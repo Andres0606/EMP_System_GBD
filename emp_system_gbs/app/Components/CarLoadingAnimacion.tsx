@@ -1,424 +1,407 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Car, UserCircle, Calendar } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import '../globals.css';
 
-// Enhanced static car background with more cars matching the lobby style
-function CarStaticBackground({ opacity = 1 }) {
-  // Pre-define more static car positions for a denser pattern
-  const staticCars = [
-    // Original cars
-    { size: 28, top: 15, left: 10, opacity: 0.08, rotation: 15 },
-    { size: 22, top: 25, left: 85, opacity: 0.06, rotation: 190 },
-    { size: 20, top: 65, left: 20, opacity: 0.05, rotation: 45 },
-    { size: 24, top: 75, left: 75, opacity: 0.07, rotation: 320 },
-    { size: 18, top: 40, left: 50, opacity: 0.04, rotation: 90 },
-    { size: 26, top: 85, left: 40, opacity: 0.08, rotation: 250 },
-    { size: 16, top: 5, left: 60, opacity: 0.05, rotation: 135 },
-    { size: 20, top: 55, left: 5, opacity: 0.06, rotation: 0 },
-    { size: 30, top: 30, left: 30, opacity: 0.09, rotation: 275 },
-    { size: 14, top: 60, left: 90, opacity: 0.04, rotation: 60 },
-    { size: 22, top: 10, left: 75, opacity: 0.07, rotation: 180 },
-    { size: 18, top: 90, left: 15, opacity: 0.05, rotation: 225 },
-    { size: 24, top: 45, left: 70, opacity: 0.08, rotation: 30 },
-    { size: 20, top: 80, left: 60, opacity: 0.06, rotation: 300 },
-    { size: 16, top: 35, left: 15, opacity: 0.05, rotation: 165 },
-    // Additional cars for denser pattern
-    { size: 22, top: 12, left: 42, opacity: 0.07, rotation: 110 },
-    { size: 18, top: 28, left: 6, opacity: 0.05, rotation: 240 },
-    { size: 26, top: 50, left: 88, opacity: 0.08, rotation: 35 },
-    { size: 14, top: 82, left: 25, opacity: 0.04, rotation: 185 },
-    { size: 20, top: 6, left: 28, opacity: 0.06, rotation: 290 },
-    { size: 24, top: 70, left: 50, opacity: 0.07, rotation: 155 },
-    { size: 16, top: 48, left: 35, opacity: 0.05, rotation: 75 },
-    { size: 28, top: 95, left: 80, opacity: 0.08, rotation: 210 },
-    { size: 18, top: 18, left: 95, opacity: 0.05, rotation: 120 },
-    { size: 22, top: 38, left: 65, opacity: 0.07, rotation: 345 },
-    { size: 20, top: 58, left: 22, opacity: 0.06, rotation: 80 },
-    { size: 24, top: 88, left: 45, opacity: 0.07, rotation: 225 },
-    { size: 16, top: 78, left: 12, opacity: 0.05, rotation: 310 },
-    { size: 26, top: 8, left: 48, opacity: 0.08, rotation: 140 },
-    { size: 18, top: 32, left: 78, opacity: 0.05, rotation: 265 }
-  ];
+/* ─── Icons ─────────────────────────────────────────── */
+const Ic = {
+  Car:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/></svg>,
+  File:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+  Swap:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
+  Shield: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  Clock:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Tag:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
+  Check:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  Pin:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  Arrow:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  User:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Eye:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  EyeOff: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+  X:      () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Menu:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="16" y2="18"/></svg>,
+  Mail:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  Lock:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  Phone:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>,
+  Star:   () => <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  Zap:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+};
+
+/* ─── Data ───────────────────────────────────────────── */
+const SERVICIOS = [
+  { icon: <Ic.File />,   label: 'Matrícula & Registro',   desc: 'Registro inicial y actualización de vehículos ante tránsito.',   color: 'blue' },
+  { icon: <Ic.Swap />,   label: 'Traspaso de Vehículo',   desc: 'Cambio de propietario con toda la documentación requerida.',     color: 'violet' },
+  { icon: <Ic.Pin />,    label: 'Traslado de Matrícula',  desc: 'Radicado y traslado entre municipios del departamento.',         color: 'cyan' },
+  { icon: <Ic.Car />,    label: 'Duplicado de Placas',    desc: 'Trámite de duplicado de placas y licencias de tránsito.',        color: 'emerald' },
+  { icon: <Ic.Shield />, label: 'Prenda & Cancelación',   desc: 'Inscripción, levantamiento y cancelación de matrículas.',       color: 'amber' },
+  { icon: <Ic.Tag />,    label: 'Cambios de Servicio',    desc: 'Color, carrocería, servicio y más trámites ante el RUNT.',      color: 'rose' },
+];
+
+const SEDES = [
+  { ciudad: 'Villavicencio', agentes: 5, emoji: '🏙️', tag: 'Sede principal', desc: 'Capital del Meta · 5 agentes disponibles', principal: true },
+  { ciudad: 'Acacias',       agentes: 2, emoji: '🌿', tag: null, desc: '2 agentes disponibles' },
+  { ciudad: 'Pto. López',    agentes: 1, emoji: '🌊', tag: null, desc: '1 agente disponible' },
+  { ciudad: 'Pto. Gaitán',   agentes: 1, emoji: '🛣️', tag: null, desc: '1 agente disponible' },
+  { ciudad: 'Restrepo',      agentes: 1, emoji: '⛰️', tag: null, desc: '1 agente disponible' },
+];
+
+/* ─── Animated counter ──────────────────────────────── */
+function Counter({ to, suffix = '' }: { to: number; suffix?: string }) {
+  const [val, setVal] = useState(0);
+  const ref  = useRef<HTMLSpanElement>(null);
+  const done = useRef(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !done.current) {
+        done.current = true;
+        let v = 0;
+        const step = Math.ceil(to / 55);
+        const t = setInterval(() => { v = Math.min(v + step, to); setVal(v); if (v >= to) clearInterval(t); }, 28);
+      }
+    });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [to]);
+  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
+}
+
+/* ─── Floating blobs background ─────────────────────── */
+function Blobs() {
+  return (
+    <div className="blobs" aria-hidden>
+      <div className="blob blob--1" />
+      <div className="blob blob--2" />
+      <div className="blob blob--3" />
+      <div className="blob blob--4" />
+    </div>
+  );
+}
+
+/* ─── Login Modal ────────────────────────────────────── */
+function LoginModal({ onClose }: { onClose: () => void }) {
+  const [tab,     setTab]     = useState<'login'|'register'>('login');
+  const [showPwd, setShowPwd] = useState(false);
+  const [form,    setForm]    = useState({ name:'', email:'', phone:'', password:'' });
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
 
   return (
-    <div className="absolute inset-0 overflow-hidden z-0">
-      <div className="absolute inset-0">
-        {/* Static positioned car silhouettes */}
-        {staticCars.map((car, i) => (
-          <Car 
-            key={i}
-            size={car.size}
-            className="text-white absolute" 
-            style={{
-              top: `${car.top}%`,
-              left: `${car.left}%`,
-              opacity: car.opacity * opacity,
-              transform: `rotate(${car.rotation}deg)`
-            }}
-          />
-        ))}
+    <div className="bd" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal">
+        <button className="modal__x" onClick={onClose}><Ic.X /></button>
+
+        <div className="modal__logo">
+          <span className="modal__logo-mark"><Ic.Car /></span>
+          <span>TransMeta</span>
+        </div>
+
+        <div className="modal__tabs">
+          <button className={`modal__tab${tab==='login'?' on':''}`} onClick={() => setTab('login')}>Ingresar</button>
+          <button className={`modal__tab${tab==='register'?' on':''}`} onClick={() => setTab('register')}>Registrarse</button>
+          <div className={`modal__tab-slider${tab==='register'?' right':''}`} />
+        </div>
+
+        <div className="modal__body">
+          {tab === 'login' ? (
+            <>
+              <h2 className="modal__h2">¡Bienvenido de nuevo!</h2>
+              <p className="modal__sub">Accede a tu panel de trámites</p>
+              <Field icon={<Ic.Mail />} label="Correo" type="email" placeholder="correo@email.com" value={form.email} onChange={set('email')} />
+              <Field icon={<Ic.Lock />} label="Contraseña" type={showPwd?'text':'password'} placeholder="••••••••"
+                value={form.password} onChange={set('password')}
+                right={<button className="eye-btn" onClick={() => setShowPwd(v=>!v)}>{showPwd?<Ic.EyeOff />:<Ic.Eye />}</button>} />
+              <a href="#" className="modal__forgot">¿Olvidaste tu contraseña?</a>
+              <button className="modal__cta">Ingresar</button>
+            </>
+          ) : (
+            <>
+              <h2 className="modal__h2">Crea tu cuenta gratis</h2>
+              <p className="modal__sub">Gestiona tus trámites en línea</p>
+              <Field icon={<Ic.User />}  label="Nombre completo" type="text"     placeholder="Tu nombre"       value={form.name}     onChange={set('name')} />
+              <Field icon={<Ic.Mail />}  label="Correo"          type="email"    placeholder="correo@email.com" value={form.email}    onChange={set('email')} />
+              <Field icon={<Ic.Phone />} label="Teléfono"        type="tel"      placeholder="310 000 0000"    value={form.phone}    onChange={set('phone')} />
+              <Field icon={<Ic.Lock />}  label="Contraseña"      type={showPwd?'text':'password'} placeholder="Mín. 8 caracteres"
+                value={form.password} onChange={set('password')}
+                right={<button className="eye-btn" onClick={() => setShowPwd(v=>!v)}>{showPwd?<Ic.EyeOff />:<Ic.Eye />}</button>} />
+              <button className="modal__cta">Crear cuenta</button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-export default function CarLoadingAnimation() {
-  const router = useRouter();
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [blurAmount, setBlurAmount] = useState(10); // Initial blur amount
-  const [showLobby, setShowLobby] = useState(false);
-  const [transitionPhase, setTransitionPhase] = useState(0);
-  const [hoveredOption, setHoveredOption] = useState<'clientes' | 'vehiculos' | 'alquileres' | null>(null);
-  const [skipAnimation, setSkipAnimation] = useState(false);
+function Field({ icon, label, type, placeholder, value, onChange, right }: {
+  icon: React.ReactNode; label: string; type: string; placeholder: string;
+  value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  right?: React.ReactNode;
+}) {
+  return (
+    <div className="field">
+      <label className="field__label">{label}</label>
+      <div className="field__row">
+        <span className="field__ico">{icon}</span>
+        <input className="field__input" type={type} placeholder={placeholder} value={value} onChange={onChange} />
+        {right}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main ───────────────────────────────────────────── */
+export default function HomePage() {
+  const [scrolled,  setScrolled]  = useState(false);
+  const [menuOpen,  setMenuOpen]  = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [visible,   setVisible]   = useState(false);
 
   useEffect(() => {
-    // Check if animation has already been shown in this browser session
-    const hasSeenAnimation = localStorage.getItem('hasSeenTheCarsAnimation');
-    
-    if (hasSeenAnimation === 'true') {
-      // Skip animation and go straight to lobby
-      setSkipAnimation(true);
-      setBlurAmount(0);
-      setIsLoaded(true);
-      setShowLobby(true);
-      setTransitionPhase(3);
-    } else {
-      // Start animation and set localStorage flag
-      startLoadingAnimation();
-
-      // Set the flag indicating animation has been shown
-      localStorage.setItem('hasSeenTheCarsAnimation', 'true');
-      
-      // Setup event listener to clear localStorage when window/tab is closed
-      const handleBeforeUnload = () => {
-        localStorage.removeItem('hasSeenTheCarsAnimation');
-      };
-
-      window.addEventListener('beforeunload', handleBeforeUnload);
-
-      return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-      };
-    }
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', fn);
+    // trigger entrance animation
+    const t = setTimeout(() => setVisible(true), 80);
+    return () => { window.removeEventListener('scroll', fn); clearTimeout(t); };
   }, []);
 
-  const startLoadingAnimation = () => {
-    // Start blur animation immediately
-    const blurTimer = setInterval(() => {
-      setBlurAmount(prevBlur => {
-        // Gradually reduce blur from 10px to 0px
-        if (prevBlur <= 0) {
-          clearInterval(blurTimer);
-          
-          // When blur effect finishes, consider content loaded
-          setTimeout(() => {
-            setIsLoaded(true);
-            
-            // Start transition to lobby
-            setTimeout(() => {
-              startTransition();
-            }, 800);
-          }, 500);
-          
-          return 0;
-        }
-        return prevBlur - 0.2; // Reduce blur gradually
-      });
-    }, 50);
-    
-    return () => clearInterval(blurTimer);
+  useEffect(() => {
+    document.body.style.overflow = showLogin ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showLogin]);
+
+  const go = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setMenuOpen(false);
   };
 
-  // Function to handle the transition animation to the lobby
-  const startTransition = () => {
-    // Phase 1: Fade out the title
-    setTransitionPhase(1);
-    
-    // Phase 2: After some time, start showing the lobby with a fade in
-    setTimeout(() => {
-      setTransitionPhase(2);
-      setShowLobby(true);
-      
-      // Phase 3: Complete transition
-      setTimeout(() => {
-        setTransitionPhase(3);
-      }, 800);
-      
-    }, 1000);
-  };
-
-  // Handle navigation to different sections
-  const handleNavigation = (route: string) => {
-    // Add a small delay for a better user experience (allowing the button animation to complete)
-    setTimeout(() => {
-      router.push(route);
-    }, 300);
-  };
+  const openLogin = () => setShowLogin(true);
 
   return (
-    <div className="relative overflow-hidden h-screen w-screen" style={{ 
-      backgroundColor: '#333',
-      fontFamily: "'Poppins', sans-serif"
-    }}>
-      {/* Loading Screen - Only shown when animation is not skipped */}
-      {!skipAnimation && (
-        <div 
-          className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-1000 ease-in-out ${
-            transitionPhase >= 1 ? 'opacity-0' : 'opacity-100'
-          }`}
-        >
-          <CarStaticBackground opacity={transitionPhase === 0 ? 1 : 0} />
-          
-          <div className="w-full max-w-md z-10 relative p-4 flex flex-col items-center justify-center">
-            {/* River Cars Logo/Title with blur effect */}
-            <div 
-              className="mb-6 text-center text-white transition-all duration-1000 ease-in-out"
-              style={{ 
-                filter: `blur(${blurAmount}px)`,
-                transform: `scale(${1 + blurAmount/20})`,
-                opacity: 1 - (blurAmount / 20)
-              }}
-            >
-              {/* Logo/Icon */}
-              <div className="flex justify-center mb-4">
-                <Car size={64} className="text-white" />
+    <div className="pg">
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+
+      {/* NAV */}
+      <header className={`nav${scrolled?' nav--up':''}`}>
+        <button className="nav__logo" onClick={() => go('inicio')}>
+          <span className="nav__mark"><Ic.Car /></span>
+          TransMeta
+        </button>
+
+        <nav className={`nav__links${menuOpen?' open':''}`}>
+          {['inicio','servicios','sedes','nosotros'].map(s => (
+            <button key={s} className="nav__a" onClick={() => go(s)}>
+              {s[0].toUpperCase()+s.slice(1)}
+            </button>
+          ))}
+          <button className="nav__a nav__a--cta" onClick={openLogin}>Ingresar</button>
+        </nav>
+
+        <div className="nav__right">
+          <button className="nav__in" onClick={openLogin}><Ic.User /> Ingresar</button>
+          <button className="nav__reg" onClick={openLogin}>Registrarse →</button>
+          <button className="nav__burg" onClick={() => setMenuOpen(v=>!v)}>
+            {menuOpen ? <Ic.X /> : <Ic.Menu />}
+          </button>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section id="inicio" className="hero">
+        <Blobs />
+
+        <div className={`hero__inner${visible?' visible':''}`}>
+          <div className="hero__copy">
+            <div className="hero__pill">
+              <span className="hero__dot" />
+              Especialistas en trámites · Meta, Colombia
+            </div>
+
+            <h1 className="hero__h1">
+              Tus trámites<br/>
+              de tránsito,<br/>
+              <span className="hero__gradient">sin complicaciones.</span>
+            </h1>
+
+            <p className="hero__p">
+              10 agentes certificados en 5 municipios del Meta. Matrícula,
+              traspasos, duplicados y más — rápido, claro y sin filas.
+            </p>
+
+            <div className="hero__btns">
+              <button className="btn-blue" onClick={() => go('servicios')}>Ver servicios <Ic.Arrow /></button>
+              <button className="btn-ghost" onClick={openLogin}>Crear cuenta gratis</button>
+            </div>
+
+            <div className="hero__chips">
+              {['Sin filas','Precio claro','Seguimiento en tiempo real'].map(c => (
+                <span key={c} className="chip"><Ic.Check />{c}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* floating card */}
+          <div className="hero__right">
+            <div className="hcard">
+              <div className="hcard__head">
+                <div className="hcard__ico"><Ic.File /></div>
+                <div>
+                  <div className="hcard__name">Traspaso de vehículo</div>
+                  <div className="hcard__meta">Villav. · Carlos Rodríguez</div>
+                </div>
+                <span className="hcard__status">En curso</span>
               </div>
-              
-              {/* Title Text */}
-              <h1 className="text-5xl font-bold tracking-wider font-[Poppins]">
-                THE CARS
-              </h1>
-              <p className="text-lg font-light mt-2">
-                Desarrolado por el tomasin
-              </p>
-              
-              {/* Tagline that appears as blur reduces */}
-              <p 
-                className="mt-4 text-xl transition-all duration-1000"
-                style={{ 
-                  opacity: 1 - (blurAmount / 5) > 0 ? 1 - (blurAmount / 5) : 0 
-                }}
-              >
-                Sistema de Gestión de Alquiler
-              </p>
+
+              <div className="hcard__steps">
+                {['Recibido','Radicado','Aprobación','Listo'].map((s,i) => (
+                  <div key={s} className={`hcard__step${i<2?' done':i===2?' cur':''}`}>
+                    <div className="hcard__dot" />
+                    {i<3 && <div className="hcard__line" />}
+                    <span>{s}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hcard__prog-row"><span>Progreso</span><span>68%</span></div>
+              <div className="hcard__bar"><div className="hcard__fill" /></div>
             </div>
-            
-            {/* Ready Message - appears after blur is complete */}
-            <div 
-              className="text-center text-white text-lg font-medium font-[Poppins] mt-8 transition-opacity duration-700"
-              style={{ opacity: isLoaded ? 1 : 0 }}
-            >
-              {isLoaded ? "¡Bienvenido!" : ""}
-            </div>
+
+            {/* floating decorative pills */}
+            <div className="fpill fpill--a"><Ic.Zap /><span>Rápido</span></div>
+            <div className="fpill fpill--b"><Ic.Star /><span>4.9 ★</span></div>
+            <div className="fpill fpill--c"><span className="fpill__num">500+</span><span>trámites/mes</span></div>
           </div>
         </div>
-      )}
 
-      {/* Transition Element - Simple fade effect - Only shown when animation is not skipped */}
-      {!skipAnimation && (
-        <div 
-          className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-in-out ${
-            transitionPhase === 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="flex flex-col items-center">
-            <Car 
-              size={96} 
-              className="text-white opacity-70"
-              style={{
-                filter: "drop-shadow(0 0 10px rgba(255,255,255,0.5))"
-              }}
-            />
+        {/* wave divider */}
+        <div className="hero__wave" aria-hidden>
+          <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="#F0F7FF"/></svg>
+        </div>
+      </section>
+
+      {/* STATS */}
+      <div className="statsbar">
+        {([
+          [2800,'+','Trámites realizados'],
+          [5,'','Municipios'],
+          [10,'','Agentes certificados'],
+          [98,'%','Satisfacción'],
+        ] as [number,string,string][]).map(([n,s,l]) => (
+          <div key={l} className="statsbar__item">
+            <strong><Counter to={n} suffix={s} /></strong>
+            <span>{l}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* SERVICES */}
+      <section id="servicios" className="sec services">
+        <div className="sec__head">
+          <p className="eyebrow">Lo que hacemos</p>
+          <h2 className="sec__h2">Todos los trámites,<br/><em>un solo lugar</em></h2>
+          <p className="sec__sub">Gestionamos ante las Secretarías de Tránsito de cada municipio con agilidad y experiencia.</p>
+        </div>
+
+        <div className="svc-grid">
+          {SERVICIOS.map(({ icon, label, desc, color }, i) => (
+            <div key={label} className={`svc svc--${color}`} style={{ '--di': i } as React.CSSProperties}>
+              <div className="svc__ico">{icon}</div>
+              <h3 className="svc__label">{label}</h3>
+              <p className="svc__desc">{desc}</p>
+              <span className="svc__arr"><Ic.Arrow /></span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SEDES */}
+      <section id="sedes" className="sec sedes">
+        <div className="sec__head">
+          <p className="eyebrow">Cobertura regional</p>
+          <h2 className="sec__h2">Estamos en<br/><em>tu municipio</em></h2>
+          <p className="sec__sub">Un agente presencial que conoce la oficina de tránsito local y sus procedimientos.</p>
+        </div>
+
+        <div className="sedes-grid">
+          {SEDES.map(({ ciudad, agentes, emoji, tag, desc, principal }, i) => (
+            <div key={ciudad} className={`sede${principal?' sede--main':''}`} style={{ '--di': i } as React.CSSProperties}>
+              <div className="sede__top">
+                <span className="sede__emoji">{emoji}</span>
+                {tag && <span className="sede__tag">{tag}</span>}
+              </div>
+              <h3 className="sede__city">{ciudad}</h3>
+              <p className="sede__desc">{desc}</p>
+              <div className="sede__dots">
+                {Array.from({ length: agentes }).map((_,k) => <span key={k} className="adot" />)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* WHY */}
+      <section id="nosotros" className="sec why">
+        <div className="why__wrap">
+          <div className="why__left">
+            <p className="eyebrow">¿Por qué elegirnos?</p>
+            <h2 className="sec__h2 left">Presencia local,<br/><em>resultados reales</em></h2>
+            <p className="sec__sub left">Somos el aliado de los propietarios de vehículos en el Meta. Conocemos cada oficina, cada funcionario y cada procedimiento.</p>
+            <ul className="why__list">
+              {['Personal capacitado en cada municipio','Sin filas ni esperas innecesarias',
+                'Seguimiento en tiempo real','Tarifas transparentes, sin sorpresas',
+                'Más de 3 años de experiencia regional'].map(item => (
+                <li key={item}><span className="why__chk"><Ic.Check /></span>{item}</li>
+              ))}
+            </ul>
+            <button className="btn-blue" onClick={openLogin}>Empezar ahora <Ic.Arrow /></button>
+          </div>
+
+          <div className="why__nums">
+            {[
+              { n:2800, s:'+', l:'Trámites\nrealizados' },
+              { n:5,    s:'',  l:'Municipios\ncubiertos' },
+              { n:10,   s:'',  l:'Agentes\ncertificados' },
+              { n:3,    s:'+', l:'Años de\nexperiencia' },
+            ].map(({ n,s,l }) => (
+              <div key={l} className="numcard">
+                <strong><Counter to={n} suffix={s} /></strong>
+                <span style={{ whiteSpace:'pre-line' }}>{l}</span>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Lobby View (shown during transition or immediately if skipping animation) */}
-      <div 
-        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-          showLobby ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div className="h-screen w-screen flex flex-col lg:flex-row font-[Poppins]">
-          {/* Clientes Section - Dark background (#333) */}
-          <div 
-            className={`relative w-full lg:w-1/3 h-1/3 lg:h-full flex items-center justify-center transition-all duration-500 ease-in-out bg-[#333] ${
-              hoveredOption === 'clientes' ? 'lg:w-2/5' : 'lg:w-1/3'
-            }`}
-            onMouseEnter={() => setHoveredOption('clientes')}
-            onMouseLeave={() => setHoveredOption(null)}
-          >
-            {/* Content */}
-            <div className="relative z-10 p-8 text-center text-white max-w-md">
-              <div className="flex justify-center mb-6">
-                <UserCircle size={80} className="text-white" />
-              </div>
-              
-              <h2 className="text-4xl font-light uppercase tracking-wide mb-6 font-[Poppins]">Clientes</h2>
-              
-              <div className={`overflow-hidden transition-all duration-500 ${hoveredOption === 'clientes' ? 'max-h-96 opacity-100' : 'max-h-0 lg:opacity-0'}`}>
-                <p className="mb-8 text-gray-300 font-[Poppins]">
-                  Gestione la información de sus clientes y mantenga un registro detallado de cada uno.
-                </p>
-                
-                <ul className="space-y-3 mb-8 text-left font-[Poppins]">
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Registro de clientes</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Historial de alquileres</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Información de contacto</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Documentación personal</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <button 
-                onClick={() => handleNavigation('/clientes')}
-                className="mt-4 px-8 py-3 bg-white hover:bg-gray-200 text-[#333] rounded-full transition-all duration-300 uppercase tracking-wider text-sm font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-[Poppins]"
-              >
-                Gestionar Clientes
-              </button>
-            </div>
-          </div>
-          
-          {/* Vehículos Section - White background */}
-          <div 
-            className={`relative w-full lg:w-1/3 h-1/3 lg:h-full flex items-center justify-center transition-all duration-500 ease-in-out bg-white ${
-              hoveredOption === 'vehiculos' ? 'lg:w-2/5' : 'lg:w-1/3'
-            }`}
-            onMouseEnter={() => setHoveredOption('vehiculos')}
-            onMouseLeave={() => setHoveredOption(null)}
-          >
-            {/* Content */}
-            <div className="relative z-10 p-8 text-center text-[#333] max-w-md">
-              <div className="flex justify-center mb-6">
-                <Car size={80} className="text-[#333]" />
-              </div>
-              
-              <h2 className="text-4xl font-light uppercase tracking-wide mb-6 font-[Poppins]">Vehículos</h2>
-              
-              <div className={`overflow-hidden transition-all duration-500 ${hoveredOption === 'vehiculos' ? 'max-h-96 opacity-100' : 'max-h-0 lg:opacity-0'}`}>
-                <p className="mb-8 text-gray-700 font-[Poppins]">
-                  Administre su flota de vehículos, controle el mantenimiento y gestione la disponibilidad.
-                </p>
-                
-                <ul className="space-y-3 mb-8 text-left font-[Poppins]">
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-[#333] mr-3"></div>
-                    <span>Inventario de vehículos</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-[#333] mr-3"></div>
-                    <span>Control de mantenimiento</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-[#333] mr-3"></div>
-                    <span>Historial de cada vehículo</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-[#333] mr-3"></div>
-                    <span>Estado y disponibilidad</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <button 
-                onClick={() => handleNavigation('/vehiculos')}
-                className="mt-4 px-8 py-3 bg-[#333] hover:bg-gray-700 text-white rounded-full transition-all duration-300 uppercase tracking-wider text-sm font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-[Poppins]"
-              >
-                Gestionar Vehículos
-              </button>
-            </div>
-          </div>
-          
-          {/* Alquileres Section - Dark background (#333) */}
-          <div 
-            className={`relative w-full lg:w-1/3 h-1/3 lg:h-full flex items-center justify-center transition-all duration-500 ease-in-out bg-[#333] ${
-              hoveredOption === 'alquileres' ? 'lg:w-2/5' : 'lg:w-1/3'
-            }`}
-            onMouseEnter={() => setHoveredOption('alquileres')}
-            onMouseLeave={() => setHoveredOption(null)}
-          >
-            {/* Content */}
-            <div className="relative z-10 p-8 text-center text-white max-w-md">
-              <div className="flex justify-center mb-6">
-                <Calendar size={80} className="text-white" />
-              </div>
-              
-              <h2 className="text-4xl font-light uppercase tracking-wide mb-6 font-[Poppins]">Alquileres</h2>
-              
-              <div className={`overflow-hidden transition-all duration-500 ${hoveredOption === 'alquileres' ? 'max-h-96 opacity-100' : 'max-h-0 lg:opacity-0'}`}>
-                <p className="mb-8 text-gray-300 font-[Poppins]">
-                  Gestione las reservas y alquileres de vehículos de manera eficiente y organizada.
-                </p>
-                
-                <ul className="space-y-3 mb-8 text-left font-[Poppins]">
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Reservas y calendario</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Contratos de alquiler</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Facturación y pagos</span>
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-white mr-3"></div>
-                    <span>Entrega y devolución</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <button 
-                onClick={() => handleNavigation('/rental')}
-                className="mt-4 px-8 py-3 bg-white hover:bg-gray-200 text-[#333] rounded-full transition-all duration-300 uppercase tracking-wider text-sm font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-[Poppins]"
-              >
-                Gestionar Alquileres
-              </button>
-            </div>
-          </div>
-          
-          {/* Dividers for desktop */}
-          <div className="hidden lg:block absolute left-1/3 top-0 h-full z-20">
-            <div className="h-full flex flex-col items-center justify-center">
-              <div className="w-px h-full bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
-            </div>
-          </div>
-          
-          <div className="hidden lg:block absolute left-2/3 top-0 h-full z-20">
-            <div className="h-full flex flex-col items-center justify-center">
-              <div className="w-px h-full bg-gradient-to-b from-transparent via-gray-400 to-transparent"></div>
-            </div>
-          </div>
+      {/* CTA */}
+      <div className="cta">
+        <div className="cta__gfx" aria-hidden>
+          <div className="cta__blob cta__blob--1" />
+          <div className="cta__blob cta__blob--2" />
+        </div>
+        <div className="cta__text">
+          <h2>¿Listo para gestionar tu trámite?</h2>
+          <p>Crea tu cuenta gratis y un agente de tu municipio te atiende hoy.</p>
+        </div>
+        <div className="cta__btns">
+          <button className="btn-white" onClick={openLogin}>Crear cuenta gratis <Ic.Arrow /></button>
+          <button className="btn-ghost-w"><Ic.Phone /> Llamar ahora</button>
         </div>
       </div>
 
-      {/* Custom animation styles */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-        
-        @keyframes blurReveal {
-          0% { filter: blur(10px); }
-          100% { filter: blur(0px); }
-        }
-      `}</style>
+      {/* FOOTER */}
+      <footer className="footer">
+        <div className="footer__brand">
+          <span className="nav__mark"><Ic.Car /></span>
+          TransMeta®
+        </div>
+        <p className="footer__tag">Especialistas en trámites vehiculares · Meta, Colombia</p>
+        <div className="footer__links">
+          {['inicio','servicios','sedes','nosotros'].map(s => (
+            <button key={s} onClick={() => go(s)} className="footer__a">
+              {s[0].toUpperCase()+s.slice(1)}
+            </button>
+          ))}
+        </div>
+        <p className="footer__copy">© {new Date().getFullYear()} TransMeta. Todos los derechos reservados.</p>
+      </footer>
     </div>
   );
 }
