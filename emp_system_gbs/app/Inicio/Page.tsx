@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 import styles from '../CSS/Inicio/Inicio.module.css';
@@ -31,39 +32,6 @@ const ZapIcon = () => (
 const StarIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor">
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-  </svg>
-);
-const UserIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-  </svg>
-);
-const EyeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-  </svg>
-);
-const EyeOffIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-    <line x1="1" y1="1" x2="23" y2="23"/>
-  </svg>
-);
-const XIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-  </svg>
-);
-const MailIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-    <polyline points="22,6 12,13 2,6"/>
-  </svg>
-);
-const LockIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
   </svg>
 );
 const PhoneIcon = () => (
@@ -135,83 +103,6 @@ function Counter({ to, suffix = '' }: { to: number; suffix?: string }) {
   }, [to]);
 
   return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
-}
-
-/* ── Login Modal ── */
-function Field({
-  icon, label, type, placeholder, value, onChange, right,
-}: {
-  icon: React.ReactNode; label: string; type: string; placeholder: string;
-  value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  right?: React.ReactNode;
-}) {
-  return (
-    <div className={styles.field}>
-      <label className={styles.fieldLabel}>{label}</label>
-      <div className={styles.fieldRow}>
-        <span className={styles.fieldIco}>{icon}</span>
-        <input
-          className={styles.fieldInput}
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-        />
-        {right}
-      </div>
-    </div>
-  );
-}
-
-function LoginModal({ onClose }: { onClose: () => void }) {
-  const [tab,     setTab]     = useState<'login' | 'register'>('login');
-  const [showPwd, setShowPwd] = useState(false);
-  const [form,    setForm]    = useState({ name: '', email: '', phone: '', password: '' });
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }));
-
-  return (
-    <div className={styles.backdrop} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modal}>
-        <button className={styles.modalX} onClick={onClose}><XIcon /></button>
-        <div className={styles.modalLogo}>
-          <span className={styles.modalLogoMark} />
-          <span className={styles.modalLogoText}>Trans<strong>Meta</strong></span>
-        </div>
-        <div className={styles.modalTabs}>
-          <button className={`${styles.modalTab} ${tab === 'login' ? styles.modalTabOn : ''}`} onClick={() => setTab('login')}>Ingresar</button>
-          <button className={`${styles.modalTab} ${tab === 'register' ? styles.modalTabOn : ''}`} onClick={() => setTab('register')}>Registrarse</button>
-          <div className={`${styles.tabSlider} ${tab === 'register' ? styles.tabSliderRight : ''}`} />
-        </div>
-        <div className={styles.modalBody}>
-          {tab === 'login' ? (
-            <>
-              <h2 className={styles.modalH2}>¡Bienvenido de nuevo!</h2>
-              <p className={styles.modalSub}>Accede a tu panel de trámites</p>
-              <Field icon={<MailIcon />} label="Correo" type="email" placeholder="correo@email.com" value={form.email} onChange={set('email')} />
-              <Field icon={<LockIcon />} label="Contraseña" type={showPwd ? 'text' : 'password'} placeholder="••••••••" value={form.password} onChange={set('password')}
-                right={<button className={styles.eyeBtn} onClick={() => setShowPwd(v => !v)}>{showPwd ? <EyeOffIcon /> : <EyeIcon />}</button>}
-              />
-              <a href="#" className={styles.forgot}>¿Olvidaste tu contraseña?</a>
-              <button className={styles.modalCta}>Ingresar</button>
-            </>
-          ) : (
-            <>
-              <h2 className={styles.modalH2}>Crea tu cuenta gratis</h2>
-              <p className={styles.modalSub}>Gestiona tus trámites en línea</p>
-              <Field icon={<UserIcon />}  label="Nombre completo" type="text"  placeholder="Tu nombre"        value={form.name}     onChange={set('name')} />
-              <Field icon={<MailIcon />}  label="Correo"          type="email" placeholder="correo@email.com" value={form.email}    onChange={set('email')} />
-              <Field icon={<PhoneIcon />} label="Teléfono"        type="tel"   placeholder="310 000 0000"     value={form.phone}    onChange={set('phone')} />
-              <Field icon={<LockIcon />}  label="Contraseña"      type={showPwd ? 'text' : 'password'} placeholder="Mín. 8 caracteres" value={form.password} onChange={set('password')}
-                right={<button className={styles.eyeBtn} onClick={() => setShowPwd(v => !v)}>{showPwd ? <EyeOffIcon /> : <EyeIcon />}</button>}
-              />
-              <button className={styles.modalCta}>Crear cuenta</button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 /* ── Data ── */
@@ -311,26 +202,21 @@ const TESTIMONIALS = [
 
 /* ── Page ── */
 export default function HomePage() {
-  const [showLogin, setShowLogin] = useState(false);
-  const [visible,   setVisible]   = useState(false);
+  const router  = useRouter();
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80);
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    document.body.style.overflow = showLogin ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [showLogin]);
-
   const scrollTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
   return (
     <div className={styles.pg}>
-      <Header onLoginClick={() => setShowLogin(true)} />
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      {/* Header recibe la navegación — ya no abre modal */}
+      <Header onLoginClick={() => router.push('/login')} />
 
       {/* ── HERO ── */}
       <section id="inicio" className={styles.hero}>
@@ -361,7 +247,8 @@ export default function HomePage() {
               <button className={styles.btnPrimary} onClick={() => scrollTo('servicios')}>
                 Ver servicios <ArrowIcon />
               </button>
-              <button className={styles.btnGhost} onClick={() => setShowLogin(true)}>
+              {/* ← Redirige a /registro */}
+              <button className={styles.btnGhost} onClick={() => router.push('/registro')}>
                 Crear cuenta gratis
               </button>
             </div>
@@ -461,7 +348,6 @@ export default function HomePage() {
         <div className={styles.whyBg} aria-hidden />
         <div className={styles.sectionInner}>
           <div className={styles.whyGrid}>
-            {/* Left: copy */}
             <div className={styles.whyLeft}>
               <span className={styles.sectionEyebrow}>¿Por qué TransMeta?</span>
               <h2 className={styles.sectionH2}>La forma más fácil<br /><span className={styles.sectionH2Accent}>de tramitar en el Meta</span></h2>
@@ -474,12 +360,12 @@ export default function HomePage() {
                 <li><span className={styles.whyCheck}><CheckIcon /></span>Agente personal asignado a tu caso</li>
                 <li><span className={styles.whyCheck}><CheckIcon /></span>Factura oficial con todos los cobros detallados</li>
               </ul>
-              <button className={styles.btnPrimary} onClick={() => setShowLogin(true)}>
+              {/* ← Redirige a /registro */}
+              <button className={styles.btnPrimary} onClick={() => router.push('/registro')}>
                 Empezar ahora <ArrowIcon />
               </button>
             </div>
 
-            {/* Right: cards */}
             <div className={styles.whyRight}>
               {WHY_ITEMS.map((item, i) => (
                 <div key={item.title} className={styles.whyCard} style={{ animationDelay: `${i * 0.1}s` }}>
@@ -538,7 +424,8 @@ export default function HomePage() {
           <p>Crea tu cuenta gratis y un agente de tu municipio te atiende hoy.</p>
         </div>
         <div className={styles.ctaBtns}>
-          <button className={styles.btnWhite} onClick={() => setShowLogin(true)}>
+          {/* ← Redirige a /registro */}
+          <button className={styles.btnWhite} onClick={() => router.push('/registro')}>
             Crear cuenta gratis <ArrowIcon />
           </button>
           <button className={styles.btnGhostW}>

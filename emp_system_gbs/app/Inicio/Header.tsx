@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from '../CSS/Header.module.css';
 
 /* ── Icons ── */
@@ -28,10 +29,10 @@ const XIcon = () => (
 );
 
 const NAV_LINKS = [
-  { label: 'Inicio',     href: '/' },
-  { label: 'Servicios',  href: '/servicios' },
-  { label: 'Sedes',      href: '/sedes' },
-  { label: 'Nosotros',   href: '/nosotros' },
+  { label: 'Inicio',    href: '/' },
+  { label: 'Servicios', href: '/Servicios' },
+  { label: 'Sedes',     href: '/Sedes' },
+  { label: 'Nosotros',  href: '/Nosotros' },
 ];
 
 interface HeaderProps {
@@ -39,9 +40,10 @@ interface HeaderProps {
 }
 
 export default function Header({ onLoginClick }: HeaderProps) {
-  const [scrolled,  setScrolled]  = useState(false);
-  const [menuOpen,  setMenuOpen]  = useState(false);
-  const [mounted,   setMounted]   = useState(false);
+  const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted,  setMounted]  = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -55,8 +57,22 @@ export default function Header({ onLoginClick }: HeaderProps) {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
+  // Si el padre pasa onLoginClick lo usamos; si no, navegamos directo.
+  const handleLogin = () => {
+    if (onLoginClick) {
+      onLoginClick();
+    } else {
+      router.push('/login');
+    }
+  };
+
+  const handleRegister = () => {
+    router.push('/Registro');
+  };
+
   return (
     <header className={`${styles.nav} ${scrolled ? styles.navScrolled : ''} ${mounted ? styles.navVisible : ''}`}>
+
       {/* Logo */}
       <Link href="/" className={styles.logo}>
         <span className={styles.logoMark}>
@@ -78,13 +94,18 @@ export default function Header({ onLoginClick }: HeaderProps) {
 
       {/* Desktop actions */}
       <div className={styles.actions}>
-        <button className={styles.loginBtn} onClick={onLoginClick}>
+        {/* Ingresar → /Login */}
+        <button className={styles.loginBtn} onClick={handleLogin}>
           <UserIcon />
           <span>Ingresar</span>
         </button>
-        <button className={styles.registerBtn} onClick={onLoginClick}>
+
+        {/* Registrarse → /Registro */}
+        <button className={styles.registerBtn} onClick={handleRegister}>
           Registrarse →
         </button>
+
+        {/* Hamburguesa mobile */}
         <button
           className={styles.burger}
           onClick={() => setMenuOpen(v => !v)}
@@ -108,12 +129,23 @@ export default function Header({ onLoginClick }: HeaderProps) {
               {label}
             </Link>
           ))}
+
+          {/* Mobile — Ingresar */}
           <button
             className={styles.mobileCta}
             style={{ animationDelay: '0.33s' }}
-            onClick={() => { setMenuOpen(false); onLoginClick?.(); }}
+            onClick={() => { setMenuOpen(false); handleLogin(); }}
           >
-            Ingresar / Registrarse
+            Ingresar
+          </button>
+
+          {/* Mobile — Registrarse */}
+          <button
+            className={styles.mobileCtaOutline}
+            style={{ animationDelay: '0.4s' }}
+            onClick={() => { setMenuOpen(false); handleRegister(); }}
+          >
+            Registrarse
           </button>
         </div>
       </div>
