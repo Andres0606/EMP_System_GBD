@@ -45,12 +45,12 @@ const CarIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
-  const [cedula,   setCedula]   = useState('');
+  const [correo, setCorreo] = useState('');      // Cambié cedula por correo
   const [password, setPassword] = useState('');
-  const [showPwd,  setShowPwd]  = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
-  const [visible,  setVisible]  = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80);
@@ -60,15 +60,56 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!cedula.trim()) { setError('Ingresa tu número de cédula.'); return; }
-    if (!password.trim()) { setError('Ingresa tu contraseña.'); return; }
+    
+    // Validaciones
+    if (!correo.trim()) { 
+      setError('Ingresa tu correo electrónico.'); 
+      return; 
+    }
+    if (!password.trim()) { 
+      setError('Ingresa tu contraseña.'); 
+      return; 
+    }
+    
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
-    setLoading(false);
-    if (cedula.length >= 6) {
-      router.push('/dashboard');
-    } else {
-      setError('Cédula o contraseña incorrectos. Verifica e intenta de nuevo.');
+    
+    try {
+      // Llamada a tu backend Spring Boot
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          correo: correo, 
+          contrasena: password 
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.mensaje || 'Error en el login');
+      }
+      
+      // Login exitoso
+      if (data.status === 'OK') {
+        // Guardar datos del usuario en localStorage o contexto
+        sessionStorage.setItem('userCedula', data.cedula);
+        sessionStorage.setItem('userCorreo', correo);
+        sessionStorage.setItem('isLoggedIn', 'true');
+        
+        // Redirigir al dashboard
+        router.push('/dashboard');
+      } else {
+        throw new Error(data.mensaje || 'Credenciales inválidas');
+      }
+      
+    } catch (err: any) {
+      console.error('Error en login:', err);
+      setError(err.message || 'Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,20 +159,18 @@ export default function LoginPage() {
         {/* Formulario */}
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
 
-          {/* Cédula */}
+          {/* Correo Electrónico (cambié de cédula a correo) */}
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="cedula">Número de cédula</label>
-            <div className={`${styles.fieldRow} ${error && !cedula ? styles.fieldRowError : ''}`}>
+            <label className={styles.label} htmlFor="correo">Correo electrónico</label>
+            <div className={`${styles.fieldRow} ${error && !correo ? styles.fieldRowError : ''}`}>
               <span className={styles.fieldIco}><IdCardIcon /></span>
               <input
-                id="cedula"
+                id="correo"
                 className={styles.input}
-                type="text"
-                inputMode="numeric"
-                placeholder="Ej. 1234567890"
-                maxLength={12}
-                value={cedula}
-                onChange={e => { setCedula(e.target.value.replace(/\D/g, '')); setError(''); }}
+                type="email"
+                placeholder="ejemplo@correo.com"
+                value={correo}
+                onChange={e => { setCorreo(e.target.value); setError(''); }}
                 autoComplete="username"
               />
             </div>
@@ -143,7 +182,7 @@ export default function LoginPage() {
               <label className={styles.label} htmlFor="password">Contraseña</label>
               <Link href="/recuperar" className={styles.forgot}>¿Olvidaste tu contraseña?</Link>
             </div>
-            <div className={`${styles.fieldRow} ${error && cedula && !password ? styles.fieldRowError : ''}`}>
+            <div className={`${styles.fieldRow} ${error && correo && !password ? styles.fieldRowError : ''}`}>
               <span className={styles.fieldIco}><LockIcon /></span>
               <input
                 id="password"
