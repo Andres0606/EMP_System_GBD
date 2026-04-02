@@ -4,27 +4,93 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../CSS/dashboard/Dashboard.module.css';
 
+/* ── Icons ── */
+const CarIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+    <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
+  </svg>
+);
+const LogoutIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const IdIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <circle cx="8" cy="12" r="2.5"/>
+    <line x1="13" y1="10" x2="19" y2="10"/>
+    <line x1="13" y1="14" x2="17" y2="14"/>
+  </svg>
+);
+const MailIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+    <polyline points="22,6 12,13 2,6"/>
+  </svg>
+);
+const FileIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+    <polyline points="10 9 9 9 8 9"/>
+  </svg>
+);
+const UserIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const BellIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const ArrowIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+const ShieldIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  </svg>
+);
+
+/* ── Obtiene iniciales de la cédula como placeholder ── */
+function getInitials(cedula: string): string {
+  if (!cedula) return 'U';
+  return cedula.slice(0, 2);
+}
+
+/* ── Formatea la cédula con puntos ── */
+function formatCedula(cedula: string): string {
+  return cedula.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [userData, setUserData] = useState({ cedula: '', correo: '' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar si el usuario está autenticado
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const cedula = sessionStorage.getItem('userCedula');
     const correo = sessionStorage.getItem('userCorreo');
 
     if (!isLoggedIn || !cedula) {
-      // Si no está autenticado, redirigir al login
       router.push('/login');
       return;
     }
 
-    setUserData({
-      cedula: cedula,
-      correo: correo || ''
-    });
+    setUserData({ cedula, correo: correo || '' });
     setLoading(false);
   }, [router]);
 
@@ -38,7 +104,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
+        <div className={styles.spinner} />
         <p>Cargando dashboard...</p>
       </div>
     );
@@ -46,40 +112,119 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Dashboard</h1>
-        <button onClick={handleLogout} className={styles.logoutBtn}>
-          Cerrar sesión
-        </button>
+      <div className={styles.grid_bg} aria-hidden />
+      <div className={styles.particles} aria-hidden>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className={styles.particle} />
+        ))}
       </div>
 
-      <div className={styles.welcomeCard}>
-        <h2>¡Bienvenido!</h2>
-        <p>Has iniciado sesión correctamente</p>
-        <div className={styles.userInfo}>
-          <p><strong>Cédula:</strong> {userData.cedula}</p>
-          <p><strong>Correo:</strong> {userData.correo}</p>
-        </div>
-      </div>
+      <div className={styles.inner}>
 
-      <div className={styles.grid}>
-        {/* Aquí irán los módulos de tu sistema */}
-        <div className={styles.card}>
-          <h3>Trámites</h3>
-          <p>Gestiona tus trámites activos</p>
-          <button>Ver trámites →</button>
-        </div>
-
-        <div className={styles.card}>
-          <h3>Perfil</h3>
-          <p>Actualiza tu información personal</p>
-          <button>Editar perfil →</button>
+        {/* ── Header ── */}
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <span className={styles.logoMark}><CarIcon /></span>
+            <span className={styles.logoText}>Trans<strong>Meta</strong></span>
+          </div>
+          <div className={styles.headerRight}>
+            <span className={styles.headerBadge}>Panel de usuario</span>
+            <button onClick={handleLogout} className={styles.logoutBtn}>
+              <LogoutIcon />
+              Cerrar sesión
+            </button>
+          </div>
         </div>
 
-        <div className={styles.card}>
-          <h3>Notificaciones</h3>
-          <p>Revisa tus notificaciones</p>
-          <button>Ver todo →</button>
+        {/* ── Hero / Perfil ── */}
+        <div className={styles.heroCard}>
+          {/* Banner superior */}
+          <div className={styles.heroBanner} />
+
+          <div className={styles.heroBody}>
+            {/* Avatar + badge de estado */}
+            <div className={styles.avatarRow}>
+              <div className={styles.avatar}>
+                {getInitials(userData.cedula)}
+              </div>
+              <div className={styles.statusBadge}>
+                <span className={styles.statusDot} />
+                Cuenta activa
+              </div>
+            </div>
+
+            {/* Nombre / título */}
+            <h2 className={styles.heroName}>
+              ¡<span>Bienvenido</span> de nuevo!
+            </h2>
+            <p className={styles.heroSub}>Has iniciado sesión correctamente en TransMeta</p>
+
+            {/* Chips de datos */}
+            <div className={styles.infoRow}>
+              <span className={styles.infoChip}>
+                <IdIcon />
+                <strong>Cédula:</strong>&nbsp;{formatCedula(userData.cedula)}
+              </span>
+              {userData.correo && (
+                <span className={styles.infoChip}>
+                  <MailIcon />
+                  <strong>Correo:</strong>&nbsp;{userData.correo}
+                </span>
+              )}
+              <span className={styles.infoChip}>
+                <ShieldIcon />
+                <strong>Rol:</strong>&nbsp;Cliente
+              </span>
+            </div>
+
+            <div className={styles.heroDivider} />
+
+            {/* Stats decorativas */}
+            <div className={styles.statsRow}>
+              <div className={styles.statItem}>
+                <div className={styles.statNumber}><span>0</span></div>
+                <div className={styles.statLabel}>Trámites activos</div>
+              </div>
+              <div className={styles.statItem}>
+                <div className={styles.statNumber}><span>0</span></div>
+                <div className={styles.statLabel}>Notificaciones</div>
+              </div>
+              <div className={styles.statItem}>
+                <div className={styles.statNumber}><span>—</span></div>
+                <div className={styles.statLabel}>Última sesión</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Módulos ── */}
+        <p className={styles.sectionTitle}>Módulos disponibles</p>
+        <div className={styles.grid}>
+
+          <div className={styles.card}>
+            <span className={styles.comingBadge}>Próximamente</span>
+            <div className={styles.cardIcon}><FileIcon /></div>
+            <h3>Trámites</h3>
+            <p>Gestiona y consulta el estado de tus trámites activos</p>
+            <button className={styles.cardBtn}>Ver trámites <ArrowIcon /></button>
+          </div>
+
+          <div className={styles.card}>
+            <span className={styles.comingBadge}>Próximamente</span>
+            <div className={styles.cardIcon}><UserIcon /></div>
+            <h3>Perfil</h3>
+            <p>Actualiza tu información personal y preferencias de cuenta</p>
+            <button className={styles.cardBtn}>Editar perfil <ArrowIcon /></button>
+          </div>
+
+          <div className={styles.card}>
+            <span className={styles.comingBadge}>Próximamente</span>
+            <div className={styles.cardIcon}><BellIcon /></div>
+            <h3>Notificaciones</h3>
+            <p>Revisa alertas y novedades importantes de tus trámites</p>
+            <button className={styles.cardBtn}>Ver todo <ArrowIcon /></button>
+          </div>
+
         </div>
       </div>
     </div>
