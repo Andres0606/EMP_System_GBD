@@ -92,7 +92,7 @@ export default function LoginPage() {
         throw new Error(data.mensaje || 'Credenciales inválidas');
       }
       
-      // Guardar datos básicos
+      // Guardar datos básicos del login
       const cedula = data.cedula?.toString() || '';
       const rol = data.rol?.toString() || '2';
       const correoUsuario = data.correo || correo;
@@ -102,22 +102,9 @@ export default function LoginPage() {
       sessionStorage.setItem('userCorreo', correoUsuario);
       sessionStorage.setItem('userRol', rol);
       
-      // Si ya tenemos nombres y apellidos en la respuesta del login, guardarlos
-      if (data.nombres && data.apellido) {
-        sessionStorage.setItem('userNombres', data.nombres);
-        sessionStorage.setItem('userApellido', data.apellido);
-        
-        // Redirigir según el rol
-        if (rol === '3') {
-          router.push('/dashboard-admin');
-        } else if (rol === '2') {
-          router.push('/dashboard-asesor');
-        } else {
-          router.push('/dashboard');
-        }
-      } else {
-        // Si no vienen en el login, hacer una segunda llamada para obtener los datos completos
-        console.log('Obteniendo datos adicionales del usuario...');
+      // SIEMPRE hacer la segunda llamada para obtener nombres y apellidos completos
+      console.log('Obteniendo datos completos del usuario...');
+      try {
         const personaResponse = await fetch(`http://localhost:8080/api/auth/persona/${cedula}`);
         const personaData = await personaResponse.json();
         console.log('Datos de persona:', personaData);
@@ -125,21 +112,34 @@ export default function LoginPage() {
         if (personaResponse.ok && personaData.status === 'OK') {
           sessionStorage.setItem('userNombres', personaData.nombres || '');
           sessionStorage.setItem('userApellido', personaData.apellido || '');
+          console.log('Nombres guardados:', personaData.nombres, personaData.apellido);
         } else {
-          // Si no se pueden obtener, usar valores por defecto
+          // Fallback: usar el nombre del correo
           const nombreDesdeCorreo = correoUsuario.split('@')[0];
           sessionStorage.setItem('userNombres', nombreDesdeCorreo);
           sessionStorage.setItem('userApellido', '');
+          console.log('Usando nombre desde correo:', nombreDesdeCorreo);
         }
-        
-        // Redirigir según el rol
-        if (rol === '3') {
-          router.push('/dashboard-admin');
-        } else if (rol === '2') {
-          router.push('/dashboard-asesor');
-        } else {
-          router.push('/dashboard');
-        }
+      } catch (error) {
+        console.error('Error obteniendo datos de persona:', error);
+        // Fallback: usar el nombre del correo
+        const nombreDesdeCorreo = correoUsuario.split('@')[0];
+        sessionStorage.setItem('userNombres', nombreDesdeCorreo);
+        sessionStorage.setItem('userApellido', '');
+      }
+      
+      // Verificar qué rol es y redirigir
+      console.log('Rol para redirigir:', rol);
+      
+      if (rol === '3') {
+        console.log('Redirigiendo a dashboard-admin');
+        router.push('/dashboard-admin');
+      } else if (rol === '2') {
+        console.log('Redirigiendo a dashboard-asesor');
+        router.push('/dashboard-asesor');
+      } else {
+        console.log('Redirigiendo a dashboard');
+        router.push('/dashboard');
       }
       
     } catch (err: any) {
