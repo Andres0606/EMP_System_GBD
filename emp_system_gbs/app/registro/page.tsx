@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from '../CSS/Registro/Registro.module.css';
+import styles from '../CSS/dashboard/Dashboard.module.css';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -12,184 +11,162 @@ const CarIcon = () => (
     <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
   </svg>
 );
-const ArrowRightIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const LogoutIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const IdIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <circle cx="8" cy="12" r="2.5"/>
+    <line x1="13" y1="10" x2="19" y2="10"/>
+    <line x1="13" y1="14" x2="17" y2="14"/>
+  </svg>
+);
+const MailIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+    <polyline points="22,6 12,13 2,6"/>
+  </svg>
+);
+const FileIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/>
+    <line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/>
+    <polyline points="10 9 9 9 8 9"/>
+  </svg>
+);
+const UserIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const BellIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const ArrowIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
   </svg>
 );
 
-export default function RegistroPage() {
+export default function DashboardPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    cedula: '',
-    nombres: '',
-    apellido: '',
-    fechaNacimiento: '',
-    telefono: '',
-    correo: '',
-    contrasena: '',
-    confirmarContrasena: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [userData, setUserData] = useState({ cedula: '', correo: '' });
+  const [loading, setLoading] = useState(true);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setError('');
-  };
+  useEffect(() => {
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    const cedula = sessionStorage.getItem('userCedula');
+    const correo = sessionStorage.getItem('userCorreo');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!formData.cedula.trim()) { setError('La cédula es requerida'); return; }
-    if (!formData.nombres.trim()) { setError('Los nombres son requeridos'); return; }
-    if (!formData.apellido.trim()) { setError('Los apellidos son requeridos'); return; }
-    if (!formData.fechaNacimiento) { setError('La fecha de nacimiento es requerida'); return; }
-    if (!formData.correo.trim()) { setError('El correo es requerido'); return; }
-    if (!formData.contrasena) { setError('La contraseña es requerida'); return; }
-    if (formData.contrasena !== formData.confirmarContrasena) { setError('Las contraseñas no coinciden'); return; }
-    if (formData.contrasena.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return; }
-
-    setLoading(true);
-
-    try {
-      let fechaFormateada = '';
-      if (formData.fechaNacimiento) {
-        const fecha = new Date(formData.fechaNacimiento);
-        const dia = fecha.getDate().toString().padStart(2, '0');
-        const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-        const anio = fecha.getFullYear();
-        fechaFormateada = `${dia}/${mes}/${anio}`;
-      }
-
-      const response = await fetch('http://localhost:8080/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cedula: parseInt(formData.cedula),
-          nombres: formData.nombres,
-          apellido: formData.apellido,
-          fechaNacimiento: fechaFormateada,
-          telefono: formData.telefono ? parseInt(formData.telefono) : null,
-          correo: formData.correo,
-          contrasena: formData.contrasena
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.mensaje || 'Error en el registro');
-      if (data.status === 'OK') {
-        setSuccess('¡Registro exitoso! Redirigiendo al login...');
-        setTimeout(() => { router.push('/login'); }, 2000);
-      } else {
-        throw new Error(data.mensaje || 'Error en el registro');
-      }
-    } catch (err: any) {
-      console.error('Error en registro:', err);
-      setError(err.message || 'Error de conexión con el servidor');
-    } finally {
-      setLoading(false);
+    if (!isLoggedIn || !cedula) {
+      router.push('/login');
+      return;
     }
+
+    setUserData({ cedula, correo: correo || '' });
+    setLoading(false);
+  }, [router]);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('userCedula');
+    sessionStorage.removeItem('userCorreo');
+    router.push('/login');
   };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner} />
+        <p>Cargando dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-
-      {/* Grid sutil */}
-      <div className={styles.grid} aria-hidden />
-
-      {/* Partículas flotantes */}
+      {/* Fondo decorativo */}
+      <div className={styles.grid_bg} aria-hidden />
       <div className={styles.particles} aria-hidden>
-        {Array.from({ length: 10 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className={styles.particle} />
         ))}
       </div>
 
-      {/* Tarjeta */}
-      <div className={styles.card}>
+      <div className={styles.inner}>
 
-        {/* Logo */}
-        <div className={styles.logoRow}>
-          <span className={styles.logoMark}><CarIcon /></span>
-          <span className={styles.logoText}>Trans<strong>Meta</strong></span>
+        {/* Header */}
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <span className={styles.logoMark}><CarIcon /></span>
+            <span className={styles.logoText}>Trans<strong>Meta</strong></span>
+          </div>
+          <div className={styles.headerRight}>
+            <span className={styles.headerBadge}>Panel de usuario</span>
+            <button onClick={handleLogout} className={styles.logoutBtn}>
+              <LogoutIcon />
+              Cerrar sesión
+            </button>
+          </div>
         </div>
 
-        {/* Encabezado */}
-        <div className={styles.head}>
-          <h1>Crear cuenta</h1>
-          <p className={styles.subtitle}>Regístrate para acceder al sistema</p>
+        {/* Bienvenida */}
+        <div className={styles.welcomeCard}>
+          <div className={styles.welcomeTop}>
+            <div className={styles.welcomeText}>
+              <h2>¡<span>Bienvenido</span> de nuevo!</h2>
+              <p>Has iniciado sesión correctamente</p>
+            </div>
+          </div>
+          <div className={styles.userInfo}>
+            <span className={styles.infoChip}>
+              <IdIcon />
+              <strong>Cédula:</strong> {userData.cedula}
+            </span>
+            {userData.correo && (
+              <span className={styles.infoChip}>
+                <MailIcon />
+                <strong>Correo:</strong> {userData.correo}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Alertas */}
-        {error   && <div className={styles.errorAlert}   role="alert">{error}</div>}
-        {success && <div className={styles.successAlert} role="alert">{success}</div>}
-
-        {/* Formulario — lógica intacta */}
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGrid}>
-
-            <div className={styles.field}>
-              <label>Cédula *</label>
-              <input type="text" name="cedula" value={formData.cedula}
-                onChange={handleChange} placeholder="Número de cédula" maxLength={12} />
-            </div>
-
-            <div className={styles.field}>
-              <label>Nombres *</label>
-              <input type="text" name="nombres" value={formData.nombres}
-                onChange={handleChange} placeholder="Tus nombres" />
-            </div>
-
-            <div className={styles.field}>
-              <label>Apellidos *</label>
-              <input type="text" name="apellido" value={formData.apellido}
-                onChange={handleChange} placeholder="Tus apellidos" />
-            </div>
-
-            <div className={styles.field}>
-              <label>Fecha de nacimiento *</label>
-              <input type="date" name="fechaNacimiento" value={formData.fechaNacimiento}
-                onChange={handleChange} />
-            </div>
-
-            <div className={styles.field}>
-              <label>Teléfono</label>
-              <input type="tel" name="telefono" value={formData.telefono}
-                onChange={handleChange} placeholder="Número de teléfono" />
-            </div>
-
-            <div className={styles.field}>
-              <label>Correo electrónico *</label>
-              <input type="email" name="correo" value={formData.correo}
-                onChange={handleChange} placeholder="ejemplo@correo.com" />
-            </div>
-
-            <div className={styles.field}>
-              <label>Contraseña *</label>
-              <input type="password" name="contrasena" value={formData.contrasena}
-                onChange={handleChange} placeholder="Mínimo 6 caracteres" />
-            </div>
-
-            <div className={styles.field}>
-              <label>Confirmar contraseña *</label>
-              <input type="password" name="confirmarContrasena" value={formData.confirmarContrasena}
-                onChange={handleChange} placeholder="Repite tu contraseña" />
-            </div>
-
+        {/* Tarjetas */}
+        <div className={styles.grid}>
+          <div className={styles.card}>
+            <div className={styles.cardIcon}><FileIcon /></div>
+            <h3>Trámites</h3>
+            <p>Gestiona tus trámites activos</p>
+            <button>Ver trámites <ArrowIcon /></button>
           </div>
 
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Registrando...' : <><span>Registrarse</span><ArrowRightIcon /></>}
-          </button>
-        </form>
+          <div className={styles.card}>
+            <div className={styles.cardIcon}><UserIcon /></div>
+            <h3>Perfil</h3>
+            <p>Actualiza tu información personal</p>
+            <button>Editar perfil <ArrowIcon /></button>
+          </div>
 
-        <p className={styles.loginLink}>
-          ¿Ya tienes cuenta? <Link href="/login">Inicia sesión aquí</Link>
-        </p>
+          <div className={styles.card}>
+            <div className={styles.cardIcon}><BellIcon /></div>
+            <h3>Notificaciones</h3>
+            <p>Revisa tus notificaciones</p>
+            <button>Ver todo <ArrowIcon /></button>
+          </div>
+        </div>
+
       </div>
     </div>
   );
