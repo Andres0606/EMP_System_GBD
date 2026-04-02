@@ -67,12 +67,12 @@ export default function Header({ onLoginClick }: HeaderProps) {
   };
 
   const handleRegister = () => {
-    router.push('/Registro');
+    router.push('/registro');
   };
 
   return (
     <header className={`${styles.nav} ${scrolled ? styles.navScrolled : ''} ${mounted ? styles.navVisible : ''}`}>
-
+            
       {/* Logo */}
       <Link href="/" className={styles.logo}>
         <span className={styles.logoMark}>
