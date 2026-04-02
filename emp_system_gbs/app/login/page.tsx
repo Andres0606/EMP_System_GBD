@@ -45,7 +45,7 @@ const CarIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
-  const [correo, setCorreo] = useState('');      // Cambié cedula por correo
+  const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,60 +58,69 @@ export default function LoginPage() {
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  e.preventDefault();
+  setError('');
+  
+  if (!correo.trim()) { 
+    setError('Ingresa tu correo electrónico.'); 
+    return; 
+  }
+  if (!password.trim()) { 
+    setError('Ingresa tu contraseña.'); 
+    return; 
+  }
+  
+  setLoading(true);
+  
+  try {
+    const response = await fetch('http://localhost:8080/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        correo: correo, 
+        contrasena: password 
+      }),
+    });
     
-    // Validaciones
-    if (!correo.trim()) { 
-      setError('Ingresa tu correo electrónico.'); 
-      return; 
+    // Log para ver el status code
+    console.log('Status code:', response.status);
+    
+    const data = await response.json();
+    console.log('Respuesta completa:', data);
+    
+    if (!response.ok) {
+      // Mostrar el error específico del backend
+      throw new Error(data.mensaje || `Error ${response.status}: Error en el login`);
     }
-    if (!password.trim()) { 
-      setError('Ingresa tu contraseña.'); 
-      return; 
-    }
     
-    setLoading(true);
-    
-    try {
-      // Llamada a tu backend Spring Boot
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          correo: correo, 
-          contrasena: password 
-        }),
-      });
+    if (data.status === 'OK') {
+      // Guardar datos...
+      sessionStorage.setItem('userCedula', data.cedula);
+      sessionStorage.setItem('userCorreo', correo);
+      sessionStorage.setItem('userRol', data.rol);
+      sessionStorage.setItem('isLoggedIn', 'true');
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.mensaje || 'Error en el login');
-      }
-      
-      // Login exitoso
-      if (data.status === 'OK') {
-        // Guardar datos del usuario en localStorage o contexto
-        sessionStorage.setItem('userCedula', data.cedula);
-        sessionStorage.setItem('userCorreo', correo);
-        sessionStorage.setItem('isLoggedIn', 'true');
-        
-        // Redirigir al dashboard
-        router.push('/dashboard');
+      // Redirigir según el rol
+      if (data.rol === 3) {
+        router.push('/dashboard-admin');
+      } else if (data.rol === 2) {
+        router.push('/dashboard-asesor');
       } else {
-        throw new Error(data.mensaje || 'Credenciales inválidas');
+        router.push('/dashboard');
       }
-      
-    } catch (err: any) {
-      console.error('Error en login:', err);
-      setError(err.message || 'Error de conexión con el servidor');
-    } finally {
-      setLoading(false);
+    } else {
+      throw new Error(data.mensaje || 'Credenciales inválidas');
     }
-  };
+    
+  } catch (err: any) {
+    console.error('Error en login:', err);
+    setError(err.message || 'Error de conexión con el servidor');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className={styles.pg}>
