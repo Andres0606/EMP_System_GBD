@@ -64,10 +64,12 @@ const ShieldIcon = () => (
   </svg>
 );
 
-/* ── Obtiene iniciales de la cédula como placeholder ── */
-function getInitials(cedula: string): string {
-  if (!cedula) return 'U';
-  return cedula.slice(0, 2);
+/* ── Obtiene iniciales del nombre y apellido ── */
+function getInitials(nombres: string, apellido: string): string {
+  if (!nombres && !apellido) return 'U';
+  const primeraLetra = nombres ? nombres.charAt(0).toUpperCase() : '';
+  const segundaLetra = apellido ? apellido.charAt(0).toUpperCase() : '';
+  return primeraLetra + segundaLetra || 'U';
 }
 
 /* ── Formatea la cédula con puntos ── */
@@ -75,29 +77,63 @@ function formatCedula(cedula: string): string {
   return cedula.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
+/* ── Obtiene el nombre completo ── */
+function getNombreCompleto(nombres: string, apellido: string): string {
+  if (!nombres && !apellido) return 'Usuario';
+  return `${nombres || ''} ${apellido || ''}`.trim();
+}
+
+/* ── Obtiene el rol como texto ── */
+function getRolNombre(rol: number): string {
+  switch(rol) {
+    case 1: return 'Administrador';
+    case 2: return 'Cliente';
+    case 3: return 'Asesor';
+    default: return 'Usuario';
+  }
+}
+
 export default function DashboardPage() {
   const router = useRouter();
-  const [userData, setUserData] = useState({ cedula: '', correo: '' });
+  const [userData, setUserData] = useState({ 
+    cedula: '', 
+    nombres: '', 
+    apellido: '', 
+    correo: '',
+    rol: 2 
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const cedula = sessionStorage.getItem('userCedula');
+    const nombres = sessionStorage.getItem('userNombres');
+    const apellido = sessionStorage.getItem('userApellido');
     const correo = sessionStorage.getItem('userCorreo');
+    const rol = sessionStorage.getItem('userRol');
 
     if (!isLoggedIn || !cedula) {
       router.push('/login');
       return;
     }
 
-    setUserData({ cedula, correo: correo || '' });
+    setUserData({ 
+      cedula: cedula || '', 
+      nombres: nombres || '', 
+      apellido: apellido || '', 
+      correo: correo || '',
+      rol: rol ? parseInt(rol) : 2
+    });
     setLoading(false);
   }, [router]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('isLoggedIn');
     sessionStorage.removeItem('userCedula');
+    sessionStorage.removeItem('userNombres');
+    sessionStorage.removeItem('userApellido');
     sessionStorage.removeItem('userCorreo');
+    sessionStorage.removeItem('userRol');
     router.push('/login');
   };
 
@@ -109,6 +145,10 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const nombreCompleto = getNombreCompleto(userData.nombres, userData.apellido);
+  const iniciales = getInitials(userData.nombres, userData.apellido);
+  const rolNombre = getRolNombre(userData.rol);
 
   return (
     <div className={styles.container}>
@@ -145,7 +185,7 @@ export default function DashboardPage() {
             {/* Avatar + badge de estado */}
             <div className={styles.avatarRow}>
               <div className={styles.avatar}>
-                {getInitials(userData.cedula)}
+                {iniciales}
               </div>
               <div className={styles.statusBadge}>
                 <span className={styles.statusDot} />
@@ -153,9 +193,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Nombre / título */}
+            {/* Nombre completo */}
             <h2 className={styles.heroName}>
-              ¡<span>Bienvenido</span> de nuevo!
+              ¡Bienvenido, <span>{nombreCompleto}</span>!
             </h2>
             <p className={styles.heroSub}>Has iniciado sesión correctamente en TransMeta</p>
 
@@ -173,7 +213,7 @@ export default function DashboardPage() {
               )}
               <span className={styles.infoChip}>
                 <ShieldIcon />
-                <strong>Rol:</strong>&nbsp;Cliente
+                <strong>Rol:</strong>&nbsp;{rolNombre}
               </span>
             </div>
 

@@ -58,73 +58,100 @@ export default function LoginPage() {
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
-  
-  if (!correo.trim()) { 
-    setError('Ingresa tu correo electrónico.'); 
-    return; 
-  }
-  if (!password.trim()) { 
-    setError('Ingresa tu contraseña.'); 
-    return; 
-  }
-  
-  setLoading(true);
-  
-  try {
-    const response = await fetch('http://localhost:8080/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        correo: correo, 
-        contrasena: password 
-      }),
-    });
+    e.preventDefault();
+    setError('');
     
-    // Log para ver el status code
-    console.log('Status code:', response.status);
-    
-    const data = await response.json();
-    console.log('Respuesta completa:', data);
-    
-    if (!response.ok) {
-      // Mostrar el error específico del backend
-      throw new Error(data.mensaje || `Error ${response.status}: Error en el login`);
+    if (!correo.trim()) { 
+      setError('Ingresa tu correo electrónico.'); 
+      return; 
+    }
+    if (!password.trim()) { 
+      setError('Ingresa tu contraseña.'); 
+      return; 
     }
     
-    if (data.status === 'OK') {
-      // Guardar datos...
-      sessionStorage.setItem('userCedula', data.cedula);
-      sessionStorage.setItem('userCorreo', correo);
-      sessionStorage.setItem('userRol', data.rol);
-      sessionStorage.setItem('isLoggedIn', 'true');
+    setLoading(true);
+    
+    try {
+      // Primero, hacer login
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          correo: correo, 
+          contrasena: password 
+        }),
+      });
       
-      // Redirigir según el rol
-      if (data.rol === 3) {
-        router.push('/dashboard-admin');
-      } else if (data.rol === 2) {
-        router.push('/dashboard-asesor');
-      } else {
-        router.push('/dashboard');
+      const data = await response.json();
+      console.log('Respuesta login:', data);
+      
+      if (!response.ok || data.status !== 'OK') {
+        throw new Error(data.mensaje || 'Credenciales inválidas');
       }
-    } else {
-      throw new Error(data.mensaje || 'Credenciales inválidas');
+      
+      // Guardar datos básicos
+      const cedula = data.cedula?.toString() || '';
+      const rol = data.rol?.toString() || '2';
+      const correoUsuario = data.correo || correo;
+      
+      sessionStorage.setItem('isLoggedIn', 'true');
+      sessionStorage.setItem('userCedula', cedula);
+      sessionStorage.setItem('userCorreo', correoUsuario);
+      sessionStorage.setItem('userRol', rol);
+      
+      // Si ya tenemos nombres y apellidos en la respuesta del login, guardarlos
+      if (data.nombres && data.apellido) {
+        sessionStorage.setItem('userNombres', data.nombres);
+        sessionStorage.setItem('userApellido', data.apellido);
+        
+        // Redirigir según el rol
+        if (rol === '3') {
+          router.push('/dashboard-admin');
+        } else if (rol === '2') {
+          router.push('/dashboard-asesor');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        // Si no vienen en el login, hacer una segunda llamada para obtener los datos completos
+        console.log('Obteniendo datos adicionales del usuario...');
+        const personaResponse = await fetch(`http://localhost:8080/api/auth/persona/${cedula}`);
+        const personaData = await personaResponse.json();
+        console.log('Datos de persona:', personaData);
+        
+        if (personaResponse.ok && personaData.status === 'OK') {
+          sessionStorage.setItem('userNombres', personaData.nombres || '');
+          sessionStorage.setItem('userApellido', personaData.apellido || '');
+        } else {
+          // Si no se pueden obtener, usar valores por defecto
+          const nombreDesdeCorreo = correoUsuario.split('@')[0];
+          sessionStorage.setItem('userNombres', nombreDesdeCorreo);
+          sessionStorage.setItem('userApellido', '');
+        }
+        
+        // Redirigir según el rol
+        if (rol === '3') {
+          router.push('/dashboard-admin');
+        } else if (rol === '2') {
+          router.push('/dashboard-asesor');
+        } else {
+          router.push('/dashboard');
+        }
+      }
+      
+    } catch (err: any) {
+      console.error('Error en login:', err);
+      setError(err.message || 'Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
     }
-    
-  } catch (err: any) {
-    console.error('Error en login:', err);
-    setError(err.message || 'Error de conexión con el servidor');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className={styles.pg}>
-
       {/* Blobs de fondo */}
       <div className={styles.blobs} aria-hidden>
         <div className={`${styles.blob} ${styles.blob1}`} />
@@ -168,7 +195,7 @@ export default function LoginPage() {
         {/* Formulario */}
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
 
-          {/* Correo Electrónico (cambié de cédula a correo) */}
+          {/* Correo Electrónico */}
           <div className={styles.field}>
             <label className={styles.label} htmlFor="correo">Correo electrónico</label>
             <div className={`${styles.fieldRow} ${error && !correo ? styles.fieldRowError : ''}`}>
