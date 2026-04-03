@@ -237,4 +237,29 @@ public Map<String, Object> listarAsesores() {
         return errorResponse;
     }
 }
+public Map<String, Object> registrarCliente(Map<String, Object> clienteData) {
+    String url = "https://oracleapex.com/ords/ucc/apiCliente/register";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(clienteData, headers);
+    
+    try {
+        log.info("Registrando cliente en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en registro de cliente: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error en el registro: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }
