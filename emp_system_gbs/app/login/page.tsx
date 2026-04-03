@@ -62,94 +62,87 @@ export default function LoginPage() {
     setError('');
     
     if (!correo.trim()) { 
-      setError('Ingresa tu correo electrónico.'); 
-      return; 
+        setError('Ingresa tu correo electrónico.'); 
+        return; 
     }
     if (!password.trim()) { 
-      setError('Ingresa tu contraseña.'); 
-      return; 
+        setError('Ingresa tu contraseña.'); 
+        return; 
     }
     
     setLoading(true);
     
     try {
-      // Primero, hacer login
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          correo: correo, 
-          contrasena: password 
-        }),
-      });
-      
-      const data = await response.json();
-      console.log('Respuesta login:', data);
-      
-      if (!response.ok || data.status !== 'OK') {
-        throw new Error(data.mensaje || 'Credenciales inválidas');
-      }
-      
-      // Guardar datos básicos del login
-      const cedula = data.cedula?.toString() || '';
-      const rol = data.rol?.toString() || '2';
-      const correoUsuario = data.correo || correo;
-      
-      sessionStorage.setItem('isLoggedIn', 'true');
-      sessionStorage.setItem('userCedula', cedula);
-      sessionStorage.setItem('userCorreo', correoUsuario);
-      sessionStorage.setItem('userRol', rol);
-      
-      // SIEMPRE hacer la segunda llamada para obtener nombres y apellidos completos
-      console.log('Obteniendo datos completos del usuario...');
-      try {
-        const personaResponse = await fetch(`http://localhost:8080/api/auth/persona/${cedula}`);
-        const personaData = await personaResponse.json();
-        console.log('Datos de persona:', personaData);
+        // SOLO UNA LLAMADA - Login
+        const response = await fetch('http://localhost:8080/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                correo: correo, 
+                contrasena: password 
+            }),
+        });
         
-        if (personaResponse.ok && personaData.status === 'OK') {
-          sessionStorage.setItem('userNombres', personaData.nombres || '');
-          sessionStorage.setItem('userApellido', personaData.apellido || '');
-          console.log('Nombres guardados:', personaData.nombres, personaData.apellido);
-        } else {
-          // Fallback: usar el nombre del correo
-          const nombreDesdeCorreo = correoUsuario.split('@')[0];
-          sessionStorage.setItem('userNombres', nombreDesdeCorreo);
-          sessionStorage.setItem('userApellido', '');
-          console.log('Usando nombre desde correo:', nombreDesdeCorreo);
+        const data = await response.json();
+        console.log('Respuesta login completa:', data);
+        
+        if (!response.ok || data.status !== 'OK') {
+            throw new Error(data.mensaje || 'Credenciales inválidas');
         }
-      } catch (error) {
-        console.error('Error obteniendo datos de persona:', error);
-        // Fallback: usar el nombre del correo
-        const nombreDesdeCorreo = correoUsuario.split('@')[0];
-        sessionStorage.setItem('userNombres', nombreDesdeCorreo);
-        sessionStorage.setItem('userApellido', '');
-      }
-      
-      // Verificar qué rol es y redirigir
-      console.log('Rol para redirigir:', rol);
-      
-      if (rol === '3') {
-        console.log('Redirigiendo a dashboard-admin');
-        router.push('/dashboard-admin');
-      } else if (rol === '2') {
-        console.log('Redirigiendo a dashboard-asesor');
-        router.push('/dashboard-asesor');
-      } else {
-        console.log('Redirigiendo a dashboard');
-        router.push('/dashboard');
-      }
-      
+        
+        // Guardar TODOS los datos que vienen del login
+        const cedula = data.cedula?.toString() || '';
+        const rol = data.rol?.toString() || '2';
+        const correoUsuario = data.correo || correo;
+        
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('userCedula', cedula);
+        sessionStorage.setItem('userCorreo', correoUsuario);
+        sessionStorage.setItem('userRol', rol);
+        
+        // Guardar nombres y apellidos DIRECTAMENTE de la respuesta del login
+        if (data.nombres) {
+            sessionStorage.setItem('userNombres', data.nombres);
+        } else {
+            const nombreDesdeCorreo = correoUsuario.split('@')[0];
+            sessionStorage.setItem('userNombres', nombreDesdeCorreo);
+        }
+        
+        if (data.apellido) {
+            sessionStorage.setItem('userApellido', data.apellido);
+        } else {
+            sessionStorage.setItem('userApellido', '');
+        }
+        
+        console.log('Datos guardados en sessionStorage:', {
+            cedula: sessionStorage.getItem('userCedula'),
+            rol: sessionStorage.getItem('userRol'),
+            nombres: sessionStorage.getItem('userNombres'),
+            apellido: sessionStorage.getItem('userApellido'),
+            correo: sessionStorage.getItem('userCorreo')
+        });
+        
+        // Redirigir según rol
+        if (rol === '3') {
+            console.log('Redirigiendo a dashboard-admin');
+            router.push('/dashboard-admin');
+        } else if (rol === '2') {
+            console.log('Redirigiendo a dashboard-asesor');
+            router.push('/dashboard-asesor');
+        } else {
+            console.log('Redirigiendo a dashboard');
+            router.push('/dashboard');
+        }
+        
     } catch (err: any) {
-      console.error('Error en login:', err);
-      setError(err.message || 'Error de conexión con el servidor');
+        console.error('Error en login:', err);
+        setError(err.message || 'Error de conexión con el servidor');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
-
+};
   return (
     <div className={styles.pg}>
       {/* Blobs de fondo */}

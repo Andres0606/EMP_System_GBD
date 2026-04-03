@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../CSS/dashboard/Dashboard.module.css';
+import Link from 'next/link';  // ✅ CORRECTO
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -63,6 +64,12 @@ const ShieldIcon = () => (
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
   </svg>
 );
+const VehicleIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+    <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
+  </svg>
+);
 
 /* ── Obtiene iniciales del nombre y apellido ── */
 function getInitials(nombres: string, apellido: string): string {
@@ -86,9 +93,9 @@ function getNombreCompleto(nombres: string, apellido: string): string {
 /* ── Obtiene el rol como texto ── */
 function getRolNombre(rol: number): string {
   switch(rol) {
-    case 1: return 'Administrador';
-    case 2: return 'Cliente';
-    case 3: return 'Asesor';
+    case 1: return 'Cliente';
+    case 2: return 'Asesor';
+    case 3: return 'Administrador';
     default: return 'Usuario';
   }
 }
@@ -100,7 +107,7 @@ export default function DashboardPage() {
     nombres: '', 
     apellido: '', 
     correo: '',
-    rol: 2 
+    rol: 1 
   });
   const [loading, setLoading] = useState(true);
 
@@ -238,34 +245,41 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Módulos ── */}
-        <p className={styles.sectionTitle}>Módulos disponibles</p>
-        <div className={styles.grid}>
+<p className={styles.sectionTitle}>Módulos disponibles</p>
+<div className={styles.grid}>
+  <div className={styles.card}>
+    <span className={styles.comingBadge}>Próximamente</span>
+    <div className={styles.cardIcon}><FileIcon /></div>
+    <h3>Trámites</h3>
+    <p>Gestiona y consulta el estado de tus trámites activos</p>
+    <button className={styles.cardBtn}>Ver trámites <ArrowIcon /></button>
+  </div>
 
-          <div className={styles.card}>
-            <span className={styles.comingBadge}>Próximamente</span>
-            <div className={styles.cardIcon}><FileIcon /></div>
-            <h3>Trámites</h3>
-            <p>Gestiona y consulta el estado de tus trámites activos</p>
-            <button className={styles.cardBtn}>Ver trámites <ArrowIcon /></button>
-          </div>
+  <div className={styles.card}>
+    <span className={styles.comingBadge}>Próximamente</span>
+    <div className={styles.cardIcon}><UserIcon /></div>
+    <h3>Perfil</h3>
+    <p>Actualiza tu información personal y preferencias de cuenta</p>
+    <button className={styles.cardBtn}>Editar perfil <ArrowIcon /></button>
+  </div>
 
-          <div className={styles.card}>
-            <span className={styles.comingBadge}>Próximamente</span>
-            <div className={styles.cardIcon}><UserIcon /></div>
-            <h3>Perfil</h3>
-            <p>Actualiza tu información personal y preferencias de cuenta</p>
-            <button className={styles.cardBtn}>Editar perfil <ArrowIcon /></button>
-          </div>
+  <div className={styles.card}>
+    <span className={styles.comingBadge}>Próximamente</span>
+    <div className={styles.cardIcon}><BellIcon /></div>
+    <h3>Notificaciones</h3>
+    <p>Revisa alertas y novedades importantes de tus trámites</p>
+    <button className={styles.cardBtn}>Ver todo <ArrowIcon /></button>
+  </div>
 
-          <div className={styles.card}>
-            <span className={styles.comingBadge}>Próximamente</span>
-            <div className={styles.cardIcon}><BellIcon /></div>
-            <h3>Notificaciones</h3>
-            <p>Revisa alertas y novedades importantes de tus trámites</p>
-            <button className={styles.cardBtn}>Ver todo <ArrowIcon /></button>
-          </div>
-
-        </div>
+  <div className={styles.card}>
+    <div className={styles.cardIcon}><VehicleIcon /></div>
+    <h3>Mis Vehículos</h3>
+    <p>Registra y consulta los vehículos asociados a tu cuenta</p>
+    <Link href="/vehiculos">
+      <button className={styles.cardBtn}>Ver vehículos <ArrowIcon /></button>
+    </Link>
+  </div>
+</div>
       </div>
     </div>
   );
