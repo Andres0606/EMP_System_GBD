@@ -148,24 +148,32 @@ public class AuthService {
             return errorResponse;
         }
     }
-    // Método para buscar persona por cédula
-    public Map<String, Object> buscarPersonaPorCedula(Long cedula) {
-        String url = "https://oracleapex.com/ords/ucc/apiPersona/getByCedula";
+    
+    // ✅ NUEVO MÉTODO CORREGIDO - Reemplaza a buscarPersonaPorCedula
+    public Map<String, Object> obtenerPersonaPorCedula(Long cedula) {
+        // Validar que la cédula no sea nula
+        if (cedula == null) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "ERROR");
+            errorResponse.put("mensaje", "La cédula no puede ser nula");
+            return errorResponse;
+        }
         
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("cedula", cedula);
+        // Usar GET con parámetro en la URL
+        String url = "https://oracleapex.com/ords/ucc/apiPersona/getByCedula?P_CEDULA=" + cedula;
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         
         try {
-            log.info("Buscando persona con cédula: {}", cedula);
+            log.info("Obteniendo persona con cédula: {}", cedula);
+            log.info("URL: {}", url);
             
             ResponseEntity<Map> response = restTemplate.exchange(
                 url,
-                HttpMethod.POST,
+                HttpMethod.GET,
                 requestEntity,
                 Map.class
             );
@@ -173,93 +181,106 @@ public class AuthService {
             log.info("Respuesta de APEX: {}", response.getBody());
             return response.getBody();
             
-        } catch (HttpClientErrorException e) {
-            log.error("Error HTTP al buscar persona: {}", e.getStatusCode());
+        } catch (Exception e) {
+            log.error("Error al obtener persona: ", e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", "ERROR");
+            errorResponse.put("mensaje", "Error: " + e.getMessage());
+            return errorResponse;
+        }
+    }
+    
+    // Método para listar todos los asesores
+    public Map<String, Object> listarAsesores() {
+        String url = "https://oracleapex.com/ords/ucc/apiAsesor/list";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        
+        try {
+            log.info("Listando asesores desde APEX: {}", url);
             
-            try {
-                Map<String, Object> errorBody = e.getResponseBodyAs(Map.class);
-                if (errorBody != null && errorBody.containsKey("mensaje")) {
-                    errorResponse.put("mensaje", errorBody.get("mensaje"));
-                } else {
-                    errorResponse.put("mensaje", "Persona no encontrada");
-                }
-            } catch (Exception ex) {
-                errorResponse.put("mensaje", "Persona no encontrada");
-            }
+            ResponseEntity<Map> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                requestEntity,
+                Map.class
+            );
+            
+            log.info("Status code: {}", response.getStatusCode());
+            log.info("Respuesta de APEX: {}", response.getBody());
+            
+            return response.getBody();
+            
+        } catch (HttpClientErrorException e) {
+            log.error("Error HTTP al listar asesores: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "ERROR");
+            errorResponse.put("mensaje", "Error al listar asesores: " + e.getResponseBodyAsString());
             return errorResponse;
             
         } catch (Exception e) {
-            log.error("Error inesperado al buscar persona: ", e);
+            log.error("Error inesperado al listar asesores: ", e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", "ERROR");
             errorResponse.put("mensaje", "Error de conexión: " + e.getMessage());
             return errorResponse;
         }
     }
-    // Método para listar todos los asesores
-public Map<String, Object> listarAsesores() {
-    String url = "https://oracleapex.com/ords/ucc/apiAsesor/list";
     
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    
-    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-    
-    try {
-        log.info("Listando asesores desde APEX: {}", url);
+    // Método para registrar cliente
+    public Map<String, Object> registrarCliente(Map<String, Object> clienteData) {
+        String url = "https://oracleapex.com/ords/ucc/apiCliente/register";
         
-        ResponseEntity<Map> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            requestEntity,
-            Map.class
-        );
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
         
-        log.info("Status code: {}", response.getStatusCode());
-        log.info("Respuesta de APEX: {}", response.getBody());
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(clienteData, headers);
         
-        return response.getBody();
-        
-    } catch (HttpClientErrorException e) {
-        log.error("Error HTTP al listar asesores: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error al listar asesores: " + e.getResponseBodyAsString());
-        return errorResponse;
-        
-    } catch (Exception e) {
-        log.error("Error inesperado al listar asesores: ", e);
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error de conexión: " + e.getMessage());
-        return errorResponse;
+        try {
+            log.info("Registrando cliente en APEX: {}", url);
+            ResponseEntity<Map> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                Map.class
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error en registro de cliente: ", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "ERROR");
+            errorResponse.put("mensaje", "Error en el registro: " + e.getMessage());
+            return errorResponse;
+        }
     }
-}
-public Map<String, Object> registrarCliente(Map<String, Object> clienteData) {
-    String url = "https://oracleapex.com/ords/ucc/apiCliente/register";
     
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    
-    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(clienteData, headers);
-    
-    try {
-        log.info("Registrando cliente en APEX: {}", url);
-        ResponseEntity<Map> response = restTemplate.exchange(
-            url,
-            HttpMethod.POST,
-            requestEntity,
-            Map.class
-        );
-        return response.getBody();
-    } catch (Exception e) {
-        log.error("Error en registro de cliente: ", e);
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error en el registro: " + e.getMessage());
-        return errorResponse;
+    // Método para actualizar perfil (agregar después)
+    public Map<String, Object> actualizarPerfil(Map<String, Object> perfilData) {
+        String url = "https://oracleapex.com/ords/ucc/apiPersona/update";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(perfilData, headers);
+        
+        try {
+            log.info("Actualizando perfil en APEX: {}", url);
+            ResponseEntity<Map> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                Map.class
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error al actualizar perfil: ", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "ERROR");
+            errorResponse.put("mensaje", "Error al actualizar: " + e.getMessage());
+            return errorResponse;
+        }
     }
-}
 }
