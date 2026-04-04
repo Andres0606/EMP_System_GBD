@@ -8,6 +8,8 @@ import com.gbdj.backend.DTO.AsesorRequest;
 import com.gbdj.backend.DTO.ClienteRegisterRequest;
 import com.gbdj.backend.DTO.ActualizarPerfilRequest;  // 👈 NUEVO DTO
 import com.gbdj.backend.Service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +20,7 @@ import java.util.HashMap;
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
-
+private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     @Autowired
     private AuthService authService;
 
@@ -314,51 +316,61 @@ public class AuthController {
         }
     }
     
-    // ✅ NUEVO ENDPOINT - Actualizar perfil
-    @PutMapping("/perfil")
-    public ResponseEntity<?> actualizarPerfil(@RequestBody ActualizarPerfilRequest request) {
-        // Validaciones
-        if (request.getCedula() == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "La cédula es requerida"
-            ));
-        }
-        
-        // Preparar datos para APEX
-        Map<String, Object> perfilData = new HashMap<>();
-        perfilData.put("P_CEDULA", request.getCedula());
-        perfilData.put("P_NOMBRES", request.getNombres());
-        perfilData.put("P_APELLIDO", request.getApellido());
-        perfilData.put("P_CORREO", request.getCorreo());
-        perfilData.put("P_LICENCIACONDUCCION", request.getLicenciaConduccion());
-        
-        if (request.getFechaNacimiento() != null) {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-            perfilData.put("P_FECHANACIMIENTO", sdf.format(request.getFechaNacimiento()));
-        }
-        
-        if (request.getTelefono() != null) {
-            perfilData.put("P_TELEFONO", request.getTelefono());
-        }
-        
-        if (request.getContrasena() != null && !request.getContrasena().trim().isEmpty()) {
-            perfilData.put("P_CONTRASENA", request.getContrasena());
-        }
-        
-        Map<String, Object> response = authService.actualizarPerfil(perfilData);
-        
-        if (response != null && "OK".equals(response.get("status"))) {
-            return ResponseEntity.ok(response);
-        } else {
-            String mensaje = response != null ? 
-                              response.get("mensaje").toString() : "Error al actualizar perfil";
-            return ResponseEntity.status(500).body(Map.of(
-                "status", "ERROR",
-                "mensaje", mensaje
-            ));
-        }
+  // ✅ NUEVO ENDPOINT - Actualizar perfil
+@PutMapping("/perfil")
+public ResponseEntity<?> actualizarPerfil(@RequestBody ActualizarPerfilRequest request) {
+    log.info("=== ACTUALIZAR PERFIL ===");
+    log.info("Request recibido: {}", request);
+    
+    // Validaciones
+    if (request.getCedula() == null) {
+        log.error("Cédula requerida");
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La cédula es requerida"
+        ));
     }
+    
+    // Preparar datos para APEX
+    Map<String, Object> perfilData = new HashMap<>();
+    perfilData.put("P_CEDULA", request.getCedula());
+    perfilData.put("P_NOMBRES", request.getNombres());
+    perfilData.put("P_APELLIDO", request.getApellido());
+    perfilData.put("P_CORREO", request.getCorreo());
+    perfilData.put("P_LICENCIACONDUCCION", request.getLicenciaConduccion());
+    
+    if (request.getFechaNacimiento() != null) {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        perfilData.put("P_FECHANACIMIENTO", sdf.format(request.getFechaNacimiento()));
+    }
+    
+    if (request.getTelefono() != null) {
+        perfilData.put("P_TELEFONO", request.getTelefono());
+    }
+    
+    if (request.getContrasena() != null && !request.getContrasena().trim().isEmpty()) {
+        perfilData.put("P_CONTRASENA", request.getContrasena());
+        log.info("Actualizando contraseña");
+    }
+    
+    log.info("Datos a enviar a APEX: {}", perfilData);
+    
+    Map<String, Object> response = authService.actualizarPerfil(perfilData);
+    
+    log.info("Respuesta de APEX: {}", response);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al actualizar perfil";
+        log.error("Error actualizando perfil: {}", mensaje);
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
     
     @GetMapping("/asesores")
     public ResponseEntity<?> listarAsesores() {

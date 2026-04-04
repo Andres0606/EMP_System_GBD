@@ -26,6 +26,7 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [userRol, setUserRol] = useState<number>(1); // 👈 NUEVO: guardar el rol
   
   const [formData, setFormData] = useState({
     cedula: '',
@@ -42,12 +43,14 @@ export default function PerfilPage() {
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const cedula = sessionStorage.getItem('userCedula');
+    const rol = sessionStorage.getItem('userRol');
     
     if (!isLoggedIn || !cedula) {
       router.push('/login');
       return;
     }
     
+    setUserRol(rol ? parseInt(rol) : 1); // 👈 Guardar el rol
     cargarPerfil(cedula);
   }, []);
 
@@ -85,6 +88,16 @@ export default function PerfilPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
     setSuccess('');
+  };
+
+  // 👈 NUEVA FUNCIÓN: obtener la ruta de redirección según el rol
+  const getRedirectPath = () => {
+    switch(userRol) {
+      case 1: return '/dashboard';
+      case 2: return '/dashboard-asesor';
+      case 3: return '/dashboard-admin';
+      default: return '/dashboard';
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -150,8 +163,9 @@ export default function PerfilPage() {
           confirmarContrasena: ''
         }));
         
+        // 👈 REDIRIGIR SEGÚN EL ROL
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push(getRedirectPath());
         }, 2000);
       } else {
         setError(data.mensaje || 'Error al actualizar perfil');
@@ -161,6 +175,16 @@ export default function PerfilPage() {
       setError('Error de conexión con el servidor');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // 👈 NUEVO: botón de volver según el rol
+  const getBackButtonPath = () => {
+    switch(userRol) {
+      case 1: return '/dashboard';
+      case 2: return '/dashboard-asesor';
+      case 3: return '/dashboard-admin';
+      default: return '/dashboard';
     }
   };
 
@@ -176,7 +200,7 @@ export default function PerfilPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Link href="/dashboard" className={styles.backButton}>
+        <Link href={getBackButtonPath()} className={styles.backButton}>
           <ArrowLeftIcon /> Volver al Dashboard
         </Link>
         <h1>Mi Perfil</h1>
@@ -218,10 +242,13 @@ export default function PerfilPage() {
               <input type="email" name="correo" value={formData.correo} onChange={handleChange} required />
             </div>
 
-            <div className={styles.field}>
-              <label>Licencia de Conducción</label>
-              <input type="text" name="licenciaConduccion" value={formData.licenciaConduccion} onChange={handleChange} placeholder="Número de licencia" />
-            </div>
+            {/* Mostrar campo de licencia solo si es cliente (rol 1) */}
+            {userRol === 1 && (
+              <div className={styles.field}>
+                <label>Licencia de Conducción</label>
+                <input type="text" name="licenciaConduccion" value={formData.licenciaConduccion} onChange={handleChange} placeholder="Número de licencia" />
+              </div>
+            )}
 
             <div className={styles.field}>
               <label>Nueva Contraseña (opcional)</label>

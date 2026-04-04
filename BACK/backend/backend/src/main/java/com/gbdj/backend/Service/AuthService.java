@@ -258,29 +258,43 @@ public class AuthService {
     }
     
     // Método para actualizar perfil (agregar después)
-    public Map<String, Object> actualizarPerfil(Map<String, Object> perfilData) {
-        String url = "https://oracleapex.com/ords/ucc/apiPersona/update";
+   public Map<String, Object> actualizarPerfil(Map<String, Object> perfilData) {
+    String url = "https://oracleapex.com/ords/ucc/apiPersona/update";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(perfilData, headers);
+    
+    try {
+        log.info("=== ACTUALIZAR PERFIL SERVICE ===");
+        log.info("URL: {}", url);
+        log.info("Datos enviados a APEX: {}", perfilData);
         
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
         
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(perfilData, headers);
+        log.info("Status code: {}", response.getStatusCode());
+        log.info("Respuesta de APEX: {}", response.getBody());
+        return response.getBody();
         
-        try {
-            log.info("Actualizando perfil en APEX: {}", url);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class
-            );
-            return response.getBody();
-        } catch (Exception e) {
-            log.error("Error al actualizar perfil: ", e);
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error al actualizar: " + e.getMessage());
-            return errorResponse;
-        }
+    } catch (HttpClientErrorException e) {
+        log.error("Error HTTP: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error HTTP: " + e.getStatusCode());
+        errorResponse.put("detalle", e.getResponseBodyAsString());
+        return errorResponse;
+    } catch (Exception e) {
+        log.error("Error en actualizarPerfil: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
     }
+}
 }

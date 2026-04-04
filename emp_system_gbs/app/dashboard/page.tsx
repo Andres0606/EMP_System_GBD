@@ -260,7 +260,8 @@ export default function DashboardPage() {
     <div className={styles.cardIcon}><UserIcon /></div>
     <h3>Perfil</h3>
     <p>Actualiza tu información personal y preferencias de cuenta</p>
-    <Link href="/perfil">
+   
+<Link href="/perfil">
   <button className={styles.cardBtn}>Editar perfil <ArrowIcon /></button>
 </Link>
   </div>
