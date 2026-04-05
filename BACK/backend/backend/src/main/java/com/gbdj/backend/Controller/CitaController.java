@@ -4,8 +4,11 @@ import com.gbdj.backend.DTO.AtenderCitaRequest;
 import com.gbdj.backend.DTO.SolicitarCitaRequest;
 import com.gbdj.backend.Service.CitaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -116,6 +119,26 @@ public ResponseEntity<?> atenderCita(@RequestBody AtenderCitaRequest request) {
         return ResponseEntity.status(500).body(Map.of(
             "status", "ERROR",
             "mensaje", mensaje
+        ));
+    }
+}
+@GetMapping("/agendadas/{cedulaAsesor}")
+public ResponseEntity<?> listarCitasAgendadas(@PathVariable Long cedulaAsesor) {
+    String url = "https://oracleapex.com/ords/ucc/apiCita/listarAgendadas?P_ID_ASESOR=" + cedulaAsesor;
+    
+    try {
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            null,
+            Map.class
+        );
+        return ResponseEntity.ok(response.getBody());
+    } catch (Exception e) {
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", e.getMessage()
         ));
     }
 }
