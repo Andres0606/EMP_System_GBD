@@ -3,9 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import styles from '../CSS/Admin/CrearAsesor.module.css';
+
+interface TipoTramite {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  valorBase: number;
+}
 
 export default function CrearAsesorPage() {
   const router = useRouter();
+  const [tiposTramite, setTiposTramite] = useState<TipoTramite[]>([]);
+  const [loadingTipos, setLoadingTipos] = useState(true);
   const [formData, setFormData] = useState({
     cedula: '',
     nombres: '',
@@ -34,7 +44,23 @@ export default function CrearAsesorPage() {
       router.push('/dashboard');
       return;
     }
+
+    cargarTiposTramite();
   }, [router]);
+
+  const cargarTiposTramite = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/tipo-tramite/list');
+      const data = await response.json();
+      if (data.status === 'OK' && data.tiposTramite) {
+        setTiposTramite(data.tiposTramite);
+      }
+    } catch (error) {
+      console.error('Error cargando tipos de trámite:', error);
+    } finally {
+      setLoadingTipos(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -144,127 +170,127 @@ export default function CrearAsesorPage() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Registrar Nuevo Asesor</h1>
-        <p style={styles.subtitle}>Complete todos los datos del nuevo asesor</p>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Registrar Nuevo Asesor</h1>
+        <p className={styles.subtitle}>Complete todos los datos del nuevo asesor</p>
 
         {error && (
-          <div style={styles.errorAlert} role="alert">
+          <div className={styles.errorAlert} role="alert">
             {error}
           </div>
         )}
 
         {success && (
-          <div style={styles.successAlert} role="alert">
+          <div className={styles.successAlert} role="alert">
             {success}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.formGrid}>
-            <div style={styles.field}>
-              <label style={styles.label}>Cédula *</label>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGrid}>
+            <div className={styles.field}>
+              <label className={styles.label}>Cédula *</label>
               <input
                 type="text"
                 name="cedula"
                 value={formData.cedula}
                 onChange={handleChange}
                 placeholder="Número de cédula"
-                style={styles.input}
+                className={styles.input}
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Nombres *</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Nombres *</label>
               <input
                 type="text"
                 name="nombres"
                 value={formData.nombres}
                 onChange={handleChange}
                 placeholder="Nombres completos"
-                style={styles.input}
+                className={styles.input}
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Apellidos *</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Apellidos *</label>
               <input
                 type="text"
                 name="apellido"
                 value={formData.apellido}
                 onChange={handleChange}
                 placeholder="Apellidos completos"
-                style={styles.input}
+                className={styles.input}
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Fecha de Nacimiento *</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Fecha de Nacimiento *</label>
               <input
                 type="date"
                 name="fechaNacimiento"
                 value={formData.fechaNacimiento}
                 onChange={handleChange}
-                style={styles.input}
+                className={styles.input}
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Teléfono</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Teléfono</label>
               <input
                 type="tel"
                 name="telefono"
                 value={formData.telefono}
                 onChange={handleChange}
                 placeholder="Número de teléfono"
-                style={styles.input}
+                className={styles.input}
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Correo Electrónico *</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Correo Electrónico *</label>
               <input
                 type="email"
                 name="correo"
                 value={formData.correo}
                 onChange={handleChange}
                 placeholder="correo@ejemplo.com"
-                style={styles.input}
+                className={styles.input}
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Contraseña *</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Contraseña *</label>
               <input
                 type="password"
                 name="contrasena"
                 value={formData.contrasena}
                 onChange={handleChange}
                 placeholder="Mínimo 6 caracteres"
-                style={styles.input}
+                className={styles.input}
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Especialidad *</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Especialidad *</label>
               <select
                 name="especialidadTramite"
                 value={formData.especialidadTramite}
                 onChange={handleChange}
-                style={styles.select}
+                className={styles.select}
               >
                 <option value="">Seleccione una especialidad</option>
-                <option value="Licencias">Licencias de Conducir</option>
-                <option value="Matriculas">Matrículas Vehiculares</option>
-                <option value="Impuestos">Impuestos Vehiculares</option>
-                <option value="Transferencias">Transferencias de Propiedad</option>
-                <option value="Revisiones">Revisiones Técnicas</option>
+                {tiposTramite.map((tipo) => (
+                  <option key={tipo.id} value={tipo.nombre}>
+                    {tipo.nombre}
+                  </option>
+                ))}
               </select>
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Sueldo *</label>
+            <div className={styles.field}>
+              <label className={styles.label}>Sueldo *</label>
               <input
                 type="number"
                 name="sueldo"
@@ -272,144 +298,29 @@ export default function CrearAsesorPage() {
                 onChange={handleChange}
                 placeholder="Sueldo mensual"
                 step="0.01"
-                style={styles.input}
+                className={styles.input}
               />
             </div>
           </div>
 
-          <div style={styles.buttonGroup}>
+          <div className={styles.buttonGroup}>
             <button
               type="submit"
-              style={styles.submitBtn}
+              className={styles.submitBtn}
               disabled={loading}
             >
               {loading ? 'Registrando...' : 'Registrar Asesor'}
             </button>
-            <Link href="/dashboard-admin" style={styles.cancelBtn}>
+            <Link href="/dashboard-admin" className={styles.cancelBtn}>
               Cancelar
             </Link>
           </div>
         </form>
 
-        <Link href="/dashboard-admin" style={styles.backLink}>
+        <Link href="/dashboard-admin" className={styles.backLink}>
           ← Volver al Dashboard
         </Link>
       </div>
     </div>
   );
 }
-
-// Estilos (mantén los mismos que tenías)
-const styles = {
-  container: {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '2rem',
-  },
-  card: {
-    background: 'white',
-    borderRadius: '1rem',
-    padding: '2rem',
-    maxWidth: '900px',
-    margin: '0 auto',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-  },
-  title: {
-    color: '#333',
-    marginBottom: '0.5rem',
-    textAlign: 'center' as const,
-  },
-  subtitle: {
-    color: '#666',
-    textAlign: 'center' as const,
-    marginBottom: '2rem',
-  },
-  // ✅ AGREGAR ESTA PROPIEDAD
-  form: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1rem',
-  },
-  formGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '1rem',
-    marginBottom: '1.5rem',
-  },
-  field: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-  },
-  label: {
-    fontSize: '0.9rem',
-    fontWeight: 500,
-    color: '#333',
-    marginBottom: '0.5rem',
-  },
-  input: {
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-  },
-  select: {
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    backgroundColor: 'white',
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '1rem',
-    marginTop: '1rem',
-  },
-  submitBtn: {
-    flex: 1,
-    padding: '0.75rem',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  cancelBtn: {
-    flex: 1,
-    padding: '0.75rem',
-    background: '#ef4444',
-    color: 'white',
-    border: 'none',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-    textAlign: 'center' as const,
-    textDecoration: 'none',
-    display: 'inline-block',
-  },
-  errorAlert: {
-    backgroundColor: '#fee2e2',
-    color: '#dc2626',
-    padding: '0.75rem',
-    borderRadius: '0.5rem',
-    marginBottom: '1rem',
-    borderLeft: '4px solid #dc2626',
-  },
-  successAlert: {
-    backgroundColor: '#d1fae5',
-    color: '#059669',
-    padding: '0.75rem',
-    borderRadius: '0.5rem',
-    marginBottom: '1rem',
-    borderLeft: '4px solid #059669',
-  },
-  backLink: {
-    display: 'block',
-    textAlign: 'center' as const,
-    marginTop: '1rem',
-    color: '#667eea',
-    textDecoration: 'none',
-  }
-};
