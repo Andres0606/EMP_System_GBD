@@ -44,4 +44,29 @@ public class CitaService {
             return errorResponse;
         }
     }
+    public Map<String, Object> listarCitasPendientes(Long cedulaAsesor) {
+    String url = "https://oracleapex.com/ords/ucc/apiCita/listarPendientes?P_CEDULA_ASESOR=" + cedulaAsesor;
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+    
+    try {
+        log.info("Listando citas pendientes para asesor: {}", cedulaAsesor);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al listar citas pendientes: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }

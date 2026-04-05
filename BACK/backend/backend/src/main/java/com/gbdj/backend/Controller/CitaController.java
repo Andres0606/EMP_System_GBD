@@ -52,4 +52,19 @@ public class CitaController {
             ));
         }
     }
+    @GetMapping("/pendientes/{cedulaAsesor}")
+public ResponseEntity<?> listarCitasPendientes(@PathVariable Long cedulaAsesor) {
+    Map<String, Object> response = citaService.listarCitasPendientes(cedulaAsesor);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al listar citas";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 }
