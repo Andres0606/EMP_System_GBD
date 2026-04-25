@@ -24,6 +24,8 @@ public class TramiteController {
     public ResponseEntity<?> crearTramite(@RequestBody CrearTramiteRequest request) {
         log.info("=== CREAR TRÁMITE ===");
         log.info("idCita: {}", request.getIdCita());
+        log.info("valorTramite: {}", request.getValorTramite());
+        log.info("valorOtrosConceptos: {}", request.getValorOtrosConceptos());
         
         if (request.getIdCita() == null) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -32,8 +34,18 @@ public class TramiteController {
             ));
         }
         
+        if (request.getValorTramite() == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "status", "ERROR",
+                "mensaje", "El valor del trámite es requerido"
+            ));
+        }
+        
         Map<String, Object> tramiteData = new HashMap<>();
         tramiteData.put("P_ID_CITA", request.getIdCita());
+        tramiteData.put("P_VALOR_TRAMITE", request.getValorTramite());
+        tramiteData.put("P_VALOR_OTROS_CONCEPTOS", request.getValorOtrosConceptos() != null ? 
+                        request.getValorOtrosConceptos() : 0);
         
         Map<String, Object> response = tramiteService.crearTramite(tramiteData);
         
@@ -41,7 +53,7 @@ public class TramiteController {
             return ResponseEntity.ok(response);
         } else {
             String mensaje = response != null ? 
-                              response.get("mensaje").toString() : "Error al crear trámite";
+                            response.get("mensaje").toString() : "Error al crear trámite";
             return ResponseEntity.status(500).body(Map.of(
                 "status", "ERROR",
                 "mensaje", mensaje

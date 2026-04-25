@@ -25,6 +25,8 @@ export default function CompletarCitaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [valorOtrosConceptos, setValorOtrosConceptos] = useState<number>(0);
+  const [valorTotal, setValorTotal] = useState<number>(0);
 
   const cedulaAsesor = typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
 
@@ -42,12 +44,22 @@ export default function CompletarCitaPage() {
 
   const cargarCita = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`http://localhost:8080/api/citas/agendadas/${cedulaAsesor}`);
       const data = await response.json();
       
+      console.log('Respuesta completa:', data); // 👈 Depuración
+      
       if (data.status === 'OK' && data.citas) {
         const citaEncontrada = data.citas.find((c: any) => c.idCita === parseInt(idCita));
+        console.log('Cita encontrada:', citaEncontrada); // 👈 Depuración
+        console.log('Valor base:', citaEncontrada?.valorBase); // 👈 Depuración
+        
         setCita(citaEncontrada);
+        
+        // Asegurar que valorBase tenga un valor por defecto
+        const base = citaEncontrada?.valorBase || 0;
+        setValorTotal(base);
       } else {
         setError('No se pudo cargar la información de la cita');
       }
@@ -59,14 +71,24 @@ export default function CompletarCitaPage() {
     }
   };
 
+  const handleOtrosConceptosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = parseFloat(e.target.value) || 0;
+    setValorOtrosConceptos(valor);
+    const base = cita?.valorBase || 0;
+    setValorTotal(base + valor);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
     setSuccess('');
 
+    const base = cita?.valorBase || 0;
+    const total = base + valorOtrosConceptos;
+
     try {
-      // 1. Completar cita (cambiar estado a Atendida)
+      // 1. Completar cita
       const responseCita = await fetch('http://localhost:8080/api/citas/completar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,17 +101,21 @@ export default function CompletarCitaPage() {
         throw new Error(dataCita.mensaje || 'Error al completar la cita');
       }
       
-      // 2. Crear el trámite
+      // 2. Crear trámite
       const responseTramite = await fetch('http://localhost:8080/api/tramite/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCita: parseInt(idCita) })
+        body: JSON.stringify({
+          idCita: parseInt(idCita),
+          valorTramite: total,
+          valorOtrosConceptos: valorOtrosConceptos
+        })
       });
       
       const dataTramite = await responseTramite.json();
       
       if (responseTramite.ok && dataTramite.status === 'OK') {
-        setSuccess(`✅ ¡Trámite #${dataTramite.idTramite} creado exitosamente! Redirigiendo...`);
+        setSuccess(`✅ ¡Trámite #${dataTramite.idTramite} creado exitosamente! Valor total: $${total.toLocaleString()}`);
         setTimeout(() => {
           router.push('/asesor/citas');
         }, 2000);
@@ -129,6 +155,8 @@ export default function CompletarCitaPage() {
     );
   }
 
+  const valorBaseMostrar = cita.valorBase || 0;
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -149,26 +177,55 @@ export default function CompletarCitaPage() {
           <div><strong>Teléfono:</strong> {cita.telefono}</div>
           <div><strong>Vehículo:</strong> {cita.vehiculo || 'No aplica'}</div>
           <div><strong>Trámite:</strong> {cita.tipoTramite}</div>
-          <div><strong>Valor base:</strong> ${cita.valorBase?.toLocaleString()}</div>
+          <div><strong>Valor base:</strong> ${valorBaseMostrar.toLocaleString()}</div>
           <div><strong>Fecha Programada:</strong> {new Date(cita.fechaProgramada).toLocaleString()}</div>
         </div>
       </div>
 
       <div className={styles.formCard}>
-        <h2>✅ Confirmar Finalización</h2>
-        <p>¿El trámite se realizó correctamente? Al confirmar, se creará automáticamente el registro del trámite.</p>
-        <div className={styles.buttonGroup}>
-          <button 
-            onClick={handleSubmit} 
-            disabled={submitting} 
-            className={styles.confirmButton}
-          >
-            {submitting ? 'Procesando...' : '✓ Sí, completar trámite'}
-          </button>
-          <Link href="/asesor/citas" className={styles.cancelButton}>
-            Cancelar
-          </Link>
-        </div>
+        <h2>💰 Valor del Trámite</h2>
+        <form onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label>Valor Base</label>
+            <input
+              type="text"
+              value={`$${valorBaseMostrar.toLocaleString()}`}
+              disabled
+              className={styles.disabledInput}
+            />
+            <small className={styles.helperText}>Valor base del trámite (no editable)</small>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Valor Otros Conceptos</label>
+            <input
+              type="number"
+              value={valorOtrosConceptos}
+              onChange={handleOtrosConceptosChange}
+              placeholder="Ej: 50000"
+              className={styles.input}
+            />
+            <small className={styles.helperText}>Costos adicionales como impuestos, certificados, etc.</small>
+          </div>
+
+          <div className={styles.totalCard}>
+            <span className={styles.totalLabel}>💰 Valor Total:</span>
+            <span className={styles.totalValue}>${(valorBaseMostrar + valorOtrosConceptos).toLocaleString()}</span>
+          </div>
+
+          <div className={styles.buttonGroup}>
+            <button 
+              type="submit"
+              disabled={submitting} 
+              className={styles.confirmButton}
+            >
+              {submitting ? 'Procesando...' : '✓ Sí, completar trámite'}
+            </button>
+            <Link href="/asesor/citas" className={styles.cancelButton}>
+              Cancelar
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   );
