@@ -34,6 +34,9 @@ export default function TramiteDetallePage() {
 
   const cedulaAsesor = typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
 
+  const [puedeEditar, setPuedeEditar] = useState(false);
+  const [camposAEditar, setCamposAEditar] = useState<string[]>([]);
+
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const rol = sessionStorage.getItem('userRol');
@@ -47,20 +50,60 @@ export default function TramiteDetallePage() {
   }, []);
 
   const cargarDetalle = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`);
-      const data = await response.json();
+  try {
+    const response = await fetch(`http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`);
+    const data = await response.json();
+    
+    if (data.status === 'OK' && data.tramites) {
+      const encontrado = data.tramites.find((t: any) => t.idTramite === parseInt(idTramite));
+      setTramite(encontrado);
+      setEstado(encontrado?.estadoTramite || 'Activo');
+
+      // 👈 Agrega este console.log para ver qué valor tiene
+      console.log('Tipo de trámite recibido:', encontrado?.tipoTramite);
       
-      if (data.status === 'OK' && data.tramites) {
-        const encontrado = data.tramites.find((t: any) => t.idTramite === parseInt(idTramite));
-        setTramite(encontrado);
-        setEstado(encontrado?.estadoTramite || 'Activo');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Error al cargar el trámite');
-    } finally {
-      setLoading(false);
+      determinarCamposEdicion(encontrado?.tipoTramite);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    setError('Error al cargar el trámite');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const determinarCamposEdicion = (tipoTramite: string) => {
+    switch(tipoTramite) {
+      case 'Cambio de Color':
+        setCamposAEditar(['color']);
+        setPuedeEditar(true);
+        break;
+      case 'Cambio de Servicio':
+        setCamposAEditar(['tipoServicio']);
+        setPuedeEditar(true);
+        break;
+      case 'Regrabar Motor':
+        setCamposAEditar(['numMotor']);
+        setPuedeEditar(true);
+        break;
+      case 'Regrabar Chasis':
+        setCamposAEditar(['numChasis']);
+        setPuedeEditar(true);
+        break;
+      case 'Cambio de Placas':
+        setCamposAEditar(['placa']);
+        setPuedeEditar(true);
+        break;
+      case 'Traspaso':
+        setCamposAEditar(['propietario']);
+        setPuedeEditar(true);
+        break;
+      case 'Cambio de Carrocería':
+        setCamposAEditar(['clase']);
+        setPuedeEditar(true);
+        break;
+      default:
+        setPuedeEditar(false);
     }
   };
 
@@ -172,6 +215,20 @@ export default function TramiteDetallePage() {
           <div><strong>Valor Total:</strong> <span className={styles.valorTotal}>${valorTotal.toLocaleString()}</span></div>
         </div>
       </div>
+
+      {/* 👇 BOTÓN DE EDITAR VEHÍCULO (AGREGAR ESTO) */}
+      {puedeEditar && (
+        <div className={styles.detalleCard}>
+          <h2>✏️ Editar Vehículo</h2>
+          <p>Este trámite requiere modificar los siguientes campos: <strong>{camposAEditar.join(', ')}</strong></p>
+          <Link 
+            href={`/asesor/tramites/${tramite.idTramite}/editar-vehiculo?campos=${camposAEditar.join(',')}&placa=${tramite.vehiculo}`}
+            className={styles.editarButton}
+          >
+            Editar Vehículo
+          </Link>
+        </div>
+      )}
 
       <div className={styles.detalleCard}>
         <h2>Actualizar Estado</h2>

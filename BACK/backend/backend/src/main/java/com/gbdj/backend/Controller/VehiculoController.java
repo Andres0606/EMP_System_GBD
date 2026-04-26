@@ -92,4 +92,43 @@ public class VehiculoController {
             return ResponseEntity.ok(emptyResponse);
         }
     }
+
+    @PutMapping("/{placa}")
+public ResponseEntity<?> actualizarVehiculo(@PathVariable String placa, @RequestBody Map<String, Object> updates) {
+    log.info("=== ACTUALIZAR VEHÍCULO ===");
+    log.info("Placa: {}", placa);
+    log.info("Updates: {}", updates);
+    
+    // Preparar datos para APEX
+    Map<String, Object> vehiculoData = new HashMap<>();
+    vehiculoData.put("P_PLACA_ORIGINAL", placa);
+    
+    if (updates.containsKey("color")) {
+        vehiculoData.put("P_COLOR", updates.get("color"));
+    }
+    if (updates.containsKey("tipoServicio")) {
+        vehiculoData.put("P_TIPO_SERVICIO", updates.get("tipoServicio"));
+    }
+    if (updates.containsKey("numMotor")) {
+        vehiculoData.put("P_NUM_MOTOR", updates.get("numMotor"));
+    }
+    if (updates.containsKey("numChasis")) {
+        vehiculoData.put("P_NUM_CHASIS", updates.get("numChasis"));
+    }
+    if (updates.containsKey("placa")) {
+        vehiculoData.put("P_NUEVA_PLACA", updates.get("placa"));
+    }
+    if (updates.containsKey("clase")) {
+        vehiculoData.put("P_CLASE", updates.get("clase"));
+    }
+    
+    Map<String, Object> response = vehiculoService.actualizarVehiculo(vehiculoData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? response.get("mensaje").toString() : "Error al actualizar";
+        return ResponseEntity.status(500).body(Map.of("status", "ERROR", "mensaje", mensaje));
+    }
+}
 }

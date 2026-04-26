@@ -237,3 +237,20 @@
   border-radius: 12px;
   margin-bottom: 1.5rem;
 }
+
+.editarButton {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.editarButton:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}

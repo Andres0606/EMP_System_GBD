@@ -97,4 +97,30 @@ public class VehiculoService {
             return emptyResponse;
         }
     }
+
+    public Map<String, Object> actualizarVehiculo(Map<String, Object> vehiculoData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/actualizar";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(vehiculoData, headers);
+    
+    try {
+        log.info("Actualizando vehículo en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al actualizar vehículo: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }
