@@ -70,4 +70,29 @@ public class TramiteService {
         return errorResponse;
     }
 }
+    public Map<String, Object> actualizarEstado(Map<String, Object> tramiteData) {
+        String url = "https://oracleapex.com/ords/ucc/apiTramite/actualizarEstado";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(tramiteData, headers);
+        
+        try {
+            log.info("Actualizando estado en APEX: {}", url);
+            ResponseEntity<Map> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                Map.class
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error al actualizar estado: ", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "ERROR");
+            errorResponse.put("mensaje", "Error: " + e.getMessage());
+            return errorResponse;
+        }
+    }
 }

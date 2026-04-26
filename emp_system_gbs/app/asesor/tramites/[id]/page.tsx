@@ -28,6 +28,9 @@ export default function TramiteDetallePage() {
   const [tramite, setTramite] = useState<TramiteDetalle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [updating, setUpdating] = useState(false);
+  const [estado, setEstado] = useState('');
 
   const cedulaAsesor = typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
 
@@ -51,12 +54,46 @@ export default function TramiteDetallePage() {
       if (data.status === 'OK' && data.tramites) {
         const encontrado = data.tramites.find((t: any) => t.idTramite === parseInt(idTramite));
         setTramite(encontrado);
+        setEstado(encontrado?.estadoTramite || 'Activo');
       }
     } catch (error) {
       console.error('Error:', error);
       setError('Error al cargar el trámite');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleActualizarEstado = async (nuevoEstado: string) => {
+    setUpdating(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch('http://localhost:8080/api/tramite/estado', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idTramite: parseInt(idTramite),
+          estado: nuevoEstado
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 'OK') {
+        setEstado(nuevoEstado);
+        setTramite(prev => prev ? { ...prev, estadoTramite: nuevoEstado } : null);
+        setSuccess('Estado actualizado exitosamente');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.mensaje || 'Error al actualizar estado');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error de conexión con el servidor');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -80,6 +117,15 @@ export default function TramiteDetallePage() {
 
   const valorTotal = tramite.valorTramite + (tramite.valorOtrosConceptos || 0);
 
+  const getEstadoColor = (estado: string) => {
+    switch(estado) {
+      case 'Activo': return styles.estadoActivo;
+      case 'En_Proceso': return styles.estadoEnProceso;
+      case 'Finalizado': return styles.estadoFinalizado;
+      default: return '';
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -89,12 +135,19 @@ export default function TramiteDetallePage() {
         <h1>Detalle del Trámite #{tramite.idTramite}</h1>
       </div>
 
+      {error && <div className={styles.errorAlert}>{error}</div>}
+      {success && <div className={styles.successAlert}>{success}</div>}
+
       <div className={styles.detalleCard}>
         <h2>Información del Trámite</h2>
         <div className={styles.infoGrid}>
           <div><strong>ID Trámite:</strong> {tramite.idTramite}</div>
           <div><strong>ID Cita:</strong> {tramite.idCita}</div>
-          <div><strong>Estado:</strong> {tramite.estadoTramite}</div>
+          <div><strong>Estado:</strong> 
+            <span className={`${styles.estadoBadge} ${getEstadoColor(estado)}`}>
+              {estado}
+            </span>
+          </div>
           <div><strong>Fecha Creación:</strong> {new Date(tramite.fechaCreacion).toLocaleString()}</div>
           <div><strong>Fecha Cita:</strong> {new Date(tramite.fechaCita).toLocaleString()}</div>
         </div>
@@ -106,7 +159,7 @@ export default function TramiteDetallePage() {
           <div><strong>Nombre:</strong> {tramite.cliente}</div>
           <div><strong>Teléfono:</strong> {tramite.telefono}</div>
           <div><strong>Correo:</strong> {tramite.correo}</div>
-          <div><strong>Vehículo:</strong> {tramite.vehiculo}</div>
+          <div><strong>Vehículo:</strong> {tramite.vehiculo || 'No aplica'}</div>
         </div>
       </div>
 
@@ -118,6 +171,34 @@ export default function TramiteDetallePage() {
           <div><strong>Otros Conceptos:</strong> ${(tramite.valorOtrosConceptos || 0).toLocaleString()}</div>
           <div><strong>Valor Total:</strong> <span className={styles.valorTotal}>${valorTotal.toLocaleString()}</span></div>
         </div>
+      </div>
+
+      <div className={styles.detalleCard}>
+        <h2>Actualizar Estado</h2>
+        <div className={styles.estadoSelector}>
+          <button 
+            className={`${styles.estadoBtn} ${estado === 'Activo' ? styles.estadoActivo : ''}`}
+            onClick={() => handleActualizarEstado('Activo')}
+            disabled={updating || estado === 'Activo'}
+          >
+            Activo
+          </button>
+          <button 
+            className={`${styles.estadoBtn} ${estado === 'En_Proceso' ? styles.estadoEnProceso : ''}`}
+            onClick={() => handleActualizarEstado('En_Proceso')}
+            disabled={updating || estado === 'En_Proceso'}
+          >
+            En Proceso
+          </button>
+          <button 
+            className={`${styles.estadoBtn} ${estado === 'Finalizado' ? styles.estadoFinalizado : ''}`}
+            onClick={() => handleActualizarEstado('Finalizado')}
+            disabled={updating || estado === 'Finalizado'}
+          >
+            Finalizado
+          </button>
+        </div>
+        <p className={styles.estadoHelper}>Cambia el estado del trámite según su progreso</p>
       </div>
 
       <Link href="/asesor/tramites" className={styles.backLink}>Volver a trámites</Link>

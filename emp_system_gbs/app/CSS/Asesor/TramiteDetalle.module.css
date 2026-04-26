@@ -154,3 +154,86 @@
     font-size: 0.85rem;
   }
 }
+/* Estados */
+.estadoBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.estadoActivo {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.estadoEnProceso {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.estadoFinalizado {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+/* Selector de estado */
+.estadoSelector {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.estadoBtn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.estadoBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.estadoBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.estadoBtn.estadoActivo {
+  background: #22c55e;
+  color: white;
+}
+
+.estadoBtn.estadoEnProceso {
+  background: #3b82f6;
+  color: white;
+}
+
+.estadoBtn.estadoFinalizado {
+  background: #6b7280;
+  color: white;
+}
+
+.estadoHelper {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.5rem;
+}
+
+.successAlert {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid #22c55e;
+  color: #86efac;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
