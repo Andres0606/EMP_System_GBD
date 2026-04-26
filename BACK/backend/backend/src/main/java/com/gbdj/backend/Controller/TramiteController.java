@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.HashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,4 +61,22 @@ public class TramiteController {
             ));
         }
     }
+    @GetMapping("/asesor/{idAsesor}")
+public ResponseEntity<?> listarTramitesPorAsesor(@PathVariable Long idAsesor) {
+    log.info("=== LISTAR TRÁMITES POR ASESOR ===");
+    log.info("idAsesor: {}", idAsesor);
+    
+    Map<String, Object> response = tramiteService.listarPorAsesor(idAsesor);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al listar trámites";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 }
