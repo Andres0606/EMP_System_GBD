@@ -1,6 +1,7 @@
 package com.gbdj.backend.Controller;
 
 import com.gbdj.backend.DTO.AtenderCitaRequest;
+import com.gbdj.backend.DTO.CompletarCitaRequest;
 import com.gbdj.backend.DTO.SolicitarCitaRequest;
 import com.gbdj.backend.Service.CitaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -16,6 +18,8 @@ import java.util.HashMap;
 @RequestMapping("/api/citas")
 @CrossOrigin(origins = "http://localhost:3000")
 public class CitaController {
+
+    private static final Logger log = LoggerFactory.getLogger(CitaController.class);
 
     @Autowired
     private CitaService citaService;
@@ -139,6 +143,34 @@ public ResponseEntity<?> listarCitasAgendadas(@PathVariable Long cedulaAsesor) {
         return ResponseEntity.status(500).body(Map.of(
             "status", "ERROR",
             "mensaje", e.getMessage()
+        ));
+    }
+}
+@PostMapping("/completar")
+public ResponseEntity<?> completarCita(@RequestBody CompletarCitaRequest request) {
+    log.info("=== COMPLETAR CITA ===");
+    log.info("idCita: {}", request.getIdCita());
+    
+    if (request.getIdCita() == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El ID de la cita es requerido"
+        ));
+    }
+    
+    Map<String, Object> citaData = new HashMap<>();
+    citaData.put("P_ID_CITA", request.getIdCita());
+    
+    Map<String, Object> response = citaService.completarCita(citaData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al completar cita";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
         ));
     }
 }

@@ -135,4 +135,30 @@ public Map<String, Object> listarCitasAgendadas(Long cedulaAsesor) {
         return errorResponse;
     }
 }
+// Completar cita (solo actualizar estado)
+public Map<String, Object> completarCita(Map<String, Object> citaData) {
+    String url = "https://oracleapex.com/ords/ucc/apiCita/completar";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(citaData, headers);
+    
+    try {
+        log.info("Completando cita en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al completar cita: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }
