@@ -252,7 +252,10 @@ export default function DashboardPage() {
     <div className={styles.cardIcon}><FileIcon /></div>
     <h3>Trámites</h3>
     <p>Gestiona y consulta el estado de tus trámites activos</p>
-    <button className={styles.cardBtn}>Ver trámites <ArrowIcon /></button>
+
+    <Link href="/mis-tramites">
+      <button className={styles.cardBtn}>Ver trámites <ArrowIcon /></button>
+    </Link>
   </div>
 
   <div className={styles.card}>

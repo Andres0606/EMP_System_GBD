@@ -95,4 +95,29 @@ public class TramiteService {
             return errorResponse;
         }
     }
+    public Map<String, Object> listarPorCliente(Long idCliente) {
+    String url = "https://oracleapex.com/ords/ucc/apiTramite/listarPorCliente?P_ID_CLIENTE=" + idCliente;
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+    
+    try {
+        log.info("Listando trámites del cliente: {}", idCliente);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al listar trámites del cliente: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }

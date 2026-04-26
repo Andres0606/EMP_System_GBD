@@ -121,4 +121,22 @@ public ResponseEntity<?> actualizarEstado(@RequestBody ActualizarEstadoRequest r
         ));
     }
 }
+@GetMapping("/cliente/{idCliente}")
+public ResponseEntity<?> listarTramitesPorCliente(@PathVariable Long idCliente) {
+    log.info("=== LISTAR TRÁMITES POR CLIENTE ===");
+    log.info("idCliente: {}", idCliente);
+    
+    Map<String, Object> response = tramiteService.listarPorCliente(idCliente);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al listar trámites";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 }
