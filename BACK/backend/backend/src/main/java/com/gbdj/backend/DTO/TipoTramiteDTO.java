@@ -8,4 +8,5 @@ public class TipoTramiteDTO {
     private String nombre;
     private String descripcion;
     private Double valorBase;
+    private String requiereVehiculo; // 'S' o 'N'
 }
