@@ -131,4 +131,87 @@ public ResponseEntity<?> actualizarVehiculo(@PathVariable String placa, @Request
         return ResponseEntity.status(500).body(Map.of("status", "ERROR", "mensaje", mensaje));
     }
 }
+
+@PostMapping("/traspaso")
+public ResponseEntity<?> realizarTraspaso(@RequestBody Map<String, Object> request) {
+    log.info("=== REALIZAR TRASPASO ===");
+    log.info("Request recibido: {}", request);
+    
+    // Validaciones
+    if (request.get("placa") == null || request.get("placa").toString().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La placa es requerida"
+        ));
+    }
+    
+    if (request.get("cedulaAnterior") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La cédula del propietario actual es requerida"
+        ));
+    }
+    
+    if (request.get("cedulaNueva") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La cédula del nuevo propietario es requerida"
+        ));
+    }
+    
+    if (request.get("idTramite") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El ID del trámite es requerido"
+        ));
+    }
+    
+    // Preparar datos para APEX
+    Map<String, Object> traspasoData = new HashMap<>();
+    traspasoData.put("P_PLACA", request.get("placa"));
+    traspasoData.put("P_CEDULA_ANTERIOR", request.get("cedulaAnterior"));
+    traspasoData.put("P_CEDULA_NUEVA", request.get("cedulaNueva"));
+    traspasoData.put("P_ID_TRAMITE", request.get("idTramite"));
+    
+    log.info("Enviando a APEX: {}", traspasoData);
+    
+    Map<String, Object> response = vehiculoService.realizarTraspaso(traspasoData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al realizar traspaso";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
+@GetMapping("/{placa}/propietario")
+public ResponseEntity<?> obtenerPropietario(@PathVariable String placa) {
+    log.info("=== OBTENER PROPIETARIO DEL VEHÍCULO ===");
+    log.info("Placa: {}", placa);
+    
+    try {
+        Map<String, Object> response = vehiculoService.obtenerPropietarioPorPlaca(placa);
+        
+        if (response != null && "OK".equals(response.get("status"))) {
+            return ResponseEntity.ok(response);
+        } else {
+            String mensaje = response != null ? 
+                              response.get("mensaje").toString() : "Propietario no encontrado";
+            return ResponseEntity.status(404).body(Map.of(
+                "status", "ERROR",
+                "mensaje", mensaje
+            ));
+        }
+    } catch (Exception e) {
+        log.error("Error en controlador: ", e);
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", "Error interno: " + e.getMessage()
+        ));
+    }
+}
 }

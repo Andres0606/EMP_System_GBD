@@ -123,4 +123,55 @@ public class VehiculoService {
         return errorResponse;
     }
 }
+public Map<String, Object> realizarTraspaso(Map<String, Object> traspasoData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/traspaso";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(traspasoData, headers);
+    
+    try {
+        log.info("Realizando traspaso en APEX: {}", url);
+        log.info("Datos traspaso: {}", traspasoData);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        log.info("Respuesta APEX: {}", response.getBody());
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en traspaso: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> obtenerPropietarioPorPlaca(String placa) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/getPropietario?P_PLACA=" + placa;
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+    
+    try {
+        log.info("Obteniendo propietario del vehículo: {}", placa);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al obtener propietario: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }

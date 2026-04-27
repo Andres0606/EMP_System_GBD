@@ -26,7 +26,6 @@ export default function EditarVehiculoPage() {
   const placaOriginal = searchParams.get('placa') || '';
   
   const [campos, setCampos] = useState<string[]>([]);
-  const [vehiculo, setVehiculo] = useState<Vehiculo | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -51,34 +50,10 @@ export default function EditarVehiculoPage() {
     }
     
     // Parsear campos a editar
-    const camposArray = camposParam.split(',');
+    const camposArray = camposParam.split(',').filter(campo => campo.trim() !== '');
     setCampos(camposArray);
-    
-    cargarVehiculo();
+    setLoading(false);
   }, []);
-
-  const cargarVehiculo = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/vehiculos/${placaOriginal}`);
-      const data = await response.json();
-      
-      if (response.ok && data.status === 'OK') {
-        setVehiculo(data.vehiculo);
-        
-        // Inicializar valores actuales
-        if (data.vehiculo.color) setNuevoColor(data.vehiculo.color);
-        if (data.vehiculo.tipoServicio) setNuevoTipoServicio(data.vehiculo.tipoServicio);
-        if (data.vehiculo.numMotor) setNuevoNumMotor(data.vehiculo.numMotor);
-        if (data.vehiculo.numChasis) setNuevoNumChasis(data.vehiculo.numChasis);
-        if (data.vehiculo.placa) setNuevaPlaca(data.vehiculo.placa);
-        if (data.vehiculo.clase) setNuevaClase(data.vehiculo.clase);
-      }
-    } catch (error) {
-      setError('Error al cargar el vehículo');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,13 +63,20 @@ export default function EditarVehiculoPage() {
 
     const updateData: any = {};
     
-    if (campos.includes('color')) updateData.color = nuevoColor;
-    if (campos.includes('tipoServicio')) updateData.tipoServicio = nuevoTipoServicio;
-    if (campos.includes('numMotor')) updateData.numMotor = nuevoNumMotor;
-    if (campos.includes('numChasis')) updateData.numChasis = nuevoNumChasis;
-    if (campos.includes('placa')) updateData.placa = nuevaPlaca;
-    if (campos.includes('clase')) updateData.clase = nuevaClase;
-    if (campos.includes('propietario')) updateData.propietario = nuevoPropietario;
+    if (campos.includes('color') && nuevoColor) updateData.color = nuevoColor;
+    if (campos.includes('tipoServicio') && nuevoTipoServicio) updateData.tipoServicio = nuevoTipoServicio;
+    if (campos.includes('numMotor') && nuevoNumMotor) updateData.numMotor = nuevoNumMotor;
+    if (campos.includes('numChasis') && nuevoNumChasis) updateData.numChasis = nuevoNumChasis;
+    if (campos.includes('placa') && nuevaPlaca) updateData.placa = nuevaPlaca;
+    if (campos.includes('clase') && nuevaClase) updateData.clase = nuevaClase;
+    if (campos.includes('propietario') && nuevoPropietario) updateData.propietario = nuevoPropietario;
+
+    // Validar que haya al menos un campo para actualizar
+    if (Object.keys(updateData).length === 0) {
+      setError('Debe ingresar al menos un valor para actualizar');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch(`http://localhost:8080/api/vehiculos/${placaOriginal}`, {
@@ -129,64 +111,61 @@ export default function EditarVehiculoPage() {
           ← Volver al Trámite
         </Link>
         <h1>Editar Vehículo</h1>
+        <p className={styles.placaInfo}>Vehículo: {placaOriginal}</p>
       </div>
 
       {error && <div className={styles.errorAlert}>{error}</div>}
       {success && <div className={styles.successAlert}>{success}</div>}
 
       <div className={styles.formCard}>
-        <h2>Vehículo: {vehiculo?.placa}</h2>
-        
         <form onSubmit={handleSubmit}>
           {campos.includes('color') && (
             <div className={styles.formGroup}>
-              <label>Color</label>
+              <label>Nuevo Color</label>
               <input 
                 type="text" 
                 value={nuevoColor} 
                 onChange={(e) => setNuevoColor(e.target.value)}
-                placeholder="Ej: Rojo"
+                placeholder="Ej: Rojo, Azul, Negro"
                 required
               />
-              <small>Valor actual: {vehiculo?.color || 'No definido'}</small>
             </div>
           )}
 
           {campos.includes('tipoServicio') && (
             <div className={styles.formGroup}>
-              <label>Tipo de Servicio</label>
+              <label>Nuevo Tipo de Servicio</label>
               <select value={nuevoTipoServicio} onChange={(e) => setNuevoTipoServicio(e.target.value)} required>
                 <option value="">Seleccionar</option>
                 <option value="Particular">Particular</option>
                 <option value="Público">Público</option>
               </select>
-              <small>Valor actual: {vehiculo?.tipoServicio || 'No definido'}</small>
             </div>
           )}
 
           {campos.includes('numMotor') && (
             <div className={styles.formGroup}>
-              <label>Número de Motor</label>
+              <label>Nuevo Número de Motor</label>
               <input 
                 type="text" 
                 value={nuevoNumMotor} 
                 onChange={(e) => setNuevoNumMotor(e.target.value.toUpperCase())}
+                placeholder="Ingrese el nuevo número de motor"
                 required
               />
-              <small>Valor actual: {vehiculo?.numMotor || 'No definido'}</small>
             </div>
           )}
 
           {campos.includes('numChasis') && (
             <div className={styles.formGroup}>
-              <label>Número de Chasis</label>
+              <label>Nuevo Número de Chasis</label>
               <input 
                 type="text" 
                 value={nuevoNumChasis} 
                 onChange={(e) => setNuevoNumChasis(e.target.value.toUpperCase())}
+                placeholder="Ingrese el nuevo número de chasis"
                 required
               />
-              <small>Valor actual: {vehiculo?.numChasis || 'No definido'}</small>
             </div>
           )}
 
@@ -200,13 +179,13 @@ export default function EditarVehiculoPage() {
                 placeholder="Ej: ABC123"
                 required
               />
-              <small>Placa actual: {vehiculo?.placa}</small>
+              <small>⚠️ Al cambiar la placa, se actualizarán automáticamente todas las citas asociadas</small>
             </div>
           )}
 
           {campos.includes('clase') && (
             <div className={styles.formGroup}>
-              <label>Clase/Carrocería</label>
+              <label>Nueva Clase/Carrocería</label>
               <select value={nuevaClase} onChange={(e) => setNuevaClase(e.target.value)} required>
                 <option value="">Seleccionar</option>
                 <option value="Automóvil">Automóvil</option>
@@ -214,7 +193,6 @@ export default function EditarVehiculoPage() {
                 <option value="Motocicleta">Motocicleta</option>
                 <option value="Camión">Camión</option>
               </select>
-              <small>Valor actual: {vehiculo?.clase || 'No definido'}</small>
             </div>
           )}
 
