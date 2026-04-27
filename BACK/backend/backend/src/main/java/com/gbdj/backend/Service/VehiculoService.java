@@ -150,4 +150,29 @@ public Map<String, Object> realizarTraspaso(Map<String, Object> traspasoData) {
         return errorResponse;
     }
 }
+public Map<String, Object> cancelarMatricula(Map<String, Object> cancelacionData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/cancelarMatricula";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(cancelacionData, headers);
+    
+    try {
+        log.info("Cancelando matrícula en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en cancelación: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }

@@ -80,7 +80,11 @@ const cargarDetalle = async () => {
 const determinarCamposEdicion = (tipoTramite: string) => {
   switch(tipoTramite) {
     case 'Matrícula/Registro':
-      setCamposAEditar(['registrarVehiculo']);  // 👈 Nuevo caso
+      setCamposAEditar(['vehiculo']);
+      setPuedeEditar(true);
+      break;
+    case 'Cancelación Matrícula':
+      setCamposAEditar(['cancelar']);
       setPuedeEditar(true);
       break;
     case 'Cambio de Color':
@@ -230,22 +234,30 @@ const determinarCamposEdicion = (tipoTramite: string) => {
   <div className={styles.detalleCard}>
     <h2>✏️ {tramite.tipoTramite === 'Traspaso' ? 'Realizar Traspaso' : 
                tramite.tipoTramite === 'Matrícula/Registro' ? 'Registrar Vehículo' : 
+               tramite.tipoTramite === 'Cancelación Matrícula' ? 'Cancelar Matrícula' :
                'Editar Vehículo'}</h2>
     <p>Este trámite requiere: <strong>{camposAEditar.join(', ')}</strong></p>
     
     {tramite.tipoTramite === 'Traspaso' ? (
-  <Link 
-    href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.idCliente}`}
-    className={styles.editarButton}
-  >
-    Realizar Traspaso
-  </Link>
+      <Link 
+        href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.idCliente}`}
+        className={styles.editarButton}
+      >
+        Realizar Traspaso
+      </Link>
     ) : tramite.tipoTramite === 'Matrícula/Registro' ? (
       <Link 
         href={`/asesor/tramites/${tramite.idTramite}/registrar-vehiculo?idCliente=${tramite.idCliente}&idTramite=${tramite.idTramite}`}
         className={styles.editarButton}
       >
         Registrar Vehículo
+      </Link>
+    ) : tramite.tipoTramite === 'Cancelación Matrícula' ? (
+      <Link 
+        href={`/asesor/tramites/${tramite.idTramite}/cancelar-matricula?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
+        className={styles.editarButton}
+      >
+        Cancelar Matrícula
       </Link>
     ) : (
       <Link 

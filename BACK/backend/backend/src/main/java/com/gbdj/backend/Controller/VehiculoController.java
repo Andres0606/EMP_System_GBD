@@ -187,4 +187,42 @@ public ResponseEntity<?> realizarTraspaso(@RequestBody Map<String, Object> reque
         ));
     }
 }
+@PostMapping("/cancelarMatricula")
+public ResponseEntity<?> cancelarMatricula(@RequestBody Map<String, Object> request) {
+    log.info("=== CANCELAR MATRÍCULA ===");
+    log.info("Request: {}", request);
+    
+    // Validaciones
+    if (request.get("placa") == null || request.get("placa").toString().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La placa es requerida"
+        ));
+    }
+    
+    if (request.get("idCliente") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El ID del cliente es requerido"
+        ));
+    }
+    
+    Map<String, Object> cancelacionData = new HashMap<>();
+    cancelacionData.put("P_PLACA", request.get("placa"));
+    cancelacionData.put("P_CEDULA_CLIENTE", request.get("idCliente"));
+    cancelacionData.put("P_ID_TRAMITE", request.get("idTramite"));
+    
+    Map<String, Object> response = vehiculoService.cancelarMatricula(cancelacionData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al cancelar matrícula";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 }
