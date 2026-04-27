@@ -11,13 +11,12 @@ export default function TraspasoPage() {
   const searchParams = useSearchParams();
   const idTramite = params.id as string;
   const placa = searchParams.get('placa') || '';
+  const cedulaActual = searchParams.get('cedulaActual') || ''; // 👈 Ya viene de la URL
   
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [busquedaCliente, setBusquedaCliente] = useState('');
-  const [cedulaActual, setCedulaActual] = useState<string>('');
-  const [cargandoPropietario, setCargandoPropietario] = useState(true);
   const [nuevoPropietario, setNuevoPropietario] = useState({
     cedula: '',
     nombre: '',
@@ -35,40 +34,10 @@ export default function TraspasoPage() {
       return;
     }
     
-    if (!placa) {
-      setError('Falta información del vehículo');
-      setCargandoPropietario(false);
-      return;
+    if (!placa || !cedulaActual) {
+      setError('Falta información del vehículo o propietario');
     }
-    
-    // Siempre obtener la cédula del backend
-    obtenerPropietarioVehiculo();
   }, []);
-
-  const obtenerPropietarioVehiculo = async () => {
-    setCargandoPropietario(true);
-    try {
-      console.log('🔍 Obteniendo propietario para placa:', placa);
-      const response = await fetch(`http://localhost:8080/api/vehiculos/${placa}/propietario`);
-      const data = await response.json();
-      console.log('📦 Respuesta completa:', data);
-      
-      if (response.ok && data.status === 'OK') {
-        const cedula = data.cedula.toString();
-        console.log('✅ Cédula del propietario actual:', cedula);
-        setCedulaActual(cedula);
-        setError('');
-      } else {
-        console.error('❌ Error:', data.mensaje);
-        setError(data.mensaje || 'No se pudo obtener el propietario actual del vehículo');
-      }
-    } catch (error) {
-      console.error('❌ Error de conexión:', error);
-      setError('Error de conexión al obtener propietario');
-    } finally {
-      setCargandoPropietario(false);
-    }
-  };
 
   const buscarCliente = async () => {
     if (!busquedaCliente) {
@@ -153,15 +122,6 @@ export default function TraspasoPage() {
       setSubmitting(false);
     }
   };
-
-  if (cargandoPropietario) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner} />
-        <p>Obteniendo información del vehículo...</p>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.container}>

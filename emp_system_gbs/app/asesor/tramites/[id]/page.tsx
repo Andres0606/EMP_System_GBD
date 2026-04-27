@@ -234,12 +234,12 @@ const determinarCamposEdicion = (tipoTramite: string) => {
     <p>Este trámite requiere: <strong>{camposAEditar.join(', ')}</strong></p>
     
     {tramite.tipoTramite === 'Traspaso' ? (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}`}
-        className={styles.editarButton}
-      >
-        Realizar Traspaso
-      </Link>
+  <Link 
+    href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.idCliente}`}
+    className={styles.editarButton}
+  >
+    Realizar Traspaso
+  </Link>
     ) : tramite.tipoTramite === 'Matrícula/Registro' ? (
       <Link 
         href={`/asesor/tramites/${tramite.idTramite}/registrar-vehiculo?idCliente=${tramite.idCliente}&idTramite=${tramite.idTramite}`}

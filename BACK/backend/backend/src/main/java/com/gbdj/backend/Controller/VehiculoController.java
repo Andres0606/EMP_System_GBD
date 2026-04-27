@@ -19,7 +19,7 @@ public class VehiculoController {
     @Autowired
     private VehiculoService vehiculoService;
 
-   @PostMapping("/register")
+ @PostMapping("/register")
 public ResponseEntity<?> registrarVehiculo(@RequestBody Map<String, Object> request) {
     log.info("=== REGISTRAR VEHÍCULO ===");
     log.info("Request recibido: {}", request);
@@ -52,6 +52,7 @@ public ResponseEntity<?> registrarVehiculo(@RequestBody Map<String, Object> requ
     vehiculoData.put("P1_TIPOSERVICIO", request.get("tipoServicio"));
     vehiculoData.put("P1_NUMMOTOR", request.get("numMotor"));
     vehiculoData.put("P1_NUMCHASIS", request.get("numChasis"));
+    vehiculoData.put("P1_COLOR", request.get("color"));  // 👈 Agrega esta línea
     
     log.info("Enviando a APEX: {}", vehiculoData);
     
@@ -183,32 +184,6 @@ public ResponseEntity<?> realizarTraspaso(@RequestBody Map<String, Object> reque
         return ResponseEntity.status(500).body(Map.of(
             "status", "ERROR",
             "mensaje", mensaje
-        ));
-    }
-}
-@GetMapping("/{placa}/propietario")
-public ResponseEntity<?> obtenerPropietario(@PathVariable String placa) {
-    log.info("=== OBTENER PROPIETARIO DEL VEHÍCULO ===");
-    log.info("Placa: {}", placa);
-    
-    try {
-        Map<String, Object> response = vehiculoService.obtenerPropietarioPorPlaca(placa);
-        
-        if (response != null && "OK".equals(response.get("status"))) {
-            return ResponseEntity.ok(response);
-        } else {
-            String mensaje = response != null ? 
-                              response.get("mensaje").toString() : "Propietario no encontrado";
-            return ResponseEntity.status(404).body(Map.of(
-                "status", "ERROR",
-                "mensaje", mensaje
-            ));
-        }
-    } catch (Exception e) {
-        log.error("Error en controlador: ", e);
-        return ResponseEntity.status(500).body(Map.of(
-            "status", "ERROR",
-            "mensaje", "Error interno: " + e.getMessage()
         ));
     }
 }
