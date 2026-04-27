@@ -115,6 +115,10 @@ const determinarCamposEdicion = (tipoTramite: string) => {
       setCamposAEditar(['clase']);
       setPuedeEditar(true);
       break;
+    case 'Rematrícula':
+      setCamposAEditar(['reactivar']);
+      setPuedeEditar(true);
+    break;
     default:
       setPuedeEditar(false);
   }
@@ -258,6 +262,13 @@ const determinarCamposEdicion = (tipoTramite: string) => {
         className={styles.editarButton}
       >
         Cancelar Matrícula
+      </Link>
+    ) : tramite.tipoTramite === 'Rematrícula' ? (
+      <Link 
+        href={`/asesor/tramites/${tramite.idTramite}/rematricular?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
+        className={styles.editarButton}
+      >
+        Rematrícula
       </Link>
     ) : (
       <Link 

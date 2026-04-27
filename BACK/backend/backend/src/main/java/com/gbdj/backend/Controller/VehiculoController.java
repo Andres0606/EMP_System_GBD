@@ -225,4 +225,42 @@ public ResponseEntity<?> cancelarMatricula(@RequestBody Map<String, Object> requ
         ));
     }
 }
+@PostMapping("/rematricular")
+public ResponseEntity<?> rematricular(@RequestBody Map<String, Object> request) {
+    log.info("=== REALIZAR REMATRÍCULA ===");
+    log.info("Request: {}", request);
+    
+    // Validaciones
+    if (request.get("placa") == null || request.get("placa").toString().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La placa es requerida"
+        ));
+    }
+    
+    if (request.get("idCliente") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El ID del cliente es requerido"
+        ));
+    }
+    
+    Map<String, Object> rematriculaData = new HashMap<>();
+    rematriculaData.put("P_PLACA", request.get("placa"));
+    rematriculaData.put("P_CEDULA_CLIENTE", request.get("idCliente"));
+    rematriculaData.put("P_ID_TRAMITE", request.get("idTramite"));
+    
+    Map<String, Object> response = vehiculoService.rematricular(rematriculaData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al realizar rematrícula";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 }
