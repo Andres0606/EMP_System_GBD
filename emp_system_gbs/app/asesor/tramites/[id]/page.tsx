@@ -8,11 +8,11 @@ import styles from '../../../CSS/Asesor/TramiteDetalle.module.css';
 interface TramiteDetalle {
   idTramite: number;
   idCita: number;
+  idCliente?: number;  // 👈 Cambia de cedulaCliente a idCliente
   cliente: string;
   telefono: string;
   correo: string;
   vehiculo: string;
-  cedulaCliente?: number;
   tipoTramite: string;
   valorTramite: number;
   valorOtrosConceptos: number;
@@ -61,7 +61,7 @@ const cargarDetalle = async () => {
       // 👈 LOG CORRECTO - usa 'encontrado', no 'tramite'
       console.log('Trámite encontrado COMPLETO:', encontrado);
       console.log('Campos del trámite:', Object.keys(encontrado || {}));
-       console.log('cedulaCliente:', encontrado?.cedulaCliente);
+       console.log('idCliente:', encontrado?.idCliente); // 👈 Verificar que idCliente esté presente
       
       setTramite(encontrado);
       setEstado(encontrado?.estadoTramite || 'Activo');
@@ -77,8 +77,12 @@ const cargarDetalle = async () => {
   }
 };
 
-  const determinarCamposEdicion = (tipoTramite: string) => {
+const determinarCamposEdicion = (tipoTramite: string) => {
   switch(tipoTramite) {
+    case 'Matrícula/Registro':
+      setCamposAEditar(['registrarVehiculo']);  // 👈 Nuevo caso
+      setPuedeEditar(true);
+      break;
     case 'Cambio de Color':
       setCamposAEditar(['color']);
       setPuedeEditar(true);
@@ -100,7 +104,7 @@ const cargarDetalle = async () => {
       setPuedeEditar(true);
       break;
     case 'Traspaso':
-      setCamposAEditar(['cedulaCliente']);
+      setCamposAEditar(['propietario']);
       setPuedeEditar(true);
       break;
     case 'Cambio de Carrocería':
@@ -111,7 +115,6 @@ const cargarDetalle = async () => {
       setPuedeEditar(false);
   }
 };
-
   const handleActualizarEstado = async (nuevoEstado: string) => {
     setUpdating(true);
     setError('');
@@ -225,15 +228,24 @@ const cargarDetalle = async () => {
       {/* Botón de Editar según el tipo de trámite */}
 {puedeEditar && (
   <div className={styles.detalleCard}>
-    <h2>✏️ {tramite.tipoTramite === 'Traspaso' ? 'Realizar Traspaso' : 'Editar Vehículo'}</h2>
-    <p>Este trámite requiere modificar los siguientes campos: <strong>{camposAEditar.join(', ')}</strong></p>
+    <h2>✏️ {tramite.tipoTramite === 'Traspaso' ? 'Realizar Traspaso' : 
+               tramite.tipoTramite === 'Matrícula/Registro' ? 'Registrar Vehículo' : 
+               'Editar Vehículo'}</h2>
+    <p>Este trámite requiere: <strong>{camposAEditar.join(', ')}</strong></p>
     
     {tramite.tipoTramite === 'Traspaso' ? (
       <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.cedulaCliente}`}
+        href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}`}
         className={styles.editarButton}
       >
         Realizar Traspaso
+      </Link>
+    ) : tramite.tipoTramite === 'Matrícula/Registro' ? (
+      <Link 
+        href={`/asesor/tramites/${tramite.idTramite}/registrar-vehiculo?idCliente=${tramite.idCliente}&idTramite=${tramite.idTramite}`}
+        className={styles.editarButton}
+      >
+        Registrar Vehículo
       </Link>
     ) : (
       <Link 

@@ -8,6 +8,7 @@ import styles from '../../CSS/Asesor/Tramites.module.css';
 interface Tramite {
   idTramite: number;
   idCita: number;
+  idCliente?: number;  // 👈 Agregado
   cliente: string;
   telefono: string;
   correo: string;
@@ -46,6 +47,8 @@ export default function AsesorTramitesPage() {
       setLoading(true);
       const response = await fetch(`http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`);
       const data = await response.json();
+      
+      console.log('📦 Respuesta de trámites:', data); // 👈 Log para verificar
       
       if (response.ok && data.status === 'OK') {
         setTramites(data.tramites || []);
