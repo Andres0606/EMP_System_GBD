@@ -200,4 +200,54 @@ public Map<String, Object> rematricular(Map<String, Object> rematriculaData) {
         return errorResponse;
     }
 }
+public Map<String, Object> inscribirPrenda(Map<String, Object> prendaData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/inscribirPrenda";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(prendaData, headers);
+    
+    try {
+        log.info("Inscribiendo prenda en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en inscripción de prenda: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> levantarPrenda(Map<String, Object> prendaData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/levantarPrenda";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(prendaData, headers);
+    
+    try {
+        log.info("Levantando prenda en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en levantamiento de prenda: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }

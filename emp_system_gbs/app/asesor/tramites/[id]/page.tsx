@@ -119,7 +119,16 @@ const determinarCamposEdicion = (tipoTramite: string) => {
       setCamposAEditar(['reactivar']);
       setPuedeEditar(true);
     break;
-    default:
+    case 'Inscripción Prenda':
+      setCamposAEditar(['inscribirPrenda']);
+      setPuedeEditar(true);
+      break;
+
+    case 'Levantar Prenda':
+      setCamposAEditar(['levantarPrenda']);
+      setPuedeEditar(true);
+      break;
+      default:
       setPuedeEditar(false);
   }
 };
@@ -239,6 +248,9 @@ const determinarCamposEdicion = (tipoTramite: string) => {
     <h2>✏️ {tramite.tipoTramite === 'Traspaso' ? 'Realizar Traspaso' : 
                tramite.tipoTramite === 'Matrícula/Registro' ? 'Registrar Vehículo' : 
                tramite.tipoTramite === 'Cancelación Matrícula' ? 'Cancelar Matrícula' :
+               tramite.tipoTramite === 'Rematrícula' ? 'Realizar Rematrícula' :
+               tramite.tipoTramite === 'Inscripción Prenda' ? 'Inscribir Prenda' :
+               tramite.tipoTramite === 'Levantar Prenda' ? 'Levantar Prenda' :
                'Editar Vehículo'}</h2>
     <p>Este trámite requiere: <strong>{camposAEditar.join(', ')}</strong></p>
     
@@ -268,7 +280,21 @@ const determinarCamposEdicion = (tipoTramite: string) => {
         href={`/asesor/tramites/${tramite.idTramite}/rematricular?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
         className={styles.editarButton}
       >
-        Rematrícula
+        Realizar Rematrícula
+      </Link>
+    ) : tramite.tipoTramite === 'Inscripción Prenda' ? (
+      <Link 
+        href={`/asesor/tramites/${tramite.idTramite}/gestionar-prenda?placa=${tramite.vehiculo}&tipo=inscribir`}
+        className={styles.editarButton}
+      >
+        Inscribir Prenda
+      </Link>
+    ) : tramite.tipoTramite === 'Levantar Prenda' ? (
+      <Link 
+        href={`/asesor/tramites/${tramite.idTramite}/gestionar-prenda?placa=${tramite.vehiculo}&tipo=levantar`}
+        className={styles.editarButton}
+      >
+        Levantar Prenda
       </Link>
     ) : (
       <Link 

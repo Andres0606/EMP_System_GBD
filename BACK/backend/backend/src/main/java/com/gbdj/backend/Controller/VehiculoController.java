@@ -263,4 +263,76 @@ public ResponseEntity<?> rematricular(@RequestBody Map<String, Object> request) 
         ));
     }
 }
+@PostMapping("/inscribirPrenda")
+public ResponseEntity<?> inscribirPrenda(@RequestBody Map<String, Object> request) {
+    log.info("=== INSCRIBIR PRENDA ===");
+    log.info("Request recibido: {}", request);
+    
+    try {
+        // Validaciones
+        if (request.get("placa") == null || request.get("placa").toString().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "status", "ERROR",
+                "mensaje", "La placa es requerida"
+            ));
+        }
+        
+        Map<String, Object> prendaData = new HashMap<>();
+        prendaData.put("P_PLACA", request.get("placa"));
+        prendaData.put("P_ID_TRAMITE", request.get("idTramite"));
+        
+        log.info("Enviando a APEX: {}", prendaData);
+        
+        Map<String, Object> response = vehiculoService.inscribirPrenda(prendaData);
+        
+        log.info("Respuesta de APEX: {}", response);
+        
+        if (response != null && "OK".equals(response.get("status"))) {
+            return ResponseEntity.ok(response);
+        } else {
+            String mensaje = response != null ? 
+                              response.get("mensaje").toString() : "Error al inscribir prenda";
+            return ResponseEntity.status(500).body(Map.of(
+                "status", "ERROR",
+                "mensaje", mensaje
+            ));
+        }
+    } catch (Exception e) {
+        log.error("Excepción en inscribirPrenda: ", e);
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", "Error interno: " + e.getMessage()
+        ));
+    }
+}
+@PostMapping("/levantarPrenda")
+public ResponseEntity<?> levantarPrenda(@RequestBody Map<String, Object> request) {
+    log.info("=== LEVANTAR PRENDA ===");
+    log.info("Request: {}", request);
+    
+    // Validaciones
+    if (request.get("placa") == null || request.get("placa").toString().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La placa es requerida"
+        ));
+    }
+    
+    Map<String, Object> prendaData = new HashMap<>();
+    prendaData.put("P_PLACA", request.get("placa"));
+    prendaData.put("P_ID_TRAMITE", request.get("idTramite"));
+    
+    Map<String, Object> response = vehiculoService.levantarPrenda(prendaData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al levantar prenda";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 }
