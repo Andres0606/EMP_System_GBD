@@ -300,3 +300,48 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.estadoBadge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.estadoActivo {
+  background: #d4edda;
+  color: #155724;
+}
+
+.estadoCancelado {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.cardCancelado {
+  opacity: 0.8;
+  border-left: 4px solid #dc3545;
+}
+
+.prendado {
+  color: #856404;
+  background: #fff3cd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.emptyButton {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: #0070f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.emptyButton:hover {
+  background: #0051a8;
+}
