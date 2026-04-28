@@ -8,7 +8,7 @@ import styles from '../../../CSS/Asesor/TramiteDetalle.module.css';
 interface TramiteDetalle {
   idTramite: number;
   idCita: number;
-  idCliente?: number;  // 👈 Cambia de cedulaCliente a idCliente
+  idCliente?: number;
   cliente: string;
   telefono: string;
   correo: string;
@@ -50,88 +50,96 @@ export default function TramiteDetallePage() {
     cargarDetalle();
   }, []);
 
-const cargarDetalle = async () => {
-  try {
-    const response = await fetch(`http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`);
-    const data = await response.json();
-    
-    if (data.status === 'OK' && data.tramites) {
-      const encontrado = data.tramites.find((t: any) => t.idTramite === parseInt(idTramite));
+  const cargarDetalle = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`);
+      const data = await response.json();
       
-      // 👈 LOG CORRECTO - usa 'encontrado', no 'tramite'
-      console.log('Trámite encontrado COMPLETO:', encontrado);
-      console.log('Campos del trámite:', Object.keys(encontrado || {}));
-       console.log('idCliente:', encontrado?.idCliente); // 👈 Verificar que idCliente esté presente
-      
-      setTramite(encontrado);
-      setEstado(encontrado?.estadoTramite || 'Activo');
-      console.log('Tipo de trámite recibido:', encontrado?.tipoTramite);
-      
-      determinarCamposEdicion(encontrado?.tipoTramite);
+      if (data.status === 'OK' && data.tramites) {
+        const encontrado = data.tramites.find((t: any) => t.idTramite === parseInt(idTramite));
+        
+        console.log('Trámite encontrado COMPLETO:', encontrado);
+        console.log('Campos del trámite:', Object.keys(encontrado || {}));
+        console.log('idCliente:', encontrado?.idCliente);
+        
+        setTramite(encontrado);
+        setEstado(encontrado?.estadoTramite || 'Activo');
+        console.log('Tipo de trámite recibido:', encontrado?.tipoTramite);
+        
+        determinarCamposEdicion(encontrado?.tipoTramite);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Error al cargar el trámite');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error:', error);
-    setError('Error al cargar el trámite');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-const determinarCamposEdicion = (tipoTramite: string) => {
-  switch(tipoTramite) {
-    case 'Matrícula/Registro':
-      setCamposAEditar(['vehiculo']);
-      setPuedeEditar(true);
-      break;
-    case 'Cancelación Matrícula':
-      setCamposAEditar(['cancelar']);
-      setPuedeEditar(true);
-      break;
-    case 'Cambio de Color':
-      setCamposAEditar(['color']);
-      setPuedeEditar(true);
-      break;
-    case 'Cambio de Servicio':
-      setCamposAEditar(['tipoServicio']);
-      setPuedeEditar(true);
-      break;
-    case 'Regrabar Motor':
-      setCamposAEditar(['numMotor']);
-      setPuedeEditar(true);
-      break;
-    case 'Regrabar Chasis':
-      setCamposAEditar(['numChasis']);
-      setPuedeEditar(true);
-      break;
-    case 'Cambio de Placas':
-      setCamposAEditar(['placa']);
-      setPuedeEditar(true);
-      break;
-    case 'Traspaso':
-      setCamposAEditar(['propietario']);
-      setPuedeEditar(true);
-      break;
-    case 'Cambio de Carrocería':
-      setCamposAEditar(['clase']);
-      setPuedeEditar(true);
-      break;
-    case 'Rematrícula':
-      setCamposAEditar(['reactivar']);
-      setPuedeEditar(true);
-    break;
-    case 'Inscripción Prenda':
-      setCamposAEditar(['inscribirPrenda']);
-      setPuedeEditar(true);
-      break;
-
-    case 'Levantar Prenda':
-      setCamposAEditar(['levantarPrenda']);
-      setPuedeEditar(true);
-      break;
+  const determinarCamposEdicion = (tipoTramite: string) => {
+    switch(tipoTramite) {
+      case 'Matrícula/Registro':
+        setCamposAEditar(['vehiculo']);
+        setPuedeEditar(true);
+        break;
+      case 'Cancelación Matrícula':
+        setCamposAEditar(['cancelar']);
+        setPuedeEditar(true);
+        break;
+      case 'Rematrícula':
+        setCamposAEditar(['reactivar']);
+        setPuedeEditar(true);
+        break;
+      case 'Inscripción Prenda':
+        setCamposAEditar(['inscribirPrenda']);
+        setPuedeEditar(true);
+        break;
+      case 'Levantar Prenda':
+        setCamposAEditar(['levantarPrenda']);
+        setPuedeEditar(true);
+        break;
+      case 'Cambio de Color':
+        setCamposAEditar(['color']);
+        setPuedeEditar(true);
+        break;
+      case 'Cambio de Servicio':
+        setCamposAEditar(['tipoServicio']);
+        setPuedeEditar(true);
+        break;
+      case 'Regrabar Motor':
+        setCamposAEditar(['numMotor']);
+        setPuedeEditar(true);
+        break;
+      case 'Regrabar Chasis':
+        setCamposAEditar(['numChasis']);
+        setPuedeEditar(true);
+        break;
+      case 'Cambio de Placas':
+        setCamposAEditar(['placa']);
+        setPuedeEditar(true);
+        break;
+      case 'Traspaso':
+        setCamposAEditar(['propietario']);
+        setPuedeEditar(true);
+        break;
+      case 'Cambio de Carrocería':
+        setCamposAEditar(['clase']);
+        setPuedeEditar(true);
+        break;
+      case 'Duplicado de Placas':
+      case 'Duplicado Licencia':
+      case 'Traslado Matrícula':
+      case 'Radicado Matrícula':
+      case 'Transformación':
+      case 'Otros':
+        setCamposAEditar(['realizar']);
+        setPuedeEditar(true);
+        break;
       default:
-      setPuedeEditar(false);
-  }
-};
+        setPuedeEditar(false);
+    }
+  };
+
   const handleActualizarEstado = async (nuevoEstado: string) => {
     setUpdating(true);
     setError('');
@@ -241,71 +249,82 @@ const determinarCamposEdicion = (tipoTramite: string) => {
         </div>
       </div>
 
-      {/* 👇 BOTÓN DE EDITAR VEHÍCULO (AGREGAR ESTO) */}
-      {/* Botón de Editar según el tipo de trámite */}
-{puedeEditar && (
-  <div className={styles.detalleCard}>
-    <h2>✏️ {tramite.tipoTramite === 'Traspaso' ? 'Realizar Traspaso' : 
-               tramite.tipoTramite === 'Matrícula/Registro' ? 'Registrar Vehículo' : 
-               tramite.tipoTramite === 'Cancelación Matrícula' ? 'Cancelar Matrícula' :
-               tramite.tipoTramite === 'Rematrícula' ? 'Realizar Rematrícula' :
-               tramite.tipoTramite === 'Inscripción Prenda' ? 'Inscribir Prenda' :
-               tramite.tipoTramite === 'Levantar Prenda' ? 'Levantar Prenda' :
-               'Editar Vehículo'}</h2>
-    <p>Este trámite requiere: <strong>{camposAEditar.join(', ')}</strong></p>
-    
-    {tramite.tipoTramite === 'Traspaso' ? (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.idCliente}`}
-        className={styles.editarButton}
-      >
-        Realizar Traspaso
-      </Link>
-    ) : tramite.tipoTramite === 'Matrícula/Registro' ? (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/registrar-vehiculo?idCliente=${tramite.idCliente}&idTramite=${tramite.idTramite}`}
-        className={styles.editarButton}
-      >
-        Registrar Vehículo
-      </Link>
-    ) : tramite.tipoTramite === 'Cancelación Matrícula' ? (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/cancelar-matricula?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
-        className={styles.editarButton}
-      >
-        Cancelar Matrícula
-      </Link>
-    ) : tramite.tipoTramite === 'Rematrícula' ? (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/rematricular?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
-        className={styles.editarButton}
-      >
-        Realizar Rematrícula
-      </Link>
-    ) : tramite.tipoTramite === 'Inscripción Prenda' ? (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/gestionar-prenda?placa=${tramite.vehiculo}&tipo=inscribir`}
-        className={styles.editarButton}
-      >
-        Inscribir Prenda
-      </Link>
-    ) : tramite.tipoTramite === 'Levantar Prenda' ? (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/gestionar-prenda?placa=${tramite.vehiculo}&tipo=levantar`}
-        className={styles.editarButton}
-      >
-        Levantar Prenda
-      </Link>
-    ) : (
-      <Link 
-        href={`/asesor/tramites/${tramite.idTramite}/editar-vehiculo?campos=${camposAEditar.join(',')}&placa=${tramite.vehiculo}`}
-        className={styles.editarButton}
-      >
-        Editar Vehículo
-      </Link>
-    )}
-  </div>
-)}
+      {puedeEditar && (
+        <div className={styles.detalleCard}>
+          <h2>
+            ✏️ {tramite.tipoTramite === 'Traspaso' ? 'Realizar Traspaso' : 
+                tramite.tipoTramite === 'Matrícula/Registro' ? 'Registrar Vehículo' : 
+                tramite.tipoTramite === 'Cancelación Matrícula' ? 'Cancelar Matrícula' :
+                tramite.tipoTramite === 'Rematrícula' ? 'Realizar Rematrícula' :
+                tramite.tipoTramite === 'Inscripción Prenda' ? 'Inscribir Prenda' :
+                tramite.tipoTramite === 'Levantar Prenda' ? 'Levantar Prenda' :
+                (tramite.tipoTramite === 'Duplicado de Placas' || 
+                 tramite.tipoTramite === 'Duplicado Licencia' ||
+                 tramite.tipoTramite === 'Traslado Matrícula' ||
+                 tramite.tipoTramite === 'Radicado Matrícula' ||
+                 tramite.tipoTramite === 'Transformación' ||
+                 tramite.tipoTramite === 'Otros') ? 'Realizar Trámite' :
+                'Editar Vehículo'}
+          </h2>
+          <p>Este trámite requiere: <strong>{camposAEditar.join(', ')}</strong></p>
+          
+          {tramite.tipoTramite === 'Traspaso' ? (
+            <Link 
+              href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.idCliente}`}
+              className={styles.editarButton}
+            >
+              Realizar Traspaso
+            </Link>
+          ) : tramite.tipoTramite === 'Matrícula/Registro' ? (
+            <Link 
+              href={`/asesor/tramites/${tramite.idTramite}/registrar-vehiculo?idCliente=${tramite.idCliente}&idTramite=${tramite.idTramite}`}
+              className={styles.editarButton}
+            >
+              Registrar Vehículo
+            </Link>
+          ) : tramite.tipoTramite === 'Cancelación Matrícula' ? (
+            <Link 
+              href={`/asesor/tramites/${tramite.idTramite}/cancelar-matricula?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
+              className={styles.editarButton}
+            >
+              Cancelar Matrícula
+            </Link>
+          ) : tramite.tipoTramite === 'Rematrícula' ? (
+            <Link 
+              href={`/asesor/tramites/${tramite.idTramite}/rematricular?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
+              className={styles.editarButton}
+            >
+              Realizar Rematrícula
+            </Link>
+          ) : (tramite.tipoTramite === 'Inscripción Prenda' || tramite.tipoTramite === 'Levantar Prenda') ? (
+            <Link 
+              href={`/asesor/tramites/${tramite.idTramite}/gestionar-prenda?placa=${tramite.vehiculo}&tipo=${tramite.tipoTramite === 'Inscripción Prenda' ? 'inscribir' : 'levantar'}`}
+              className={styles.editarButton}
+            >
+              {tramite.tipoTramite === 'Inscripción Prenda' ? 'Inscribir Prenda' : 'Levantar Prenda'}
+            </Link>
+          ) : (tramite.tipoTramite === 'Duplicado de Placas' || 
+               tramite.tipoTramite === 'Duplicado Licencia' ||
+               tramite.tipoTramite === 'Traslado Matrícula' ||
+               tramite.tipoTramite === 'Radicado Matrícula' ||
+               tramite.tipoTramite === 'Transformación' ||
+               tramite.tipoTramite === 'Otros') ? (
+            <Link 
+              href={`/asesor/tramites/${tramite.idTramite}/tramite-simple?tipo=${tramite.tipoTramite}`}
+              className={styles.editarButton}
+            >
+              Realizar Trámite
+            </Link>
+          ) : (
+            <Link 
+              href={`/asesor/tramites/${tramite.idTramite}/editar-vehiculo?campos=${camposAEditar.join(',')}&placa=${tramite.vehiculo}`}
+              className={styles.editarButton}
+            >
+              Editar Vehículo
+            </Link>
+          )}
+        </div>
+      )}
 
       <div className={styles.detalleCard}>
         <h2>Actualizar Estado</h2>
