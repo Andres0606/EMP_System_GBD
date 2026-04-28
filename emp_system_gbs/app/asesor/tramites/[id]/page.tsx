@@ -5,6 +5,39 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../CSS/Asesor/TramiteDetalle.module.css';
 
+/* ── Icons ── */
+const ArrowLeftIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+const ArrowRightIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+const CheckCircleIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/>
+  </svg>
+);
+const AlertCircleIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+);
+const EditIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+
 interface TramiteDetalle {
   idTramite: number;
   idCita: number;
@@ -25,7 +58,7 @@ export default function TramiteDetallePage() {
   const router = useRouter();
   const params = useParams();
   const idTramite = params.id as string;
-  
+
   const [tramite, setTramite] = useState<TramiteDetalle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,7 +66,8 @@ export default function TramiteDetallePage() {
   const [updating, setUpdating] = useState(false);
   const [estado, setEstado] = useState('');
 
-  const cedulaAsesor = typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
+  const cedulaAsesor =
+    typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
 
   const [puedeEditar, setPuedeEditar] = useState(false);
   const [camposAEditar, setCamposAEditar] = useState<string[]>([]);
@@ -41,35 +75,28 @@ export default function TramiteDetallePage() {
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const rol = sessionStorage.getItem('userRol');
-    
     if (!isLoggedIn || !cedulaAsesor || rol !== '2') {
       router.push('/login');
       return;
     }
-    
     cargarDetalle();
   }, []);
 
   const cargarDetalle = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`);
+      const response = await fetch(
+        `http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`
+      );
       const data = await response.json();
-      
       if (data.status === 'OK' && data.tramites) {
-        const encontrado = data.tramites.find((t: any) => t.idTramite === parseInt(idTramite));
-        
-        console.log('Trámite encontrado COMPLETO:', encontrado);
-        console.log('Campos del trámite:', Object.keys(encontrado || {}));
-        console.log('idCliente:', encontrado?.idCliente);
-        
+        const encontrado = data.tramites.find(
+          (t: any) => t.idTramite === parseInt(idTramite)
+        );
         setTramite(encontrado);
         setEstado(encontrado?.estadoTramite || 'Activo');
-        console.log('Tipo de trámite recibido:', encontrado?.tipoTramite);
-        
         determinarCamposEdicion(encontrado?.tipoTramite);
       }
     } catch (error) {
-      console.error('Error:', error);
       setError('Error al cargar el trámite');
     } finally {
       setLoading(false);
@@ -77,66 +104,31 @@ export default function TramiteDetallePage() {
   };
 
   const determinarCamposEdicion = (tipoTramite: string) => {
-    switch(tipoTramite) {
-      case 'Matrícula/Registro':
-        setCamposAEditar(['vehiculo']);
-        setPuedeEditar(true);
-        break;
-      case 'Cancelación Matrícula':
-        setCamposAEditar(['cancelar']);
-        setPuedeEditar(true);
-        break;
-      case 'Rematrícula':
-        setCamposAEditar(['reactivar']);
-        setPuedeEditar(true);
-        break;
-      case 'Inscripción Prenda':
-        setCamposAEditar(['inscribirPrenda']);
-        setPuedeEditar(true);
-        break;
-      case 'Levantar Prenda':
-        setCamposAEditar(['levantarPrenda']);
-        setPuedeEditar(true);
-        break;
-      case 'Cambio de Color':
-        setCamposAEditar(['color']);
-        setPuedeEditar(true);
-        break;
-      case 'Cambio de Servicio':
-        setCamposAEditar(['tipoServicio']);
-        setPuedeEditar(true);
-        break;
-      case 'Regrabar Motor':
-        setCamposAEditar(['numMotor']);
-        setPuedeEditar(true);
-        break;
-      case 'Regrabar Chasis':
-        setCamposAEditar(['numChasis']);
-        setPuedeEditar(true);
-        break;
-      case 'Cambio de Placas':
-        setCamposAEditar(['placa']);
-        setPuedeEditar(true);
-        break;
-      case 'Traspaso':
-        setCamposAEditar(['propietario']);
-        setPuedeEditar(true);
-        break;
-      case 'Cambio de Carrocería':
-        setCamposAEditar(['clase']);
-        setPuedeEditar(true);
-        break;
-      case 'Duplicado de Placas':
-      case 'Duplicado Licencia':
-      case 'Traslado Matrícula':
-      case 'Radicado Matrícula':
-      case 'Transformación':
-      case 'Otros':
-        setCamposAEditar(['realizar']);
-        setPuedeEditar(true);
-        break;
-      default:
-        setPuedeEditar(false);
+    const mapa: Record<string, string[]> = {
+      'Matrícula/Registro': ['vehiculo'],
+      'Cancelación Matrícula': ['cancelar'],
+      'Rematrícula': ['reactivar'],
+      'Inscripción Prenda': ['inscribirPrenda'],
+      'Levantar Prenda': ['levantarPrenda'],
+      'Cambio de Color': ['color'],
+      'Cambio de Servicio': ['tipoServicio'],
+      'Regrabar Motor': ['numMotor'],
+      'Regrabar Chasis': ['numChasis'],
+      'Cambio de Placas': ['placa'],
+      'Traspaso': ['propietario'],
+      'Cambio de Carrocería': ['clase'],
+      'Duplicado de Placas': ['realizar'],
+      'Duplicado Licencia': ['realizar'],
+      'Traslado Matrícula': ['realizar'],
+      'Radicado Matrícula': ['realizar'],
+      'Transformación': ['realizar'],
+      'Otros': ['realizar'],
+    };
+    if (mapa[tipoTramite]) {
+      setCamposAEditar(mapa[tipoTramite]);
+      setPuedeEditar(true);
+    } else {
+      setPuedeEditar(false);
     }
   };
 
@@ -144,40 +136,72 @@ export default function TramiteDetallePage() {
     setUpdating(true);
     setError('');
     setSuccess('');
-
     try {
       const response = await fetch('http://localhost:8080/api/tramite/estado', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          idTramite: parseInt(idTramite),
-          estado: nuevoEstado
-        })
+        body: JSON.stringify({ idTramite: parseInt(idTramite), estado: nuevoEstado }),
       });
-
       const data = await response.json();
-
       if (response.ok && data.status === 'OK') {
         setEstado(nuevoEstado);
-        setTramite(prev => prev ? { ...prev, estadoTramite: nuevoEstado } : null);
+        setTramite((prev) => prev ? { ...prev, estadoTramite: nuevoEstado } : null);
         setSuccess('Estado actualizado exitosamente');
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(data.mensaje || 'Error al actualizar estado');
       }
-    } catch (err) {
-      console.error('Error:', err);
+    } catch {
       setError('Error de conexión con el servidor');
     } finally {
       setUpdating(false);
     }
   };
 
+  const getEditarHref = () => {
+    if (!tramite) return '#';
+    switch (tramite.tipoTramite) {
+      case 'Traspaso':
+        return `/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.idCliente}`;
+      case 'Matrícula/Registro':
+        return `/asesor/tramites/${tramite.idTramite}/registrar-vehiculo?idCliente=${tramite.idCliente}&idTramite=${tramite.idTramite}`;
+      case 'Cancelación Matrícula':
+        return `/asesor/tramites/${tramite.idTramite}/cancelar-matricula?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`;
+      case 'Rematrícula':
+        return `/asesor/tramites/${tramite.idTramite}/rematricular?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`;
+      case 'Inscripción Prenda':
+      case 'Levantar Prenda':
+        return `/asesor/tramites/${tramite.idTramite}/gestionar-prenda?placa=${tramite.vehiculo}&tipo=${tramite.tipoTramite === 'Inscripción Prenda' ? 'inscribir' : 'levantar'}`;
+      case 'Duplicado de Placas':
+      case 'Duplicado Licencia':
+      case 'Traslado Matrícula':
+      case 'Radicado Matrícula':
+      case 'Transformación':
+      case 'Otros':
+        return `/asesor/tramites/${tramite.idTramite}/tramite-simple?tipo=${tramite.tipoTramite}`;
+      default:
+        return `/asesor/tramites/${tramite.idTramite}/editar-vehiculo?campos=${camposAEditar.join(',')}&placa=${tramite.vehiculo}`;
+    }
+  };
+
+  const getEditarLabel = () => {
+    if (!tramite) return 'Realizar acción';
+    const labels: Record<string, string> = {
+      'Traspaso': 'Realizar Traspaso',
+      'Matrícula/Registro': 'Registrar Vehículo',
+      'Cancelación Matrícula': 'Cancelar Matrícula',
+      'Rematrícula': 'Realizar Rematrícula',
+      'Inscripción Prenda': 'Inscribir Prenda',
+      'Levantar Prenda': 'Levantar Prenda',
+    };
+    return labels[tramite.tipoTramite] ?? 'Realizar Trámite';
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.spinner} />
-        <p>Cargando...</p>
+        <p>Cargando trámite...</p>
       </div>
     );
   }
@@ -185,176 +209,172 @@ export default function TramiteDetallePage() {
   if (!tramite) {
     return (
       <div className={styles.container}>
-        <div className={styles.errorAlert}>Trámite no encontrado</div>
-        <Link href="/asesor/tramites" className={styles.backLink}>Volver a trámites</Link>
+        <div className={styles.inner}>
+          <div className={styles.errorAlert}>
+            <AlertCircleIcon /> Trámite no encontrado
+          </div>
+          <Link href="/asesor/tramites" className={styles.backLink}>
+            <ArrowLeftIcon /> Volver a trámites
+          </Link>
+        </div>
       </div>
     );
   }
 
   const valorTotal = tramite.valorTramite + (tramite.valorOtrosConceptos || 0);
 
-  const getEstadoColor = (estado: string) => {
-    switch(estado) {
-      case 'Activo': return styles.estadoActivo;
-      case 'En_Proceso': return styles.estadoEnProceso;
-      case 'Finalizado': return styles.estadoFinalizado;
-      default: return '';
-    }
+  const getEstadoClass = (e: string) => {
+    if (e === 'Activo') return styles.estadoActivo;
+    if (e === 'En_Proceso') return styles.estadoEnProceso;
+    if (e === 'Finalizado') return styles.estadoFinalizado;
+    return '';
   };
+
+  const fmtFecha = (f: string) =>
+    new Date(f).toLocaleString('es-CO', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <Link href="/asesor/tramites" className={styles.backButton}>
-          ← Volver a Trámites
-        </Link>
-        <h1>Detalle del Trámite #{tramite.idTramite}</h1>
-      </div>
+      <div className={styles.inner}>
 
-      {error && <div className={styles.errorAlert}>{error}</div>}
-      {success && <div className={styles.successAlert}>{success}</div>}
+        {/* Header */}
+        <div className={styles.header}>
+          <Link href="/asesor/tramites" className={styles.backButton}>
+            <ArrowLeftIcon /> Volver a Trámites
+          </Link>
+          <h1>
+            Trámite&nbsp;<span>#{tramite.idTramite}</span>
+          </h1>
+        </div>
 
-      <div className={styles.detalleCard}>
-        <h2>Información del Trámite</h2>
-        <div className={styles.infoGrid}>
-          <div><strong>ID Trámite:</strong> {tramite.idTramite}</div>
-          <div><strong>ID Cita:</strong> {tramite.idCita}</div>
-          <div><strong>Estado:</strong> 
-            <span className={`${styles.estadoBadge} ${getEstadoColor(estado)}`}>
-              {estado}
-            </span>
+        {/* Alertas */}
+        {error && (
+          <div className={styles.errorAlert}>
+            <AlertCircleIcon /> {error}
           </div>
-          <div><strong>Fecha Creación:</strong> {new Date(tramite.fechaCreacion).toLocaleString()}</div>
-          <div><strong>Fecha Cita:</strong> {new Date(tramite.fechaCita).toLocaleString()}</div>
-        </div>
-      </div>
+        )}
+        {success && (
+          <div className={styles.successAlert}>
+            <CheckCircleIcon /> {success}
+          </div>
+        )}
 
-      <div className={styles.detalleCard}>
-        <h2>Información del Cliente</h2>
-        <div className={styles.infoGrid}>
-          <div><strong>Nombre:</strong> {tramite.cliente}</div>
-          <div><strong>Teléfono:</strong> {tramite.telefono}</div>
-          <div><strong>Correo:</strong> {tramite.correo}</div>
-          <div><strong>Vehículo:</strong> {tramite.vehiculo || 'No aplica'}</div>
-        </div>
-      </div>
-
-      <div className={styles.detalleCard}>
-        <h2>Información del Trámite Solicitado</h2>
-        <div className={styles.infoGrid}>
-          <div><strong>Tipo Trámite:</strong> {tramite.tipoTramite}</div>
-          <div><strong>Valor Base:</strong> ${tramite.valorTramite.toLocaleString()}</div>
-          <div><strong>Otros Conceptos:</strong> ${(tramite.valorOtrosConceptos || 0).toLocaleString()}</div>
-          <div><strong>Valor Total:</strong> <span className={styles.valorTotal}>${valorTotal.toLocaleString()}</span></div>
-        </div>
-      </div>
-
-      {puedeEditar && (
+        {/* Información del trámite */}
         <div className={styles.detalleCard}>
-          <h2>
-            ✏️ {tramite.tipoTramite === 'Traspaso' ? 'Realizar Traspaso' : 
-                tramite.tipoTramite === 'Matrícula/Registro' ? 'Registrar Vehículo' : 
-                tramite.tipoTramite === 'Cancelación Matrícula' ? 'Cancelar Matrícula' :
-                tramite.tipoTramite === 'Rematrícula' ? 'Realizar Rematrícula' :
-                tramite.tipoTramite === 'Inscripción Prenda' ? 'Inscribir Prenda' :
-                tramite.tipoTramite === 'Levantar Prenda' ? 'Levantar Prenda' :
-                (tramite.tipoTramite === 'Duplicado de Placas' || 
-                 tramite.tipoTramite === 'Duplicado Licencia' ||
-                 tramite.tipoTramite === 'Traslado Matrícula' ||
-                 tramite.tipoTramite === 'Radicado Matrícula' ||
-                 tramite.tipoTramite === 'Transformación' ||
-                 tramite.tipoTramite === 'Otros') ? 'Realizar Trámite' :
-                'Editar Vehículo'}
-          </h2>
-          <p>Este trámite requiere: <strong>{camposAEditar.join(', ')}</strong></p>
-          
-          {tramite.tipoTramite === 'Traspaso' ? (
-            <Link 
-              href={`/asesor/tramites/${tramite.idTramite}/traspaso?placa=${tramite.vehiculo}&cedulaActual=${tramite.idCliente}`}
-              className={styles.editarButton}
-            >
-              Realizar Traspaso
-            </Link>
-          ) : tramite.tipoTramite === 'Matrícula/Registro' ? (
-            <Link 
-              href={`/asesor/tramites/${tramite.idTramite}/registrar-vehiculo?idCliente=${tramite.idCliente}&idTramite=${tramite.idTramite}`}
-              className={styles.editarButton}
-            >
-              Registrar Vehículo
-            </Link>
-          ) : tramite.tipoTramite === 'Cancelación Matrícula' ? (
-            <Link 
-              href={`/asesor/tramites/${tramite.idTramite}/cancelar-matricula?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
-              className={styles.editarButton}
-            >
-              Cancelar Matrícula
-            </Link>
-          ) : tramite.tipoTramite === 'Rematrícula' ? (
-            <Link 
-              href={`/asesor/tramites/${tramite.idTramite}/rematricular?placa=${tramite.vehiculo}&idCliente=${tramite.idCliente}`}
-              className={styles.editarButton}
-            >
-              Realizar Rematrícula
-            </Link>
-          ) : (tramite.tipoTramite === 'Inscripción Prenda' || tramite.tipoTramite === 'Levantar Prenda') ? (
-            <Link 
-              href={`/asesor/tramites/${tramite.idTramite}/gestionar-prenda?placa=${tramite.vehiculo}&tipo=${tramite.tipoTramite === 'Inscripción Prenda' ? 'inscribir' : 'levantar'}`}
-              className={styles.editarButton}
-            >
-              {tramite.tipoTramite === 'Inscripción Prenda' ? 'Inscribir Prenda' : 'Levantar Prenda'}
-            </Link>
-          ) : (tramite.tipoTramite === 'Duplicado de Placas' || 
-               tramite.tipoTramite === 'Duplicado Licencia' ||
-               tramite.tipoTramite === 'Traslado Matrícula' ||
-               tramite.tipoTramite === 'Radicado Matrícula' ||
-               tramite.tipoTramite === 'Transformación' ||
-               tramite.tipoTramite === 'Otros') ? (
-            <Link 
-              href={`/asesor/tramites/${tramite.idTramite}/tramite-simple?tipo=${tramite.tipoTramite}`}
-              className={styles.editarButton}
-            >
-              Realizar Trámite
-            </Link>
-          ) : (
-            <Link 
-              href={`/asesor/tramites/${tramite.idTramite}/editar-vehiculo?campos=${camposAEditar.join(',')}&placa=${tramite.vehiculo}`}
-              className={styles.editarButton}
-            >
-              Editar Vehículo
-            </Link>
-          )}
+          <h2>Información del Trámite</h2>
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>ID Trámite</span>
+              <span className={styles.infoValue}>#{tramite.idTramite}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>ID Cita</span>
+              <span className={styles.infoValue}>#{tramite.idCita}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Estado</span>
+              <span className={`${styles.estadoBadge} ${getEstadoClass(estado)}`}>
+                {estado.replace('_', ' ')}
+              </span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Fecha Creación</span>
+              <span className={styles.infoValue}>{fmtFecha(tramite.fechaCreacion)}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Fecha Cita</span>
+              <span className={styles.infoValue}>{fmtFecha(tramite.fechaCita)}</span>
+            </div>
+          </div>
         </div>
-      )}
 
-      <div className={styles.detalleCard}>
-        <h2>Actualizar Estado</h2>
-        <div className={styles.estadoSelector}>
-          <button 
-            className={`${styles.estadoBtn} ${estado === 'Activo' ? styles.estadoActivo : ''}`}
-            onClick={() => handleActualizarEstado('Activo')}
-            disabled={updating || estado === 'Activo'}
-          >
-            Activo
-          </button>
-          <button 
-            className={`${styles.estadoBtn} ${estado === 'En_Proceso' ? styles.estadoEnProceso : ''}`}
-            onClick={() => handleActualizarEstado('En_Proceso')}
-            disabled={updating || estado === 'En_Proceso'}
-          >
-            En Proceso
-          </button>
-          <button 
-            className={`${styles.estadoBtn} ${estado === 'Finalizado' ? styles.estadoFinalizado : ''}`}
-            onClick={() => handleActualizarEstado('Finalizado')}
-            disabled={updating || estado === 'Finalizado'}
-          >
-            Finalizado
-          </button>
+        {/* Información del cliente */}
+        <div className={styles.detalleCard}>
+          <h2>Información del Cliente</h2>
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Nombre</span>
+              <span className={styles.infoValue}>{tramite.cliente}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Teléfono</span>
+              <span className={styles.infoValue}>{tramite.telefono}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Correo</span>
+              <span className={styles.infoValue}>{tramite.correo}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Vehículo</span>
+              <span className={styles.infoValue}>{tramite.vehiculo || 'No aplica'}</span>
+            </div>
+          </div>
         </div>
-        <p className={styles.estadoHelper}>Cambia el estado del trámite según su progreso</p>
+
+        {/* Información del trámite solicitado */}
+        <div className={styles.detalleCard}>
+          <h2>Detalle Económico</h2>
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Tipo Trámite</span>
+              <span className={styles.infoValue}>{tramite.tipoTramite}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Valor Base</span>
+              <span className={styles.infoValue}>${tramite.valorTramite.toLocaleString('es-CO')}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Otros Conceptos</span>
+              <span className={styles.infoValue}>${(tramite.valorOtrosConceptos || 0).toLocaleString('es-CO')}</span>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Valor Total</span>
+              <span className={styles.valorTotal}>${valorTotal.toLocaleString('es-CO')}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Acción del trámite */}
+        {puedeEditar && (
+          <div className={styles.detalleCard}>
+            <h2><EditIcon /> Gestionar Trámite</h2>
+            <p className={styles.editarButtonDesc}>
+              Este trámite de tipo <strong>{tramite.tipoTramite}</strong> requiere acción sobre: {camposAEditar.join(', ')}.
+            </p>
+            <Link href={getEditarHref()} className={styles.editarButton}>
+              {getEditarLabel()} <ArrowRightIcon />
+            </Link>
+          </div>
+        )}
+
+        {/* Actualizar estado */}
+        <div className={styles.detalleCard}>
+          <h2>Actualizar Estado</h2>
+          <div className={styles.estadoSelector}>
+            {(['Activo', 'En_Proceso', 'Finalizado'] as const).map((e) => (
+              <button
+                key={e}
+                className={`${styles.estadoBtn} ${estado === e ? getEstadoClass(e) : ''}`}
+                onClick={() => handleActualizarEstado(e)}
+                disabled={updating || estado === e}
+              >
+                {e === 'En_Proceso' ? 'En Proceso' : e}
+              </button>
+            ))}
+          </div>
+          <p className={styles.estadoHelper}>
+            Actualiza el estado según el progreso del trámite
+          </p>
+        </div>
+
+        <Link href="/asesor/tramites" className={styles.backLink}>
+          <ArrowLeftIcon /> Volver a trámites
+        </Link>
+
       </div>
-
-      <Link href="/asesor/tramites" className={styles.backLink}>Volver a trámites</Link>
     </div>
   );
 }
