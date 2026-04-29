@@ -3,7 +3,7 @@ package com.gbdj.backend.Controller;
 import com.gbdj.backend.DTO.LoginRequest;
 import com.gbdj.backend.DTO.LoginResponse;
 import com.gbdj.backend.DTO.PersonaDTO;
-import com.gbdj.backend.DTO.RegisterRequest;
+
 import com.gbdj.backend.DTO.AsesorRequest;
 import com.gbdj.backend.DTO.ClienteRegisterRequest;
 import com.gbdj.backend.DTO.ActualizarPerfilRequest;  // 👈 NUEVO DTO
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 @RestController
@@ -104,72 +105,6 @@ private static final Logger log = LoggerFactory.getLogger(AuthController.class);
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-        // Validaciones de campos requeridos
-        if (registerRequest.getCedula() == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "La cédula es requerida"
-            ));
-        }
-        
-        if (registerRequest.getNombres() == null || registerRequest.getNombres().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "Los nombres son requeridos"
-            ));
-        }
-        
-        if (registerRequest.getApellido() == null || registerRequest.getApellido().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "Los apellidos son requeridos"
-            ));
-        }
-        
-        if (registerRequest.getCorreo() == null || registerRequest.getCorreo().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "El correo es requerido"
-            ));
-        }
-        
-        if (registerRequest.getContrasena() == null || registerRequest.getContrasena().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "La contraseña es requerida"
-            ));
-        }
-        
-        // Preparar datos para APEX
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("P_CEDULA", registerRequest.getCedula());
-        userData.put("P_NOMBRES", registerRequest.getNombres());
-        userData.put("P_APELLIDO", registerRequest.getApellido());
-        
-        // Formatear fecha a DD/MM/YYYY
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-        String fechaStr = sdf.format(registerRequest.getFechaNacimiento());
-        userData.put("P_FECHANACIMIENTO", fechaStr);
-        
-        userData.put("P_TELEFONO", registerRequest.getTelefono());
-        userData.put("P_CORREO", registerRequest.getCorreo());
-        userData.put("P_CONTRASENA", registerRequest.getContrasena());
-        
-        // Llamar al servicio
-        Map<String, Object> response = authService.registrarUsuario(userData);
-        
-        if ("OK".equals(response.get("status"))) {
-            return ResponseEntity.ok(response);
-        } else {
-            String mensaje = response.get("mensaje").toString();
-            if (mensaje.contains("cédula") || mensaje.contains("correo")) {
-                return ResponseEntity.status(409).body(response);
-            }
-            return ResponseEntity.status(500).body(response);
-        }
-    }
 
     @PostMapping("/asesor")
     public ResponseEntity<?> crearAsesor(@RequestBody AsesorRequest asesorRequest) {
@@ -396,70 +331,94 @@ public ResponseEntity<?> actualizarPerfil(@RequestBody ActualizarPerfilRequest r
         }
     }
 
-    @PostMapping("/register/cliente")
-    public ResponseEntity<?> registerCliente(@RequestBody ClienteRegisterRequest request) {
-        // Validaciones
-        if (request.getCedula() == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "La cédula es requerida"
-            ));
-        }
-        if (request.getNombres() == null || request.getNombres().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "Los nombres son requeridos"
-            ));
-        }
-        if (request.getApellido() == null || request.getApellido().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "Los apellidos son requeridos"
-            ));
-        }
-        if (request.getCorreo() == null || request.getCorreo().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "El correo es requerido"
-            ));
-        }
-        if (request.getContrasena() == null || request.getContrasena().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "La contraseña es requerida"
-            ));
-        }
-        
-        // Preparar datos para APEX
-        Map<String, Object> clienteData = new HashMap<>();
-        clienteData.put("P_CEDULA", request.getCedula());
-        clienteData.put("P_NOMBRES", request.getNombres());
-        clienteData.put("P_APELLIDO", request.getApellido());
-        
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-        String fechaStr = sdf.format(request.getFechaNacimiento());
-        clienteData.put("P_FECHANACIMIENTO", fechaStr);
-        
-        clienteData.put("P_TELEFONO", request.getTelefono());
-        clienteData.put("P_CORREO", request.getCorreo());
-        clienteData.put("P_CONTRASENA", request.getContrasena());
-        clienteData.put("P_LICENCIACONDUCCION", request.getLicenciaConduccion());
-        clienteData.put("P_TIPOUSUARIO", request.getTipoUsuario() != null ? request.getTipoUsuario() : 1);
-        
-        // Llamar al servicio
-        Map<String, Object> response = authService.registrarCliente(clienteData);
-        
-        if ("OK".equals(response.get("status"))) {
-            return ResponseEntity.ok(response);
-        } else {
-            String mensaje = response.get("mensaje").toString();
-            if (mensaje.contains("cédula") || mensaje.contains("correo")) {
-                return ResponseEntity.status(409).body(response);
-            }
-            return ResponseEntity.status(500).body(response);
-        }
+@PostMapping("/register/cliente")
+public ResponseEntity<?> registerCliente(@RequestBody ClienteRegisterRequest request) {
+    log.info("=== REGISTRO CLIENTE ===");
+    log.info("Request: {}", request);
+    
+    // Validaciones
+    if (request.getNumeroDocumento() == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El número de documento es requerido"
+        ));
     }
     
+    if (request.getTipoDocumento() == null || request.getTipoDocumento().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El tipo de documento es requerido"
+        ));
+    }
+    
+    if (request.getNombres() == null || request.getNombres().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "Los nombres son requeridos"
+        ));
+    }
+    
+    if (request.getApellido() == null || request.getApellido().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "Los apellidos son requeridos"
+        ));
+    }
+    
+    if (request.getCorreo() == null || request.getCorreo().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El correo es requerido"
+        ));
+    }
+    
+    if (request.getContrasena() == null || request.getContrasena().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La contraseña es requerida"
+        ));
+    }
+    
+    if (request.getFechaNacimiento() == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La fecha de nacimiento es requerida"
+        ));
+    }
+    
+    // Formatear fecha a DD/MM/YYYY
+    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+    String fechaStr = sdf.format(request.getFechaNacimiento());  // 👈 Esta línea faltaba
+    
+    // Preparar datos para APEX
+    Map<String, Object> clienteData = new HashMap<>();
+    clienteData.put("P_NUMERODOCUMENTO", request.getNumeroDocumento());
+    clienteData.put("P_TIPODOCUMENTO", request.getTipoDocumento());
+    clienteData.put("P_NOMBRES", request.getNombres());
+    clienteData.put("P_APELLIDO", request.getApellido());
+    clienteData.put("P_FECHANACIMIENTO", fechaStr);
+    clienteData.put("P_TELEFONO", request.getTelefono());
+    clienteData.put("P_CORREO", request.getCorreo());
+    clienteData.put("P_CONTRASENA", request.getContrasena());
+    clienteData.put("P_LICENCIACONDUCCION", request.getLicenciaConduccion() != null ? request.getLicenciaConduccion() : "N");
+    clienteData.put("P_TIPOUSUARIO", request.getTipoUsuario() != null ? request.getTipoUsuario() : 1);
+    
+    log.info("Enviando a APEX: {}", clienteData);
+    
+    // Llamar al servicio
+    Map<String, Object> response = authService.registrarCliente(clienteData);
+    
+    if ("OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response.get("mensaje") != null ? 
+                          response.get("mensaje").toString() : "Error en el registro";
+        if (mensaje.contains("número de documento") || mensaje.contains("correo")) {
+            return ResponseEntity.status(409).body(response);
+        }
+        return ResponseEntity.status(500).body(response);
+    }
+}
     @GetMapping("/test")
     public ResponseEntity<?> test() {
         return ResponseEntity.ok(Map.of(

@@ -21,7 +21,8 @@ const ArrowRightIcon = () => (
 export default function RegistroPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    cedula: '',
+    tipoDocumento: 'CEDULA',
+    numeroDocumento: '',
     nombres: '',
     apellido: '',
     fechaNacimiento: '',
@@ -29,15 +30,20 @@ export default function RegistroPage() {
     correo: '',
     contrasena: '',
     confirmarContrasena: '',
-    licenciaConduccion: ''  // Solo agregamos la licencia (opcional)
+    licenciaConduccion: 'S'  // 'S' o 'N'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement;
+      setFormData(prev => ({ ...prev, [name]: target.checked ? 'S' : 'N' }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     setError('');
   };
 
@@ -46,7 +52,7 @@ export default function RegistroPage() {
     setError('');
     setSuccess('');
 
-    if (!formData.cedula.trim()) { setError('La cédula es requerida'); return; }
+    if (!formData.numeroDocumento.trim()) { setError('El número de documento es requerido'); return; }
     if (!formData.nombres.trim()) { setError('Los nombres son requeridos'); return; }
     if (!formData.apellido.trim()) { setError('Los apellidos son requeridos'); return; }
     if (!formData.fechaNacimiento) { setError('La fecha de nacimiento es requerida'); return; }
@@ -67,19 +73,19 @@ export default function RegistroPage() {
         fechaFormateada = `${dia}/${mes}/${anio}`;
       }
 
-      // Endpoint para registrar CLIENTE (inserta en PERSONA y CLIENTE)
       const response = await fetch('http://localhost:8080/api/auth/register/cliente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cedula: parseInt(formData.cedula),
+          tipoDocumento: formData.tipoDocumento,
+          numeroDocumento: parseInt(formData.numeroDocumento),
           nombres: formData.nombres,
           apellido: formData.apellido,
           fechaNacimiento: fechaFormateada,
           telefono: formData.telefono ? parseInt(formData.telefono) : null,
           correo: formData.correo,
           contrasena: formData.contrasena,
-          licenciaConduccion: formData.licenciaConduccion || null  // Licencia (opcional)
+          licenciaConduccion: formData.licenciaConduccion  // 'S' o 'N'
         }),
       });
 
@@ -127,9 +133,19 @@ export default function RegistroPage() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGrid}>
             <div className={styles.field}>
-              <label>Cédula *</label>
-              <input type="text" name="cedula" value={formData.cedula}
-                onChange={handleChange} placeholder="Número de cédula" />
+              <label>Tipo de documento *</label>
+              <select name="tipoDocumento" value={formData.tipoDocumento} onChange={handleChange}>
+                <option value="CEDULA">Cédula de Ciudadanía</option>
+                <option value="NIT">NIT</option>
+                <option value="PASAPORTE">Pasaporte</option>
+                <option value="TARJETA_IDENTIDAD">Tarjeta de Identidad</option>
+              </select>
+            </div>
+
+            <div className={styles.field}>
+              <label>Número de documento *</label>
+              <input type="text" name="numeroDocumento" value={formData.numeroDocumento}
+                onChange={handleChange} placeholder="Número de documento" />
             </div>
 
             <div className={styles.field}>
@@ -162,11 +178,17 @@ export default function RegistroPage() {
                 onChange={handleChange} placeholder="ejemplo@correo.com" />
             </div>
 
-            {/* Campo opcional para licencia de conducción */}
-            <div className={styles.field}>
-              <label>Licencia de Conducción (opcional)</label>
-              <input type="text" name="licenciaConduccion" value={formData.licenciaConduccion}
-                onChange={handleChange} placeholder="Número de licencia" />
+            {/* Checkbox para licencia */}
+            <div className={styles.field} style={{ gridColumn: 'span 2' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input 
+                  type="checkbox" 
+                  name="licenciaConduccion" 
+                  checked={formData.licenciaConduccion === 'S'}
+                  onChange={handleChange}
+                />
+                ¿Tiene licencia de conducción?
+              </label>
             </div>
 
             <div className={styles.field}>
