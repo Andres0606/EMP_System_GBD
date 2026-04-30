@@ -84,30 +84,30 @@ export default function PerfilPage() {
     fechaNacimiento: '',
     telefono: '',
     correo: '',
-    licenciaConduccion: '',
     contrasena: '',
     confirmarContrasena: '',
   });
-// Convertir fecha de DD/MM/YYYY a YYYY-MM-DD para input date
-const convertirFechaParaInput = (fechaStr: string): string => {
-  if (!fechaStr) return '';
-  const partes = fechaStr.split('/');
-  if (partes.length === 3) {
-    return `${partes[2]}-${partes[1]}-${partes[0]}`;
-  }
-  return fechaStr;
-};
 
-// Convertir fecha de YYYY-MM-DD a DD/MM/YYYY para enviar al backend
-const convertirFechaParaBackend = (fechaStr: string): string => {
-  if (!fechaStr) return '';
-  const partes = fechaStr.split('-');
-  if (partes.length === 3) {
-    // Usar la fecha local sin conversión de zona horaria
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
-  }
-  return fechaStr;
-};
+  // Convertir fecha de DD/MM/YYYY a YYYY-MM-DD para input date
+  const convertirFechaParaInput = (fechaStr: string): string => {
+    if (!fechaStr) return '';
+    const partes = fechaStr.split('/');
+    if (partes.length === 3) {
+      return `${partes[2]}-${partes[1]}-${partes[0]}`;
+    }
+    return fechaStr;
+  };
+
+  // Convertir fecha de YYYY-MM-DD a DD/MM/YYYY para enviar al backend
+  const convertirFechaParaBackend = (fechaStr: string): string => {
+    if (!fechaStr) return '';
+    const partes = fechaStr.split('-');
+    if (partes.length === 3) {
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return fechaStr;
+  };
+
   /* ── Carga inicial ── */
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
@@ -128,7 +128,7 @@ const convertirFechaParaBackend = (fechaStr: string): string => {
       const data = await res.json();
 
       if (res.ok && data.status === 'OK') {
-        const licencia = data.licenciaConduccion || '';
+        const licencia = data.licenciaConduccion || 'N';
         setFormData({
           cedula:              data.cedula             || '',
           nombres:             data.nombres            || '',
@@ -136,12 +136,11 @@ const convertirFechaParaBackend = (fechaStr: string): string => {
           fechaNacimiento:     convertirFechaParaInput(data.fechaNacimiento || ''),
           telefono:            data.telefono           || '',
           correo:              data.correo             || '',
-          licenciaConduccion:  licencia,
           contrasena:          '',
           confirmarContrasena: '',
         });
-        /* Si ya tenía licencia guardada, marcamos "Sí" por defecto */
-        if (licencia) setTieneLicencia(true);
+        // 👈 Corregido: solo marcar "Sí" si licencia es 'S'
+        setTieneLicencia(licencia === 'S');
       } else {
         setError(data.mensaje || 'Error al cargar perfil');
       }
@@ -178,30 +177,27 @@ const convertirFechaParaBackend = (fechaStr: string): string => {
     }
 
     const updateData: Record<string, unknown> = {
-      numeroDocumento:   parseInt(formData.cedula),
-      nombres:  formData.nombres,
+      numeroDocumento: parseInt(formData.cedula),
+      nombres: formData.nombres,
       apellido: formData.apellido,
-      correo:   formData.correo,
-      /* Solo se envía licencia si el rol es cliente */
-      licenciaConduccion:
-        userRol === 1
-          ? tieneLicencia
-            ? formData.licenciaConduccion || null
-            : null
-          : undefined,
+      correo: formData.correo,
+      // 👈 Enviar 'S' o 'N' según el toggle
+      licenciaConduccion: userRol === 1 ? (tieneLicencia ? 'S' : 'N') : undefined,
     };
 
     if (formData.fechaNacimiento) {
-    updateData.fechaNacimiento = convertirFechaParaBackend(formData.fechaNacimiento); // 👈 Convertir aquí
-  }
-    if (formData.telefono)        updateData.telefono        = parseInt(formData.telefono);
-    if (formData.contrasena)      updateData.contrasena      = formData.contrasena;
+      updateData.fechaNacimiento = convertirFechaParaBackend(formData.fechaNacimiento);
+    }
+    if (formData.telefono) updateData.telefono = parseInt(formData.telefono);
+    if (formData.contrasena) updateData.contrasena = formData.contrasena;
+
+    console.log('Enviando al backend:', updateData);
 
     try {
-      const res  = await fetch('http://localhost:8080/api/auth/perfil', {
-        method:  'PUT',
+      const res = await fetch('http://localhost:8080/api/auth/perfil', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(updateData),
+        body: JSON.stringify(updateData),
       });
       const data = await res.json();
 
@@ -258,7 +254,7 @@ const convertirFechaParaBackend = (fechaStr: string): string => {
         </div>
 
         {/* ── Alertas ── */}
-        {error   && (
+        {error && (
           <div className={styles.errorAlert}>
             <AlertIcon />{error}
           </div>
@@ -392,26 +388,12 @@ const convertirFechaParaBackend = (fechaStr: string): string => {
                         className={`${styles.toggleBtn} ${tieneLicencia === false ? styles.toggleBtnActive : ''}`}
                         onClick={() => {
                           setTieneLicencia(false);
-                          setFormData(prev => ({ ...prev, licenciaConduccion: '' }));
                           setError(''); setSuccess('');
                         }}
                       >
                         No
                       </button>
                     </div>
-
-                    {/* Campo número de licencia, aparece solo si eligió Sí */}
-                    {tieneLicencia === true && (
-                      <div className={`${styles.fieldWrap} ${styles.licenciaInput}`}>
-                        <input
-                          type="text"
-                          name="licenciaConduccion"
-                          value={formData.licenciaConduccion}
-                          onChange={handleChange}
-                          placeholder="Número de licencia (ej. B1-20345678)"
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
