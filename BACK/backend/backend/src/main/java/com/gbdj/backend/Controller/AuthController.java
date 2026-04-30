@@ -26,85 +26,78 @@ private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        // Validaciones
-        if (loginRequest.getCorreo() == null || loginRequest.getCorreo().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "El correo es requerido"
-            ));
-        }
-        
-        if (loginRequest.getContrasena() == null || loginRequest.getContrasena().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "ERROR",
-                "mensaje", "La contraseña es requerida"
-            ));
-        }
-        
-        // Llamar al servicio para validar login
-        Map<String, Object> response = authService.validarLogin(
-            loginRequest.getCorreo(),
-            loginRequest.getContrasena()
-        );
-        
-        // Log para depuración
-        System.out.println("Respuesta de APEX: " + response);
-        
-        // Verificar respuesta
-        if (response != null && "OK".equals(response.get("status"))) {
-            LoginResponse loginResponse = new LoginResponse();
-            loginResponse.setStatus("OK");
-            
-            // Obtener cédula
-            Object cedulaObj = response.get("cedula");
-            if (cedulaObj != null) {
-                if (cedulaObj instanceof Number) {
-                    loginResponse.setCedula(((Number) cedulaObj).longValue());
-                } else if (cedulaObj instanceof String) {
-                    loginResponse.setCedula(Long.parseLong((String) cedulaObj));
-                }
-            }
-            
-            // Obtener nombres
-            Object nombresObj = response.get("nombres");
-            if (nombresObj != null) {
-                loginResponse.setNombres(nombresObj.toString());
-            }
-            
-            // Obtener apellido
-            Object apellidoObj = response.get("apellido");
-            if (apellidoObj != null) {
-                loginResponse.setApellido(apellidoObj.toString());
-            }
-            
-            // Obtener correo
-            Object correoObj = response.get("correo");
-            if (correoObj != null) {
-                loginResponse.setCorreo(correoObj.toString());
-            }
-            
-            // Obtener rol
-            Object rolObj = response.get("rol");
-            if (rolObj != null) {
-                if (rolObj instanceof Number) {
-                    loginResponse.setRol(((Number) rolObj).intValue());
-                } else if (rolObj instanceof String) {
-                    loginResponse.setRol(Integer.parseInt((String) rolObj));
-                }
-            }
-            
-            return ResponseEntity.ok(loginResponse);
-        } else {
-            String mensaje = response != null && response.get("mensaje") != null ? 
-                              response.get("mensaje").toString() : "Credenciales inválidas";
-            return ResponseEntity.status(401).body(Map.of(
-                "status", "ERROR",
-                "mensaje", mensaje
-            ));
-        }
+public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    // Validaciones
+    if (loginRequest.getCorreo() == null || loginRequest.getCorreo().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El correo es requerido"
+        ));
     }
-
+    
+    if (loginRequest.getContrasena() == null || loginRequest.getContrasena().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La contraseña es requerida"
+        ));
+    }
+    
+    // Llamar al servicio
+    Map<String, Object> response = authService.validarLogin(
+        loginRequest.getCorreo(),
+        loginRequest.getContrasena()
+    );
+    
+    log.info("Respuesta de APEX: {}", response);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setStatus("OK");
+        
+        // Obtener datos (nota: APEX devuelve "cedula" no "numeroDocumento")
+        Object cedulaObj = response.get("cedula");
+        if (cedulaObj != null) {
+            if (cedulaObj instanceof Number) {
+                loginResponse.setCedula(((Number) cedulaObj).longValue());
+            } else if (cedulaObj instanceof String) {
+                loginResponse.setCedula(Long.parseLong((String) cedulaObj));
+            }
+        }
+        
+        Object nombresObj = response.get("nombres");
+        if (nombresObj != null) {
+            loginResponse.setNombres(nombresObj.toString());
+        }
+        
+        Object apellidoObj = response.get("apellido");
+        if (apellidoObj != null) {
+            loginResponse.setApellido(apellidoObj.toString());
+        }
+        
+        Object correoObj = response.get("correo");
+        if (correoObj != null) {
+            loginResponse.setCorreo(correoObj.toString());
+        }
+        
+        Object rolObj = response.get("rol");
+        if (rolObj != null) {
+            if (rolObj instanceof Number) {
+                loginResponse.setRol(((Number) rolObj).intValue());
+            } else if (rolObj instanceof String) {
+                loginResponse.setRol(Integer.parseInt((String) rolObj));
+            }
+        }
+        
+        return ResponseEntity.ok(loginResponse);
+    } else {
+        String mensaje = response != null && response.get("mensaje") != null ? 
+                          response.get("mensaje").toString() : "Credenciales inválidas";
+        return ResponseEntity.status(401).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 
     @PostMapping("/asesor")
     public ResponseEntity<?> crearAsesor(@RequestBody AsesorRequest asesorRequest) {

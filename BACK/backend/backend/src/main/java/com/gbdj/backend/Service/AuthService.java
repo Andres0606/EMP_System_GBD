@@ -23,43 +23,44 @@ public class AuthService {
     }
 
     // Método para validar login
-    public Map<String, Object> validarLogin(String correo, String contrasena) {
-        String url = baseUrl + "/login";
+   public Map<String, Object> validarLogin(String correo, String contrasena) {
+    String url = "https://oracleapex.com/ords/ucc/apiPersona/login";
+    
+    Map<String, String> requestBody = new HashMap<>();
+    requestBody.put("correo", correo);
+    requestBody.put("contrasena", contrasena);
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
+    
+    try {
+        log.info("Enviando petición a APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
         
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("correo", correo);
-        requestBody.put("contrasena", contrasena);
+        log.info("Respuesta de APEX: {}", response.getBody());
+        return response.getBody();
         
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
-        
-        try {
-            log.info("Enviando petición a APEX: {}", url);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class
-            );
-            
-            return response.getBody();
-            
-        } catch (HttpClientErrorException e) {
-            log.error("Error HTTP: {}", e.getStatusCode());
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Credenciales inválidas");
-            return errorResponse;
-        } catch (Exception e) {
-            log.error("Error inesperado: ", e);
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error de conexión con el servidor");
-            return errorResponse;
-        }
+    } catch (HttpClientErrorException e) {
+        log.error("Error HTTP: {}", e.getStatusCode());
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Credenciales inválidas");
+        return errorResponse;
+    } catch (Exception e) {
+        log.error("Error inesperado: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error de conexión con el servidor");
+        return errorResponse;
     }
+}
         
     // Método para registrar asesor
     public Map<String, Object> registrarAsesor(Map<String, Object> asesorData) {
