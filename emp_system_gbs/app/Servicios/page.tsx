@@ -374,11 +374,7 @@ export default function ServiciosPage() {
             </a>
           </div>
         </div>
-        <div className={styles.wave} aria-hidden>
-          <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
-            <path d="M0,35 C240,70 480,0 720,35 C960,70 1200,0 1440,35 L1440,70 L0,70 Z" fill="#F4F8FF" />
-          </svg>
-        </div>
+        
       </section>
 
       {/* ── GRID DE SERVICIOS ── */}

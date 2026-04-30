@@ -47,7 +47,7 @@ export default function Header({ onLoginClick }: HeaderProps) {
 
   useEffect(() => {
     setMounted(true);
-    const fn = () => setScrolled(window.scrollY > 40);
+    const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
   }, []);
@@ -57,22 +57,15 @@ export default function Header({ onLoginClick }: HeaderProps) {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  // Si el padre pasa onLoginClick lo usamos; si no, navegamos directo.
   const handleLogin = () => {
-    if (onLoginClick) {
-      onLoginClick();
-    } else {
-      router.push('/login');
-    }
+    if (onLoginClick) onLoginClick();
+    else router.push('/login');
   };
-
-  const handleRegister = () => {
-    router.push('/registro');
-  };
+  const handleRegister = () => router.push('/registro');
 
   return (
     <header className={`${styles.nav} ${scrolled ? styles.navScrolled : ''} ${mounted ? styles.navVisible : ''}`}>
-            
+
       {/* Logo */}
       <Link href="/" className={styles.logo}>
         <span className={styles.logoMark}>
@@ -94,18 +87,13 @@ export default function Header({ onLoginClick }: HeaderProps) {
 
       {/* Desktop actions */}
       <div className={styles.actions}>
-        {/* Ingresar → /Login */}
         <button className={styles.loginBtn} onClick={handleLogin}>
           <UserIcon />
           <span>Ingresar</span>
         </button>
-
-        {/* Registrarse → /Registro */}
         <button className={styles.registerBtn} onClick={handleRegister}>
           Registrarse →
         </button>
-
-        {/* Hamburguesa mobile */}
         <button
           className={styles.burger}
           onClick={() => setMenuOpen(v => !v)}
@@ -129,8 +117,6 @@ export default function Header({ onLoginClick }: HeaderProps) {
               {label}
             </Link>
           ))}
-
-          {/* Mobile — Ingresar */}
           <button
             className={styles.mobileCta}
             style={{ animationDelay: '0.33s' }}
@@ -138,8 +124,6 @@ export default function Header({ onLoginClick }: HeaderProps) {
           >
             Ingresar
           </button>
-
-          {/* Mobile — Registrarse */}
           <button
             className={styles.mobileCtaOutline}
             style={{ animationDelay: '0.4s' }}
