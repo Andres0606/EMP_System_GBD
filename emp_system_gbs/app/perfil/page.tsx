@@ -88,7 +88,26 @@ export default function PerfilPage() {
     contrasena: '',
     confirmarContrasena: '',
   });
+// Convertir fecha de DD/MM/YYYY a YYYY-MM-DD para input date
+const convertirFechaParaInput = (fechaStr: string): string => {
+  if (!fechaStr) return '';
+  const partes = fechaStr.split('/');
+  if (partes.length === 3) {
+    return `${partes[2]}-${partes[1]}-${partes[0]}`;
+  }
+  return fechaStr;
+};
 
+// Convertir fecha de YYYY-MM-DD a DD/MM/YYYY para enviar al backend
+const convertirFechaParaBackend = (fechaStr: string): string => {
+  if (!fechaStr) return '';
+  const partes = fechaStr.split('-');
+  if (partes.length === 3) {
+    // Usar la fecha local sin conversión de zona horaria
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+  return fechaStr;
+};
   /* ── Carga inicial ── */
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
@@ -114,7 +133,7 @@ export default function PerfilPage() {
           cedula:              data.cedula             || '',
           nombres:             data.nombres            || '',
           apellido:            data.apellido           || '',
-          fechaNacimiento:     data.fechaNacimiento    || '',
+          fechaNacimiento:     convertirFechaParaInput(data.fechaNacimiento || ''),
           telefono:            data.telefono           || '',
           correo:              data.correo             || '',
           licenciaConduccion:  licencia,
@@ -159,7 +178,7 @@ export default function PerfilPage() {
     }
 
     const updateData: Record<string, unknown> = {
-      cedula:   parseInt(formData.cedula),
+      numeroDocumento:   parseInt(formData.cedula),
       nombres:  formData.nombres,
       apellido: formData.apellido,
       correo:   formData.correo,
@@ -172,7 +191,9 @@ export default function PerfilPage() {
           : undefined,
     };
 
-    if (formData.fechaNacimiento) updateData.fechaNacimiento = formData.fechaNacimiento;
+    if (formData.fechaNacimiento) {
+    updateData.fechaNacimiento = convertirFechaParaBackend(formData.fechaNacimiento); // 👈 Convertir aquí
+  }
     if (formData.telefono)        updateData.telefono        = parseInt(formData.telefono);
     if (formData.contrasena)      updateData.contrasena      = formData.contrasena;
 

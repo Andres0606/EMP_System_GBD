@@ -251,25 +251,24 @@ public ResponseEntity<?> actualizarPerfil(@RequestBody ActualizarPerfilRequest r
     log.info("Request recibido: {}", request);
     
     // Validaciones
-    if (request.getCedula() == null) {
-        log.error("Cédula requerida");
+    if (request.getNumeroDocumento() == null) {   // 👈 Cambiado
+        log.error("Número de documento requerido");
         return ResponseEntity.badRequest().body(Map.of(
             "status", "ERROR",
-            "mensaje", "La cédula es requerida"
+            "mensaje", "El número de documento es requerido"
         ));
     }
     
     // Preparar datos para APEX
     Map<String, Object> perfilData = new HashMap<>();
-    perfilData.put("P_CEDULA", request.getCedula());
+    perfilData.put("P_CEDULA", request.getNumeroDocumento());  // 👈 APEX espera P_CEDULA
     perfilData.put("P_NOMBRES", request.getNombres());
     perfilData.put("P_APELLIDO", request.getApellido());
     perfilData.put("P_CORREO", request.getCorreo());
     perfilData.put("P_LICENCIACONDUCCION", request.getLicenciaConduccion());
     
-    if (request.getFechaNacimiento() != null) {
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-        perfilData.put("P_FECHANACIMIENTO", sdf.format(request.getFechaNacimiento()));
+     if (request.getFechaNacimiento() != null && !request.getFechaNacimiento().isEmpty()) {
+        perfilData.put("P_FECHANACIMIENTO", request.getFechaNacimiento());
     }
     
     if (request.getTelefono() != null) {
