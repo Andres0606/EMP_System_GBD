@@ -5,13 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/Citas/SolicitarCita.module.css';
 
-const ArrowLeftIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="19" y1="12" x2="5" y2="12"/>
-    <polyline points="12 19 5 12 12 5"/>
-  </svg>
-);
-
 interface Vehiculo {
   placa: string;
   marca: string;
@@ -23,6 +16,7 @@ interface TipoTramite {
   nombre: string;
   descripcion: string;
   valorBase: number;
+  requiereVehiculo: string; // 'S' o 'N'
 }
 
 export default function SolicitarCitaPage() {
@@ -34,6 +28,7 @@ export default function SolicitarCitaPage() {
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [tiposTramite, setTiposTramite] = useState<TipoTramite[]>([]);
   const [valorTramite, setValorTramite] = useState<number | null>(null);
+  const [requiereVehiculo, setRequiereVehiculo] = useState<boolean>(false);
   
   const [formData, setFormData] = useState({
     idVehiculo: '',
@@ -80,16 +75,17 @@ export default function SolicitarCitaPage() {
 
   const handleTipoTramiteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const idTipo = e.target.value;
-    setFormData(prev => ({ ...prev, idTipoTramite: idTipo }));
+    setFormData(prev => ({ ...prev, idTipoTramite: idTipo, idVehiculo: '' })); // Resetear vehículo
     
     if (idTipo) {
-      // Buscar el tipo de trámite seleccionado en la lista
       const tipoSeleccionado = tiposTramite.find(t => t.id.toString() === idTipo);
       if (tipoSeleccionado) {
         setValorTramite(tipoSeleccionado.valorBase);
+        setRequiereVehiculo(tipoSeleccionado.requiereVehiculo === 'S');
       }
     } else {
       setValorTramite(null);
+      setRequiereVehiculo(false);
     }
   };
 
@@ -107,6 +103,13 @@ export default function SolicitarCitaPage() {
 
     if (!formData.idTipoTramite) {
       setError('Seleccione un tipo de trámite');
+      setSubmitting(false);
+      return;
+    }
+
+    // Validar que si requiere vehículo, se haya seleccionado uno
+    if (requiereVehiculo && !formData.idVehiculo) {
+      setError('Este trámite requiere seleccionar un vehículo');
       setSubmitting(false);
       return;
     }
@@ -155,7 +158,7 @@ export default function SolicitarCitaPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <Link href="/dashboard" className={styles.backButton}>
-          <ArrowLeftIcon /> Volver al Dashboard
+          ← Volver al Dashboard
         </Link>
         <h1>Solicitar Cita</h1>
       </div>
@@ -177,6 +180,7 @@ export default function SolicitarCitaPage() {
               {tiposTramite.map((tipo) => (
                 <option key={tipo.id} value={tipo.id}>
                   {tipo.nombre} - ${tipo.valorBase.toLocaleString()}
+                  {tipo.requiereVehiculo === 'S' && ' 🚗'}
                 </option>
               ))}
             </select>
@@ -188,17 +192,35 @@ export default function SolicitarCitaPage() {
             )}
           </div>
 
-          <div className={styles.formGroup}>
-            <label>Vehículo (opcional)</label>
-            <select name="idVehiculo" value={formData.idVehiculo} onChange={handleChange}>
-              <option value="">Seleccione un vehículo (opcional)</option>
-              {vehiculos.map((vehiculo) => (
-                <option key={vehiculo.placa} value={vehiculo.placa}>
-                  {vehiculo.placa} - {vehiculo.marca} {vehiculo.linea}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Campo de vehículo - solo se muestra si el trámite lo requiere */}
+          {requiereVehiculo && (
+            <div className={styles.formGroup}>
+              <label>Vehículo *</label>
+              <select 
+                name="idVehiculo" 
+                value={formData.idVehiculo} 
+                onChange={handleChange}
+                required={requiereVehiculo}
+              >
+                <option value="">Seleccione un vehículo</option>
+                {vehiculos.length === 0 ? (
+                  <option value="" disabled>No tiene vehículos registrados</option>
+                ) : (
+                  vehiculos.map((vehiculo) => (
+                    <option key={vehiculo.placa} value={vehiculo.placa}>
+                      {vehiculo.placa} - {vehiculo.marca} {vehiculo.linea}
+                    </option>
+                  ))
+                )}
+              </select>
+              {vehiculos.length === 0 && (
+                <small className={styles.warningText}>
+                  No tiene vehículos registrados. 
+                  <Link href="/vehiculos"> Regístrelo aquí</Link>
+                </small>
+              )}
+            </div>
+          )}
 
           <button type="submit" disabled={submitting} className={styles.submitButton}>
             {submitting ? 'Enviando...' : 'Solicitar Cita'}

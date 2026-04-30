@@ -97,4 +97,157 @@ public class VehiculoService {
             return emptyResponse;
         }
     }
+
+    public Map<String, Object> actualizarVehiculo(Map<String, Object> vehiculoData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/actualizar";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(vehiculoData, headers);
+    
+    try {
+        log.info("Actualizando vehículo en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al actualizar vehículo: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> realizarTraspaso(Map<String, Object> traspasoData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/traspaso";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(traspasoData, headers);
+    
+    try {
+        log.info("Realizando traspaso en APEX: {}", url);
+        log.info("Datos traspaso: {}", traspasoData);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        log.info("Respuesta APEX: {}", response.getBody());
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en traspaso: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> cancelarMatricula(Map<String, Object> cancelacionData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/cancelarMatricula";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(cancelacionData, headers);
+    
+    try {
+        log.info("Cancelando matrícula en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en cancelación: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> rematricular(Map<String, Object> rematriculaData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/rematricular";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(rematriculaData, headers);
+    
+    try {
+        log.info("Realizando rematrícula en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en rematrícula: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> inscribirPrenda(Map<String, Object> prendaData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/inscribirPrenda";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(prendaData, headers);
+    
+    try {
+        log.info("Inscribiendo prenda en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en inscripción de prenda: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> levantarPrenda(Map<String, Object> prendaData) {
+    String url = "https://oracleapex.com/ords/ucc/apiVehiculo/levantarPrenda";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(prendaData, headers);
+    
+    try {
+        log.info("Levantando prenda en APEX: {}", url);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en levantamiento de prenda: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }

@@ -60,36 +60,7 @@ public class AuthService {
             return errorResponse;
         }
     }
-    
-    // Método para registrar usuario normal (cliente)
-    public Map<String, Object> registrarUsuario(Map<String, Object> userData) {
-        String url = baseUrl + "/register";
         
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(userData, headers);
-        
-        try {
-            log.info("Enviando petición de registro a APEX: {}", url);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class
-            );
-            
-            return response.getBody();
-            
-        } catch (Exception e) {
-            log.error("Error en registro: ", e);
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error en el registro: " + e.getMessage());
-            return errorResponse;
-        }
-    }
-    
     // Método para registrar asesor
     public Map<String, Object> registrarAsesor(Map<String, Object> asesorData) {
         String url = "https://oracleapex.com/ords/ucc/apiAsesor/register";
@@ -230,32 +201,30 @@ public class AuthService {
         }
     }
     
-    // Método para registrar cliente
-    public Map<String, Object> registrarCliente(Map<String, Object> clienteData) {
-        String url = "https://oracleapex.com/ords/ucc/apiCliente/register";
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(clienteData, headers);
-        
-        try {
-            log.info("Registrando cliente en APEX: {}", url);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class
-            );
-            return response.getBody();
-        } catch (Exception e) {
-            log.error("Error en registro de cliente: ", e);
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error en el registro: " + e.getMessage());
-            return errorResponse;
-        }
+   public Map<String, Object> registrarCliente(Map<String, Object> clienteData) {
+    String url = "https://oracleapex.com/ords/ucc/apiCliente/register";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(clienteData, headers);
+    
+    try {
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error en registro de cliente: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
     }
+}
     
     // Método para actualizar perfil (agregar después)
    public Map<String, Object> actualizarPerfil(Map<String, Object> perfilData) {

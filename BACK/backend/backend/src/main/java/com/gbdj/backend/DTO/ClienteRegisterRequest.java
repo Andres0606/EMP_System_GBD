@@ -6,8 +6,8 @@ import java.util.Date;
 
 @Data
 public class ClienteRegisterRequest {
-    // Datos de PERSONA
-    private Long cedula;
+    private String tipoDocumento;      // CEDULA, NIT, PASAPORTE, TARJETA_IDENTIDAD
+    private Long numeroDocumento;      // El número de identificación
     private String nombres;
     private String apellido;
     
@@ -17,8 +17,6 @@ public class ClienteRegisterRequest {
     private Long telefono;
     private String correo;
     private String contrasena;
-    
-    // Datos de CLIENTE
-    private String licenciaConduccion;  // Opcional
-    private Integer tipoUsuario;         // Opcional, default 1
+    private String licenciaConduccion;  // 'S' o 'N'
+    private Integer tipoUsuario;         // default 1
 }
