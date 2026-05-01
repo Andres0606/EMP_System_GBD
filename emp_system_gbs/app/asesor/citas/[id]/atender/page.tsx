@@ -99,7 +99,8 @@ export default function AtenderCitaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [fechaProgramada, setFechaProgramada] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [hora, setHora] = useState('');
 
   const cedulaAsesor =
     typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
@@ -137,17 +138,98 @@ export default function AtenderCitaPage() {
     }
   };
 
+// Generar horas disponibles según el día seleccionado
+// Generar horas disponibles según el día seleccionado
+const generarHorasDisponibles = () => {
+  if (!fecha) return [];
+  
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+  const fechaObj = new Date(anio, mes - 1, dia);
+  const diaSemana = fechaObj.getDay();
+  
+  if (diaSemana === 0) return [];
+  
+  let horaInicio = 8;
+  let horaFin = 17;
+  
+  if (diaSemana === 6) { // Sábado
+    horaFin = 12;
+  }
+  
+  const horas = [];
+  // 👈 Cambiado: i <= horaFin para incluir la hora final
+  for (let i = horaInicio; i <= horaFin; i++) {
+    const horaStr = i.toString().padStart(2, '0');
+    let hora12 = '';
+    if (i === 12) {
+      hora12 = '12:00 PM';
+    } else if (i < 12) {
+      hora12 = `${i}:00 AM`;
+    } else {
+      hora12 = `${i - 12}:00 PM`;
+    }
+    horas.push(
+      <option key={i} value={`${horaStr}:00`}>
+        {hora12}
+      </option>
+    );
+  }
+  return horas;
+};
+  const validarHorario = (fechaStr: string, horaStr: string): boolean => {
+  if (!fechaStr || !horaStr) return false;
+  
+  // Crear fecha sin zona horaria
+  const [anio, mes, dia] = fechaStr.split('-').map(Number);
+  const fechaObj = new Date(anio, mes - 1, dia);
+  const diaSemana = fechaObj.getDay();
+  
+  if (diaSemana === 0) {
+    setError('⚠️ No hay atención los domingos');
+    return false;
+  }
+  
+  const hora = parseInt(horaStr.split(':')[0]);
+  
+  if (diaSemana === 6) { // Sábado
+    if (hora < 8 || hora >= 12) {
+      setError('⚠️ Los sábados la atención es de 8:00 AM a 12:00 PM');
+      return false;
+    }
+  } else { // Lunes a Viernes
+    if (hora < 8 || hora >= 17) {
+      setError('⚠️ El horario de atención es de 8:00 AM a 5:00 PM');
+      return false;
+    }
+  }
+  
+  return true;
+};
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
     setSuccess('');
 
-    if (!fechaProgramada) {
-      setError('Seleccione una fecha y hora para agendar la cita.');
+    if (!fecha) {
+      setError('Seleccione una fecha para agendar la cita.');
       setSubmitting(false);
       return;
     }
+    
+    if (!hora) {
+      setError('Seleccione una hora para agendar la cita.');
+      setSubmitting(false);
+      return;
+    }
+    
+    if (!validarHorario(fecha, hora)) {
+      setSubmitting(false);
+      return;
+    }
+    
+    const fechaProgramada = `${fecha}T${hora}`;
 
     try {
       const response = await fetch('http://localhost:8080/api/citas/atender', {
@@ -275,28 +357,58 @@ export default function AtenderCitaPage() {
             </div>
             <div>
               <p className={styles.cardTitle}>Programar fecha de atención</p>
-              <p className={styles.cardSubtitle}>Selecciona la fecha y hora en que se atenderá al cliente</p>
+              <p className={styles.cardSubtitle}>
+                Horario: Lunes a Viernes 8:00 AM - 5:00 PM | Sábados 8:00 AM - 12:00 PM
+              </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit}>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel} htmlFor="fechaProgramada">
-                Fecha y Hora Programada
+              <label className={styles.formLabel} htmlFor="fecha">
+                Fecha
               </label>
               <div className={styles.inputWrapper}>
                 <span className={styles.inputIco}><CalendarIcon /></span>
                 <input
-                  id="fechaProgramada"
-                  type="datetime-local"
+                  id="fecha"
+                  type="date"
                   className={styles.input}
-                  value={fechaProgramada}
-                  onChange={(e) => setFechaProgramada(e.target.value)}
+                  value={fecha}
+                  onChange={(e) => {
+                    setFecha(e.target.value);
+                    setHora('');
+                    setError('');
+                  }}
                   required
-                  min={new Date().toISOString().slice(0, 16)}
+                  min={new Date().toISOString().slice(0, 10)}
                 />
               </div>
             </div>
+
+            {fecha && (
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel} htmlFor="hora">
+                  Hora
+                </label>
+                <div className={styles.inputWrapper}>
+                  <span className={styles.inputIco}><CalendarIcon /></span>
+                  <select
+                    id="hora"
+                    className={styles.input}
+                    value={hora}
+                    onChange={(e) => {
+                      setHora(e.target.value);
+                      setError('');
+                    }}
+                    required
+                  >
+                    <option value="">Seleccionar hora</option>
+                    {generarHorasDisponibles()}
+                  </select>
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"
