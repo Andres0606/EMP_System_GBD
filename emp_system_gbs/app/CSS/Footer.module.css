@@ -5,16 +5,18 @@
 
 /* ── Base ── */
 .footer {
-  background: #0A2A6E; /* azul muy oscuro institucional */
-  color: rgba(255,255,255,0.75);
+  background: #0D47A1;  /* azul muy oscuro institucional */
+  color: rgba(255,255,255,0.9);
   font-size: 0.875rem;
   line-height: 1.6;
+
+  
 }
 
 /* ── Línea decorativa superior ── */
 .accentLine {
   height: 4px;
-  background: linear-gradient(90deg, #1565C0 0%, #1976D2 40%, #F9A825 100%);
+  background: linear-gradient(90deg, #1565C0 0%, #1976D2 45%, #2E7D32 100%);
 }
 
 /* ── Trust strip ── */
@@ -43,7 +45,7 @@
 .trustIco {
   display: grid;
   place-items: center;
-  color: #F9A825;
+  color: #2E7D32;
 }
 .trustIco svg {
   width: 15px;
@@ -93,6 +95,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
+
 }
 
 .logo {
@@ -129,7 +132,7 @@
 .tagline {
   font-size: 0.85rem;
   line-height: 1.65;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.85);
   max-width: 280px;
 }
 
@@ -151,11 +154,11 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
   display: grid;
   place-items: center;
-  color: #F9A825;
+  color: #FFFFFF;
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -169,7 +172,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.75);
   line-height: 1;
   margin-bottom: 0.2rem;
 }
@@ -177,7 +180,7 @@
   display: block;
   font-size: 0.83rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.82);
+  color: rgba(255,255,255,0.95);
 }
 
 /* ── Columnas de navegación ── */
@@ -191,7 +194,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,1);
   margin: 0;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -207,7 +210,7 @@
 .colLink {
   font-size: 0.855rem;
   font-weight: 500;
-  color: rgba(255,255,255,0.62);
+  color: rgba(255,255,255,0.85);
   text-decoration: none;
   padding: 0.2rem 0;
   display: inline-block;
@@ -231,7 +234,7 @@
 }
 .copy {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.38);
+  color: rgba(255,255,255,0.7);
   margin: 0;
 }
 .bottomLinks {
@@ -241,7 +244,7 @@
 }
 .bottomLink {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.75);
   text-decoration: none;
   transition: color 0.18s ease;
 }

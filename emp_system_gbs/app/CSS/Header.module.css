@@ -20,16 +20,16 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 68px;
-  display: flex;
+  min-height: 68px;
+  height: auto;  display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2.5rem;
   gap: 1.5rem;
 
   /* Fondo azul institucional sólido desde el inicio */
-  background: var(--h-azul-dk);
-  border-bottom: 1px solid var(--h-border);
+  background: #FFFFFF;  /* blanco */
+  border-bottom: 15px solid #F4F7FC ; /* borde gris suave */
 
   opacity: 0;
   transform: translateY(-6px);
@@ -49,8 +49,8 @@
 /* Al hacer scroll — compactar + sombra */
 .navScrolled {
   height: 60px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
-  background: var(--h-azul-dk); /* sigue igual, solo más sombra */
+  background: #FFFFFF;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
 }
 
 /* ── Logo ── */
@@ -66,8 +66,8 @@
   width: 36px;
   height: 36px;
   border-radius: 9px;
-  background: rgba(255,255,255,0.15);
-  border: 1.5px solid rgba(255,255,255,0.25);
+  background: #1565C0;  /* azul solo en el ícono */
+  border: none;
   display: grid;
   place-items: center;
   color: var(--h-white);
@@ -82,14 +82,14 @@
 }
 
 .logoText {
-  font-size: 1.15rem;
+  font-size: 1.3rem;
   font-weight: 500;
-  color: rgba(255,255,255,0.88);
+  color: #1565C0;
   letter-spacing: 0.01em;
 }
 .logoText strong {
   font-weight: 800;
-  color: var(--h-white);
+  color:  #1565C0;
 }
 
 /* ── Nav links desktop ── */
@@ -104,7 +104,7 @@
 .navLink {
   font-size: 0.9rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.78);
+  color: #0D47A1; 
   text-decoration: none;
   padding: 0.42rem 0.9rem;
   border-radius: 7px;
@@ -112,8 +112,8 @@
   letter-spacing: 0.01em;
 }
 .navLink:hover {
-  color: var(--h-white);
-  background: rgba(255,255,255,0.1);
+  color: #1565C0;
+  background: #E3F0FF;
 }
 
 /* ── Acciones ── */
@@ -131,9 +131,9 @@
   gap: 0.4rem;
   font-size: 0.88rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.85);
+  color: #1565C0;
+  border: 1.5px solid rgba(21,101,192,0.3);
   background: transparent;
-  border: 1.5px solid rgba(255,255,255,0.28);
   padding: 0.46rem 1rem;
   border-radius: 7px;
   cursor: pointer;
@@ -145,8 +145,8 @@
 }
 .loginBtn:hover {
   color: var(--h-white);
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.5);
+  background: #E3F0FF;
+  border-color: #1565C0;
 }
 
 /* Botón "Registrarse" — blanco sólido */
@@ -197,9 +197,10 @@
 .mobileMenu {
   display: none;
   position: fixed;
-  inset: 0;
+  left: 0;
+  right: 0;
   top: 68px;
-  background: var(--h-azul-dk);
+  background: #FFFFFF;
   z-index: 999;
   padding: 2rem 1.5rem;
   transform: translateX(100%);
@@ -221,18 +222,17 @@
 .mobileLink {
   font-size: 1.1rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.85);
-  text-decoration: none;
+  color: #1A2332;
+  border: 1px solid #E8EDF5;  text-decoration: none;
   padding: 1rem 1.25rem;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.08);
   transition: background 0.18s ease, color 0.18s ease;
   opacity: 0;
   animation: slideIn 0.3s ease forwards;
 }
 .mobileLink:hover {
-  background: rgba(255,255,255,0.1);
-  color: var(--h-white);
+  background: #E3F0FF;
+  color: #1565C0;
 }
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(16px); }
@@ -243,8 +243,8 @@
   margin-top: 1rem;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--h-azul-dk);
-  background: var(--h-white);
+  background: #1565C0;
+  color: #FFFFFF;
   border: none;
   padding: 0.9rem;
   border-radius: 10px;
@@ -258,9 +258,8 @@
 .mobileCtaOutline {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--h-white);
-  background: transparent;
-  border: 1.5px solid rgba(255,255,255,0.35);
+  color: #1565C0;
+  border: 1.5px solid #1565C0;  background: transparent;
   padding: 0.9rem;
   border-radius: 10px;
   cursor: pointer;
@@ -277,13 +276,29 @@
    RESPONSIVE
 ═══════════════════════════════════════ */
 @media (max-width: 860px) {
-  .links { display: none; }
-  .loginBtn { display: none; }
-  .registerBtn { display: none; }
-  .burger { display: flex; }
-  .mobileMenu { display: block; }
+  .links,
+  .actions {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+    background: #1565C0;
+    border: none;
+    color: #FFFFFF;
+  }
+
+  .mobileMenu {
+    display: block;
+    transform: translateY(-140%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .mobileMenuOpen {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
-@media (max-width: 480px) {
-  .nav { padding: 0 1.25rem; }
-}

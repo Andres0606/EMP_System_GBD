@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '../Inicio/Header';
+import Sidebar  from '../Inicio/Sidebar';
 import Footer from '../Inicio/Footer';
 import styles from '../CSS/Servicios/Servicios.module.css';
 
@@ -349,7 +349,7 @@ export default function ServiciosPage() {
 
   return (
     <div className={styles.pg}>
-      <Header />
+      <Sidebar />
 
       {/* ── HERO ── */}
       <section className={styles.hero}>
@@ -363,7 +363,7 @@ export default function ServiciosPage() {
           <span className={styles.eyebrow}>Nuestros servicios</span>
           <h1 className={styles.h1}>18 trámites vehiculares<br /><span className={styles.h1Grad}>en el Meta</span></h1>
           <p className={styles.heroP}>
-            Desde la matrícula inicial hasta el levantamiento de prenda. Un agente certificado te acompaña en cada proceso, sin filas y con precio claro.
+            Desde la matrícula inicial hasta el levantamiento de prenda. Recibe acompañamiento en cada proceso, sin filas y con precio claro.
           </p>
           <div className={styles.heroBtns}>
             <button className={styles.btnPrimary} onClick={() => router.push('/registro')}>

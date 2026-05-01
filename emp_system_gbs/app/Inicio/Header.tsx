@@ -86,22 +86,23 @@ export default function Header({ onLoginClick }: HeaderProps) {
       </nav>
 
       {/* Desktop actions */}
-      <div className={styles.actions}>
-        <button className={styles.loginBtn} onClick={handleLogin}>
-          <UserIcon />
-          <span>Ingresar</span>
-        </button>
-        <button className={styles.registerBtn} onClick={handleRegister}>
-          Registrarse →
-        </button>
-        <button
-          className={styles.burger}
-          onClick={() => setMenuOpen(v => !v)}
-          aria-label="Menú"
-        >
-          {menuOpen ? <XIcon /> : <MenuIcon />}
-        </button>
-      </div>
+<div className={styles.actions}>
+  <button className={styles.loginBtn} onClick={handleLogin}>
+    <UserIcon />
+    <span>Ingresar</span>
+  </button>
+  <button className={styles.registerBtn} onClick={handleRegister}>
+    Registrarse →
+  </button>
+</div>
+
+<button
+  className={styles.burger}
+  onClick={() => setMenuOpen(v => !v)}
+  aria-label="Menú"
+>
+  {menuOpen ? <XIcon /> : <MenuIcon />}
+</button>
 
       {/* Mobile overlay */}
       <div className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : ''}`}>

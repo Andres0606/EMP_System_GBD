@@ -108,13 +108,6 @@ function Counter({ to, suffix = '' }: { to: number; suffix?: string }) {
   return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
 }
 
-/* ── Data ── */
-const STATS = [
-  { n: 2800, s: '+', l: 'Trámites realizados' },
-  { n: 5,    s: '',  l: 'Municipios' },
-  { n: 10,   s: '',  l: 'Agentes certificados' },
-  { n: 98,   s: '%', l: 'Satisfacción' },
-];
 
 const HERO_SLIDES = [
   {
@@ -124,10 +117,11 @@ const HERO_SLIDES = [
     desc: 'En TransMeta trabajamos con dedicación para gestionar tu matrícula, traspasos y duplicados en el Meta. Sin filas, sin papeleos innecesarios.',
   },
   {
-    img: '/WhatsApp 44.jpg',
-    tag: '10 agentes certificados RUNT',
+    img: '/sedes.jpeg',
+    objPos: 'center center',   // ← esta es la que tiene el problema
+    tag: 'Atención personalizada en el Meta',
     title: 'Agentes certificados en 6 municipios del Meta',
-    desc: 'Villavicencio, Acacias, Puerto López, Puerto Gaitán y Granada. Un agente de tu municipio te atiende el mismo día.',
+    desc: 'Villavicencio, Restrepo, Acacias, Guamal, Granada y Puerto López. Un agente de tu municipio te atiende el mismo día.',
   },
   {
     img: '/WhatsApp imagen 1.jpeg ',
@@ -144,7 +138,6 @@ const SERVICES = [
     accentColor: 'azul',
     title: 'Matrícula & Registro',
     desc: 'Registra tu vehículo nuevo o usado con toda la documentación correcta. Te guiamos en cada paso sin que tengas que ir a tránsito.',
-    time: '1–2 días hábiles',
     href: '/servicios#matricula',
   },
   {
@@ -153,7 +146,6 @@ const SERVICES = [
     accentColor: 'verde',
     title: 'Traspaso de Vehículo',
     desc: 'Cambio de propietario sin complicaciones. Verificamos el estado del vehículo antes de tramitar y te mantenemos informado.',
-    time: '2–3 días hábiles',
     href: '/servicios#traspaso',
   },
   {
@@ -162,7 +154,6 @@ const SERVICES = [
     accentColor: 'dorado',
     title: 'Traslado de Matrícula',
     desc: '¿Te mudaste al Meta? Traslada tu matrícula a Villavicencio u otro municipio del departamento sin perder el día.',
-    time: '1–2 días hábiles',
     href: '/servicios#traslado',
   },
   {
@@ -171,22 +162,21 @@ const SERVICES = [
     accentColor: 'azul',
     title: 'Duplicado de Placas',
     desc: 'Pérdida, robo o deterioro. Obtenemos tus nuevas placas con el mínimo de trámites posible. Sin vueltas innecesarias.',
-    time: '1 día hábil',
     href: '/servicios#duplicado',
   },
 ];
 
 const PROCESS_STEPS = [
-  { num: '01', title: 'Regístrate', desc: 'Crea tu cuenta gratis en menos de 2 minutos. Sin tarjeta de crédito.' },
-  { num: '02', title: 'Sube tus documentos', desc: 'Foto de tu cédula, SOAT y los documentos del vehículo desde el celular.' },
-  { num: '03', title: 'Un agente te atiende', desc: 'Te asignamos un agente certificado de tu municipio ese mismo día.' },
-  { num: '04', title: 'Recibe tu trámite', desc: 'Te notificamos cuando esté listo. Sin filas, sin desplazamientos.' },
+  { num: '01', title: 'Regístrate', desc: 'Crea tu cuenta para iniciar la solicitud de tu trámite vehicular.' },
+  { num: '02', title: 'Agenda tu cita', desc: 'Elige el trámite, municipio y horario disponible.' },
+  { num: '03', title: 'Confirmación del agente', desc: 'Un agente confirma la cita y crea el trámite en la plataforma.' },
+  { num: '04', title: 'Trámite finalizado', desc: 'El agente gestiona el proceso y, al terminar, marca el trámite como completado.' },
 ];
 
 const WHY_ITEMS = [
-  { icon: <MapPinIcon />, title: '5 sedes en el Meta', desc: 'Villavicencio, Acacias, Puerto López, Puerto Gaitán y Granada.' },
+  { icon: <MapPinIcon />, title: '6 sedes en el Meta', desc: 'Villavicencio, Restrepo, Acacias, Guamal, Granada y Puerto López.' },
   { icon: <ClockIcon />,  title: 'Respuesta el mismo día', desc: 'Confirmación de tu trámite el mismo día. Sin esperas innecesarias.' },
-  { icon: <ShieldIcon />, title: 'Agentes certificados RUNT', desc: 'Todos nuestros agentes están verificados ante el Registro Nacional.' },
+  { icon: <ShieldIcon />, title: 'Agentes eficientes', desc: 'Nuestro equipo te acompaña en el proceso y busca gestionar tu trámite de forma clara y ordenada.' },
   { icon: <ThumbsUpIcon />, title: 'Precio claro, sin sorpresas', desc: 'Te decimos exactamente cuánto vale antes de comenzar.' },
 ];
 
@@ -275,8 +265,8 @@ export default function HomePage() {
           <p className={styles.heroP}>{current.desc}</p>
 
           <div className={styles.heroCtas}>
-            <button className={styles.ctaMain} onClick={() => router.push('/registro')}>
-              Ver trámites <ArrowIcon />
+            <button className={styles.ctaMain} onClick={() => router.push('/Servicios')}>
+              Ver servicios <ArrowIcon />
             </button>
             <button className={styles.ctaSec} onClick={() => router.push('/registro')}>
               Crear cuenta gratis
@@ -298,17 +288,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════
-          ESTADÍSTICAS
-      ═══════════════════════════════════ */}
-      <div className={styles.statsBar}>
-        {STATS.map(({ n, s, l }) => (
-          <div key={l} className={styles.statItem}>
-            <strong><Counter to={n} suffix={s} /></strong>
-            <span>{l}</span>
-          </div>
-        ))}
-      </div>
 
       {/* ═══════════════════════════════════
           SERVICIOS — cards con borde superior de color
@@ -332,17 +311,14 @@ export default function HomePage() {
                 <div className={`${styles.servIco} ${styles[`ico_${s.accentColor}`]}`}>{s.icon}</div>
                 <h3 className={styles.servTitle}>{s.title}</h3>
                 <p className={styles.servDesc}>{s.desc}</p>
-                <div className={styles.servFoot}>
-                  <span className={styles.servTime}><ClockIcon />{s.time}</span>
-                  <span className={styles.servMore}>Ver más <ArrowIcon /></span>
-                </div>
+               
               </a>
             ))}
           </div>
 
           <p className={styles.servExtra}>
             ¿No encuentras tu trámite?{' '}
-            <a href="/servicios" className={styles.servExtraLink}>Ver todos los servicios <ArrowIcon /></a>
+            <a href="/Servicios" className={styles.servExtraLink}>Ver todos los servicios <ArrowIcon /></a>
           </p>
         </div>
       </section>
@@ -468,9 +444,9 @@ export default function HomePage() {
             <button className={styles.ctaBtnWhite} onClick={() => router.push('/registro')}>
               Crear cuenta gratis <ArrowIcon />
             </button>
-            <button className={styles.ctaBtnGhost}>
-              <PhoneIcon /> Llamar ahora
-            </button>
+<a href="tel:+573114691980" className={styles.ctaBtnGhost}>
+  <PhoneIcon /> Llamar ahora
+</a>
           </div>
         </div>
       </section>

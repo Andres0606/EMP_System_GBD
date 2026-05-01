@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '../Inicio/Header';
+import Sidebar from '../Inicio/Sidebar';
 import Footer from '../Inicio/Footer';
-import styles from '../CSS//Sedes/Sedes.module.css';
+import styles from '../CSS/Sedes/Sedes.module.css';
 
 /* ── Icons ── */
 const ArrowIcon = () => (
@@ -44,92 +44,131 @@ const StarIcon = () => (
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
   </svg>
 );
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+const BuildingIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+  </svg>
+);
+const ZapIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
 
 const SEDES = [
   {
     id: 'villavicencio',
     nombre: 'Villavicencio',
-    tag: 'Sede Principal',
-    principal: true,
-    direccion: 'Calle 35 # 28-45, Barrio La Esperanza',
-    telefono: '+57 310 000 0001',
-    whatsapp: '573100000001',
-    correo: 'villavicencio@transmeta.com.co',
-    horario: 'Lun – Vie · 8:00 am – 6:00 pm · Sáb 8:00 am – 1:00 pm',
-    agentes: 4,
-    rating: 4.9,
-    tramites: 1200,
+    tipo: 'oficina',
+    tag: 'Oficina Principal',
     color: 'azul',
-    municipio: 'Meta',
-    mapsUrl: 'https://maps.google.com/?q=Villavicencio+Meta+Colombia',
+    short: 'Sede central con atención presencial. Todos los trámites vehiculares disponibles en un solo lugar.',
+    direccion: 'Calle 3C #29-21 Barrio Coralina',
+    telefono: '+57 311 469 1980',
+    correo: 'transmeta@hotmail.com',
+    horario: 'Lun – Vie · 8:00 am – 6:00 pm · Sáb 8:00 am – 1:00 pm',
+    mapsUrl: 'https://maps.app.goo.gl/miNucAYGVjiu7AqT6',
+    servicios: [
+      'Atención presencial en oficina',
+      'Todos los trámites vehiculares',
+      'Asesoría jurídica especializada',
+    ],
+  },
+  {
+    id: 'restrepo',
+    nombre: 'Restrepo',
+    tipo: 'cobertura',
+    tag: 'Zona de Cobertura',
+    color: 'verde',
+    short: 'Gestión asistida para trámites que deben realizarse en Restrepo. Un agente te orienta, revisa tus documentos y coordina el trámite para reducir desplazamientos innecesarios.',
+    direccion: null,
+    telefono: '+57 311 469 1980',
+    correo: 'transmeta@hotmail.com',
+    horario: 'Lun – Vie · 8:00 am – 5:00 pm',
+    mapsUrl: 'https://maps.google.com/?q=Restrepo+Meta+Colombia',
+    servicios: [
+      'Acompañamiento personalizado',
+      'Revisión previa de documentos',
+      'Coordinación de firmas o huellas cuando aplique',
+      'Gestión del trámite en Restrepo',
+    ],
   },
   {
     id: 'acacias',
     nombre: 'Acacias',
-    tag: 'Sede Regional',
-    principal: false,
-    direccion: 'Carrera 15 # 12-30, Centro',
-    telefono: '+57 310 000 0002',
-    whatsapp: '573100000002',
-    correo: 'acacias@transmeta.com.co',
-    horario: 'Lun – Vie · 8:00 am – 5:00 pm',
-    agentes: 2,
-    rating: 4.8,
-    tramites: 380,
+    tipo: 'cobertura',
+    tag: 'Zona de Cobertura',
     color: 'verde',
-    municipio: 'Meta',
+    short: 'Gestión asistida para trámites que deben realizarse en Acacías. Un agente te orienta, revisa tus documentos y coordina el proceso.',    direccion: null,
+    telefono: '+57 311 469 1980',
+    correo: 'transmeta@hotmail.com',
+    horario: 'Lun – Vie · 8:00 am – 5:00 pm',
     mapsUrl: 'https://maps.google.com/?q=Acacias+Meta+Colombia',
+    servicios: [
+      'Acompañamiento personalizado',
+      'Revisión previa de documentos',
+      'Coordinación de firmas o huellas cuando aplique',
+      'Gestión del trámite en Acacias',
+    ],
   },
   {
-    id: 'puerto-lopez',
-    nombre: 'Puerto López',
-    tag: 'Sede Regional',
-    principal: false,
-    direccion: 'Calle 8 # 5-20, Barrio Centro',
-    telefono: '+57 310 000 0003',
-    whatsapp: '573100000003',
-    correo: 'plopez@transmeta.com.co',
+    id: 'guamal',
+    nombre: 'Guamal',
+    tipo: 'cobertura',
+    tag: 'Zona de Cobertura',
+    color: 'verde',
+    short: 'Acompañamiento para trámites que deben gestionarse en Guamal. Revisamos tus documentos y te guiamos en cada paso.',    direccion: null,
+    telefono: '+57 311 469 1980',
+    correo: 'transmeta@hotmail.com',
     horario: 'Lun – Vie · 8:00 am – 5:00 pm',
-    agentes: 2,
-    rating: 4.7,
-    tramites: 290,
-    color: 'dorado',
-    municipio: 'Meta',
-    mapsUrl: 'https://maps.google.com/?q=Puerto+Lopez+Meta+Colombia',
-  },
-  {
-    id: 'puerto-gaitan',
-    nombre: 'Puerto Gaitán',
-    tag: 'Sede Regional',
-    principal: false,
-    direccion: 'Carrera 4 # 7-15, Centro',
-    telefono: '+57 310 000 0004',
-    whatsapp: '573100000004',
-    correo: 'pgaitan@transmeta.com.co',
-    horario: 'Lun – Vie · 8:00 am – 5:00 pm',
-    agentes: 1,
-    rating: 4.8,
-    tramites: 180,
-    color: 'azul',
-    municipio: 'Meta',
-    mapsUrl: 'https://maps.google.com/?q=Puerto+Gaitan+Meta+Colombia',
+    mapsUrl: 'https://maps.google.com/?q=Guamal+Meta+Colombia',
+    servicios: [
+      'Acompañamiento personalizado',
+      'Revisión previa de documentos',
+      'Coordinación de firmas o huellas cuando aplique',
+      'Gestión del trámite en Guamal',
+    ],
   },
   {
     id: 'granada',
     nombre: 'Granada',
-    tag: 'Sede Regional',
-    principal: false,
-    direccion: 'Calle 14 # 11-8, Barrio El Centro',
-    telefono: '+57 310 000 0005',
-    whatsapp: '573100000005',
-    correo: 'granada@transmeta.com.co',
-    horario: 'Lun – Vie · 8:00 am – 5:00 pm',
-    agentes: 1,
-    rating: 4.9,
-    tramites: 220,
+    tipo: 'cobertura',
+    tag: 'Zona de Cobertura',
     color: 'verde',
-    municipio: 'Meta',
+    short: 'Gestión asistida para trámites que deben realizarse en Granada. Un agente coordina el proceso y evita desplazamientos innecesarios.',    direccion: null,
+    telefono: '+57 311 469 1980',
+    correo: 'transmeta@hotmail.com',
+    horario: 'Lun – Vie · 8:00 am – 5:00 pm',
     mapsUrl: 'https://maps.google.com/?q=Granada+Meta+Colombia',
+    servicios: [
+      'Acompañamiento personalizado',
+      'Revisión previa de documentos',
+      'Coordinación de firmas o huellas cuando aplique',
+      'Gestión del trámite en Granada',
+    ],
+  },
+  {
+    id: 'lopez',
+    nombre: 'Puerto López',
+    tipo: 'cobertura',
+    tag: 'Zona de Cobertura',
+    color: 'verde',
+    short: 'Acompañamiento para trámites que deben gestionarse en Puerto López. Un agente te orienta durante todo el proceso.',    direccion: null,
+    telefono: '+57 311 469 1980',
+    correo: 'transmeta@hotmail.com',
+    horario: 'Lun – Vie · 8:00 am – 5:00 pm',
+    mapsUrl: 'https://maps.google.com/?q=Puerto+Lopez+Meta+Colombia',
+    servicios: [
+      'Acompañamiento personalizado',
+      'Revisión previa de documentos',
+      'Coordinación de firmas o huellas cuando aplique',
+      'Gestión del trámite en Pto. López',
+    ],
   },
 ];
 
@@ -143,185 +182,188 @@ export default function SedesPage() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && SEDES.find(s => s.id === hash)) setActiveSede(hash);
+  }, []);
+
   const sede = SEDES.find(s => s.id === activeSede)!;
+
+  const handleTabClick = (id: string) => {
+    setActiveSede(id);
+    window.history.replaceState(null, '', `#${id}`);
+  };
 
   return (
     <div className={styles.pg}>
-      <Header />
+      <Sidebar />
 
       {/* ── HERO ── */}
       <section className={styles.hero}>
-        <div className={styles.blobs} aria-hidden>
-          <div className={`${styles.blob} ${styles.blob1}`} />
-          <div className={`${styles.blob} ${styles.blob2}`} />
-          <div className={`${styles.blob} ${styles.blob3}`} />
-        </div>
-        <div className={styles.grid} aria-hidden />
         <div className={`${styles.heroInner} ${visible ? styles.heroVisible : ''}`}>
           <span className={styles.eyebrow}>Dónde estamos</span>
-          <h1 className={styles.h1}>5 sedes en el<br /><span className={styles.h1Grad}>departamento del Meta</span></h1>
-          <p className={styles.heroP}>Estamos presentes en los municipios más importantes del departamento para atenderte cerca de donde vives o trabajas.</p>
-        </div>
-        <div className={styles.wave} aria-hidden>
-          <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
-            <path d="M0,35 C240,70 480,0 720,35 C960,70 1200,0 1440,35 L1440,70 L0,70 Z" fill="#F4F8FF" />
-          </svg>
+          <h1 className={styles.h1}>Presencia en 6 municipios<br /><span className={styles.h1Grad}>del departamento del Meta</span></h1>
+          <p className={styles.heroP}>
+            Oficina central en Villavicencio y cobertura remota en Restrepo, Acacias, Guamal, Granada y Puerto López. Sin filas, sin desplazamientos innecesarios.
+          </p>
+          <div className={styles.heroBtns}>
+            <button className={styles.btnPrimary} onClick={() => router.push('/registro')}>
+              Crear cuenta gratis <ArrowIcon />
+            </button>
+            <a href="tel:+573114691980" className={styles.btnGhost}>
+              <PhoneIcon /> Llamar ahora
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* ── SELECTOR + DETALLE ── */}
+      {/* ── TABS + PANEL ── */}
       <section className={styles.section}>
         <div className={styles.inner}>
-          {/* Tabs */}
+
+          {/* Tabs de municipios */}
           <div className={styles.tabs}>
             {SEDES.map(s => (
               <button
                 key={s.id}
-                className={`${styles.tab} ${activeSede === s.id ? styles.tabActive : ''} ${styles[`tc_${s.color}`]}`}
-                onClick={() => setActiveSede(s.id)}
+                className={[
+                  styles.tab,
+                  activeSede === s.id ? styles.tabActive : '',
+                  activeSede === s.id ? styles[`tabActive_${s.color}`] : '',
+                ].join(' ')}
+                onClick={() => handleTabClick(s.id)}
               >
                 <MapPinIcon />
                 <span>{s.nombre}</span>
-                {s.principal && <span className={styles.tabBadge}>Principal</span>}
+                {s.tipo === 'oficina' && <span className={styles.tabBadge}>Oficina</span>}
               </button>
             ))}
           </div>
 
-          {/* Detalle de sede */}
-          <div className={styles.detail} key={sede.id}>
-            <div className={styles.detailLeft}>
-              <div className={styles.detailHeader}>
-                <div>
-                  <span className={`${styles.detailTag} ${styles[`dt_${sede.color}`]}`}>{sede.tag}</span>
-                  <h2 className={styles.detailName}>{sede.nombre}</h2>
-                  <p className={styles.detailMunicipio}>{sede.municipio}, Colombia</p>
-                </div>
-                <div className={styles.detailRating}>
-                  <StarIcon />
-                  <span>{sede.rating}</span>
+          {/* Panel de detalle */}
+          <div className={`${styles.detailPanel} ${styles[`panel_${sede.color}`]}`} key={sede.id}>
+
+            {/* Cabecera */}
+            <div className={styles.panelHeader}>
+              <div className={`${styles.panelIco} ${styles[`ico_${sede.color}`]}`}>
+                {sede.tipo === 'oficina' ? <BuildingIcon /> : <ZapIcon />}
+              </div>
+              <div className={styles.panelTitles}>
+                <span className={`${styles.panelTag} ${styles[`tag_${sede.color}`]}`}>{sede.tag}</span>
+                <h2 className={styles.panelName}>{sede.nombre}</h2>
+                <p className={styles.panelDesc}>{sede.short}</p>
+              </div>
+      
+            </div>
+
+            {/* Aviso cobertura remota */}
+            {sede.tipo === 'cobertura' && (
+              <div className={styles.coverageNotice}>
+                <span className={styles.noticeIco}><ZapIcon /></span>
+                <p>
+                  <strong>Actualmente no contamos con oficina física en este municipio.</strong> Un agente te acompaña durante el proceso, revisa tus documentos, coordina la radicación del trámite y te indica cuándo es necesario realizar firmas, huellas o validaciones presenciales.
+                </p>
+              </div>
+            )}
+
+            {/* Cuerpo del panel: dos columnas */}
+            <div className={styles.panelBody}>
+
+              {/* Columna izquierda — contacto + stats */}
+              <div className={styles.panelLeft}>
+                <h4 className={styles.blockTitle}>Información de contacto</h4>
+                <ul className={styles.infoList}>
+                  {sede.direccion && (
+                    <li>
+                      <span className={`${styles.infoIco} ${styles[`ico_${sede.color}`]}`}><MapPinIcon /></span>
+                      <div>
+                        <span className={styles.infoLabel}>Dirección</span>
+                        <span className={styles.infoVal}>{sede.direccion}</span>
+                      </div>
+                    </li>
+                  )}
+                  <li>
+                    <span className={`${styles.infoIco} ${styles[`ico_${sede.color}`]}`}><PhoneIcon /></span>
+                    <div>
+                      <span className={styles.infoLabel}>Teléfono</span>
+                      <a href={`tel:${sede.telefono}`} className={styles.infoVal}>{sede.telefono}</a>
+                    </div>
+                  </li>
+                  <li>
+                    <span className={`${styles.infoIco} ${styles[`ico_${sede.color}`]}`}><MailIcon /></span>
+                    <div>
+                      <span className={styles.infoLabel}>Correo electrónico</span>
+                      <a href={`mailto:${sede.correo}`} className={styles.infoVal}>{sede.correo}</a>
+                    </div>
+                  </li>
+                  <li>
+                    <span className={`${styles.infoIco} ${styles[`ico_${sede.color}`]}`}><ClockIcon /></span>
+                    <div>
+                      <span className={styles.infoLabel}>Horario de atención</span>
+                      <span className={styles.infoVal}>{sede.horario}</span>
+                    </div>
+                  </li>
+                </ul>
+
+                <div className={styles.statsRow}>
+                 
+            
+           
                 </div>
               </div>
 
-              <ul className={styles.detailInfo}>
-                <li>
-                  <span className={styles.infoIco}><MapPinIcon /></span>
-                  <div>
-                    <span className={styles.infoLabel}>Dirección</span>
-                    <span className={styles.infoVal}>{sede.direccion}</span>
-                  </div>
-                </li>
-                <li>
-                  <span className={styles.infoIco}><PhoneIcon /></span>
-                  <div>
-                    <span className={styles.infoLabel}>Teléfono</span>
-                    <a href={`tel:${sede.telefono}`} className={styles.infoVal}>{sede.telefono}</a>
-                  </div>
-                </li>
-                <li>
-                  <span className={styles.infoIco}><MailIcon /></span>
-                  <div>
-                    <span className={styles.infoLabel}>Correo</span>
-                    <a href={`mailto:${sede.correo}`} className={styles.infoVal}>{sede.correo}</a>
-                  </div>
-                </li>
-                <li>
-                  <span className={styles.infoIco}><ClockIcon /></span>
-                  <div>
-                    <span className={styles.infoLabel}>Horario de atención</span>
-                    <span className={styles.infoVal}>{sede.horario}</span>
-                  </div>
-                </li>
-              </ul>
+              {/* Columna derecha — servicios + acciones */}
+              <div className={styles.panelRight}>
+                <h4 className={styles.blockTitle}>
+                  {sede.tipo === 'oficina' ? 'Servicios disponibles' : '¿Cómo funciona?'}
+                </h4>
+                <ul className={styles.reqList}>
+                  {sede.servicios.map(sv => (
+                    <li key={sv}>
+                      <span className={`${styles.reqCheck} ${styles[`check_${sede.color}`]}`}><CheckIcon /></span>
+                      {sv}
+                    </li>
+                  ))}
+                </ul>
 
-              <div className={styles.detailStats}>
-                <div className={styles.dStat}>
-                  <strong>{sede.agentes}</strong>
-                  <span>Agente{sede.agentes > 1 ? 's' : ''} certificado{sede.agentes > 1 ? 's' : ''}</span>
+                <div className={styles.cardActions}>
+                 
+                  {sede.tipo === 'oficina' ? (
+                    <a
+                      href={sede.mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.btnSecondary}
+                    >
+                      <MapPinIcon /> Ver en Maps <ArrowIcon />
+                    </a>
+                  ) : (
+                    <button className={styles.btnSecondary} onClick={() => router.push('/registro')}>
+                      Iniciar trámite <ArrowIcon />
+                    </button>
+                  )}
                 </div>
-                <div className={styles.dStat}>
-                  <strong>{sede.tramites}+</strong>
-                  <span>Trámites realizados</span>
-                </div>
-                <div className={styles.dStat}>
-                  <strong>{sede.rating} ★</strong>
-                  <span>Calificación</span>
-                </div>
-              </div>
-
-              <div className={styles.detailActions}>
-                <a
-                  href={`https://wa.me/${sede.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.btnWa}
-                >
-                  <WhatsappIcon /> Escribir por WhatsApp
-                </a>
-                <a
-                  href={sede.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.btnMaps}
-                >
-                  <MapPinIcon /> Ver en Maps
-                </a>
               </div>
             </div>
 
-            {/* Mapa placeholder */}
-            <div className={styles.detailMap}>
-              <div className={styles.mapPlaceholder}>
-                <div className={styles.mapPin}><MapPinIcon /></div>
-                <p className={styles.mapName}>{sede.nombre}</p>
-                <p className={styles.mapAddr}>{sede.direccion}</p>
-                <a
-                  href={sede.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.mapLink}
-                >
-                  Abrir en Google Maps <ArrowIcon />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── TODAS LAS SEDES GRID ── */}
-      <section className={styles.allSection}>
-        <div className={styles.inner}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionH2}>Todas nuestras sedes</h2>
-            <p className={styles.sectionDesc}>Elige la sede más cercana a tu municipio.</p>
-          </div>
-          <div className={styles.sedesGrid}>
-            {SEDES.map((s, i) => (
-              <button
-                key={s.id}
-                className={`${styles.sedeCard} ${styles[`sc_${s.color}`]} ${activeSede === s.id ? styles.sedeCardActive : ''}`}
-                style={{ animationDelay: `${i * 0.07}s` }}
-                onClick={() => { setActiveSede(s.id); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
-              >
-                <div className={styles.sedeCardIco}><MapPinIcon /></div>
-                <h3 className={styles.sedeCardName}>{s.nombre}</h3>
-                <p className={styles.sedeCardAddr}>{s.direccion}</p>
-                <div className={styles.sedeCardMeta}>
-                  <span><ClockIcon /> Lun–Vie</span>
-                  <span>★ {s.rating}</span>
-                </div>
-              </button>
-            ))}
+            {/* Mapa embed — solo para oficina física */}
+{sede.tipo === 'oficina' && (
+  <div className={styles.mapEmbed}>
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.5091324028444!2d-73.62613299999997!3d4.119712000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3e2e41bbc16f37%3A0x55c6b23b03518b2e!2sCl.%203c%20%23%2029-21%2C%20Villavicencio%2C%20Meta!5e0!3m2!1ses!2sco!4v1777617932539!5m2!1ses!2sco"
+      allowFullScreen
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      title="Ubicación oficina Villavicencio"
+    />
+  </div>
+)}
           </div>
         </div>
       </section>
 
       {/* ── CTA ── */}
       <div className={styles.cta}>
-        <div className={styles.ctaGfx} aria-hidden>
-          <div className={`${styles.ctaBlob} ${styles.ctaBlob1}`} />
-          <div className={`${styles.ctaBlob} ${styles.ctaBlob2}`} />
-        </div>
         <div className={styles.ctaText}>
           <h2>¿Listo para empezar tu trámite?</h2>
           <p>Crea tu cuenta y un agente de tu municipio te contactará hoy.</p>

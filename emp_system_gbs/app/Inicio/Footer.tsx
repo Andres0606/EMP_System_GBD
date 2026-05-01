@@ -68,36 +68,31 @@ const NAV_COLS = [
       { label: 'Traspaso de Vehículo',  href: '/servicios#traspaso' },
       { label: 'Traslado de Matrícula', href: '/servicios#traslado' },
       { label: 'Duplicado de Placas',   href: '/servicios#duplicado' },
-      { label: 'Revisión Técnico-Mec.', href: '/servicios#revision' },
     ],
   },
   {
     title: 'Sedes',
     links: [
       { label: 'Villavicencio', href: '/sedes#villavicencio' },
+      { label: 'Restrepo', href: '/sedes#restrepo' },
       { label: 'Acacias',       href: '/sedes#acacias' },
-      { label: 'Puerto López',  href: '/sedes#lopez' },
-      { label: 'Puerto Gaitán', href: '/sedes#gaitan' },
+      { label: 'Guamal',       href: '/sedes#guamal' },
       { label: 'Granada',       href: '/sedes#granada' },
+      { label: 'Puerto López',  href: '/sedes#lopez' },
     ],
   },
   {
     title: 'Empresa',
     links: [
-      { label: 'Nosotros',          href: '/nosotros' },
-      { label: 'Nuestros Agentes',  href: '/nosotros#agentes' },
-      { label: 'Preguntas Frecuentes', href: '/nosotros#faq' },
-      { label: 'Blog',              href: '/blog' },
-      { label: 'Contacto',          href: '/contacto' },
+      { label: 'Servicios',          href: '/Servicios' },
+      { label: 'Sedes',  href: '/Sedes' },
+      { label: 'Nosotros',  href: '/Nosotros' },
+      { label: 'Preguntas Frecuentes', href: '/Nosotros#faq' },
     ],
   },
 ];
 
-const TRUST_ITEMS = [
-  { icon: <ShieldIcon />, label: 'Datos seguros SSL' },
-  { icon: <CheckIcon />,  label: 'RUNT verificado' },
-  { icon: <CheckIcon />,  label: 'Agentes certificados' },
-];
+
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -106,24 +101,6 @@ export default function Footer() {
     <footer className={styles.footer}>
       {/* Shimmer top accent */}
       <div className={styles.accentLine} />
-
-      {/* Trust strip */}
-      <div className={styles.trustStrip}>
-        <div className={styles.trustInner}>
-          {TRUST_ITEMS.map(({ icon, label }) => (
-            <div key={label} className={styles.trustItem}>
-              <span className={styles.trustIco}>{icon}</span>
-              <span>{label}</span>
-            </div>
-          ))}
-          <div className={styles.trustDivider} />
-          <div className={styles.socialRow}>
-            <a href="#" className={styles.socialBtn} aria-label="WhatsApp"><WhatsappIcon /></a>
-            <a href="#" className={styles.socialBtn} aria-label="Instagram"><InstagramIcon /></a>
-            <a href="#" className={styles.socialBtn} aria-label="Facebook"><FacebookIcon /></a>
-          </div>
-        </div>
-      </div>
 
       {/* Main grid */}
       <div className={styles.inner}>
@@ -142,14 +119,14 @@ export default function Footer() {
               <span className={styles.contactIco}><PhoneIcon /></span>
               <div>
                 <span className={styles.contactLabel}>Línea directa</span>
-                <span className={styles.contactVal}>+57 310 000 0000</span>
+                <span className={styles.contactVal}>+57 311 469 1980</span>
               </div>
             </li>
             <li>
               <span className={styles.contactIco}><MailIcon /></span>
               <div>
                 <span className={styles.contactLabel}>Correo</span>
-                <span className={styles.contactVal}>info@transmeta.com.co</span>
+                <span className={styles.contactVal}>transmeta@hotmail.com</span>
               </div>
             </li>
             <li>
@@ -188,7 +165,7 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className={styles.bottom}>
-        <p className={styles.copy}>© {year} TransMeta® · Todos los derechos reservados · NIT 900.000.000-0</p>
+        <p className={styles.copy}>© {year} TransMeta® · Todos los derechos reservados </p>
         <div className={styles.bottomLinks}>
           <Link href="/privacidad" className={styles.bottomLink}>Privacidad</Link>
           <span className={styles.bottomDot} />
