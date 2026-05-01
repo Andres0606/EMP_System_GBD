@@ -180,16 +180,29 @@ export default function RegistroPage() {
 
             {/* Checkbox para licencia */}
             <div className={styles.field} style={{ gridColumn: 'span 2' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input 
-                  type="checkbox" 
-                  name="licenciaConduccion" 
-                  checked={formData.licenciaConduccion === 'S'}
-                  onChange={handleChange}
-                />
-                ¿Tiene licencia de conducción?
-              </label>
-            </div>
+  <label>¿Tiene licencia de conducción?</label>
+  <div className={styles.toggleRow}>
+    <span className={styles.toggleLabel}>
+      {formData.licenciaConduccion === 'S' ? 'Sí, tengo licencia' : 'No tengo licencia'}
+    </span>
+    <div className={styles.toggleBtns}>
+      <button
+        type="button"
+        className={`${styles.toggleBtn} ${formData.licenciaConduccion === 'S' ? styles.toggleBtnActive : ''}`}
+        onClick={() => setFormData(prev => ({ ...prev, licenciaConduccion: 'S' }))}
+      >
+        Sí
+      </button>
+      <button
+        type="button"
+        className={`${styles.toggleBtn} ${formData.licenciaConduccion === 'N' ? styles.toggleBtnActive : ''}`}
+        onClick={() => setFormData(prev => ({ ...prev, licenciaConduccion: 'N' }))}
+      >
+        No
+      </button>
+    </div>
+  </div>
+</div>
 
             <div className={styles.field}>
               <label>Contraseña *</label>

@@ -361,6 +361,72 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Agrega esto en Registro.module.css */
+
+.field select {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid #d0dff0;
+  border-radius: 13px;
+  padding: 0.8rem 1rem;
+  font-family: var(--ffb, 'DM Sans', sans-serif);
+  font-size: 0.92rem;
+  color: #0d1f36;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A96A3' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 14px;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
+}
+.field select:focus {
+  border-color: #1976D2;
+  box-shadow: 0 0 0 4px rgba(21, 101, 192, 0.1);
+  background-color: #fff;
+}
+
+/* Toggle Sí / No */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.8);
+  border: 1.5px solid #d0dff0;
+  border-radius: 13px;
+  padding: 0.75rem 1rem;
+}
+.toggleLabel {
+  font-family: var(--ffb, 'DM Sans', sans-serif);
+  font-size: 0.92rem;
+  color: #0d1f36;
+}
+.toggleBtns {
+  display: flex;
+  gap: 0.4rem;
+}
+.toggleBtn {
+  padding: 0.35rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #d0dff0;
+  background: transparent;
+  font-family: var(--ffb, 'DM Sans', sans-serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #7a92ae;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.toggleBtnActive {
+  background: #1565C0;
+  border-color: #1565C0;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(21,101,192,0.28);
+}
+
 /* ══════════════════════
    RESPONSIVE
 ══════════════════════ */

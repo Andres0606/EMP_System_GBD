@@ -76,7 +76,7 @@ const SEDES = [
     servicios: [
       'Atención presencial en oficina',
       'Todos los trámites vehiculares',
-      'Asesoría jurídica especializada',
+      'Asesoría especializada',
     ],
   },
   {
