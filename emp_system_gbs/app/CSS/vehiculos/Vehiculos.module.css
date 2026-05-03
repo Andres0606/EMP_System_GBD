@@ -364,3 +364,136 @@
   font-weight: 700;
   white-space: nowrap;
 }
+.headerTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  margin-left: 2rem;
+}
+
+.headerTitle h1 {
+  margin: 0;
+}
+
+.registrarButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.registrarButton:hover {
+  background: #059669;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 1.5rem;
+}
+
+.addButton:hover {
+  background: #e5e7eb;
+  border-color: #10b981;
+  color: #059669;
+}
+
+.footerButton {
+  margin-top: 1.5rem;
+}
+
+.badgesGroup {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.prendaBadge {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.estadoBadge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.estadoActivo {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.estadoCancelado {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.cardCancelado {
+  opacity: 0.8;
+  border-left: 3px solid #dc2626;
+}
+
+.emptyButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.625rem 1.25rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.emptyButton:hover {
+  background: #059669;
+}
+/* Estilos para los nuevos campos */
+.combustibleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.vinBadge {
+  font-family: monospace;
+  background: #f3f4f6;
+  color: #4b5563;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+}

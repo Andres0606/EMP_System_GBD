@@ -29,6 +29,7 @@ export default function SolicitarCitaPage() {
   const [tiposTramite, setTiposTramite] = useState<TipoTramite[]>([]);
   const [valorTramite, setValorTramite] = useState<number | null>(null);
   const [requiereVehiculo, setRequiereVehiculo] = useState<boolean>(false);
+  const [mostrarModalRegistro, setMostrarModalRegistro] = useState(false);
   
   const [formData, setFormData] = useState({
     idVehiculo: '',
@@ -75,7 +76,7 @@ export default function SolicitarCitaPage() {
 
   const handleTipoTramiteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const idTipo = e.target.value;
-    setFormData(prev => ({ ...prev, idTipoTramite: idTipo, idVehiculo: '' })); // Resetear vehículo
+    setFormData(prev => ({ ...prev, idTipoTramite: idTipo, idVehiculo: '' }));
     
     if (idTipo) {
       const tipoSeleccionado = tiposTramite.find(t => t.id.toString() === idTipo);
@@ -107,7 +108,6 @@ export default function SolicitarCitaPage() {
       return;
     }
 
-    // Validar que si requiere vehículo, se haya seleccionado uno
     if (requiereVehiculo && !formData.idVehiculo) {
       setError('Este trámite requiere seleccionar un vehículo');
       setSubmitting(false);
@@ -143,6 +143,11 @@ export default function SolicitarCitaPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Redirigir a la página de registro de vehículo
+  const handleRegistrarVehiculo = () => {
+    router.push('/vehiculos');
   };
 
   if (loading) {
@@ -195,7 +200,18 @@ export default function SolicitarCitaPage() {
           {/* Campo de vehículo - solo se muestra si el trámite lo requiere */}
           {requiereVehiculo && (
             <div className={styles.formGroup}>
-              <label>Vehículo *</label>
+              <div className={styles.vehiculoHeader}>
+                <label>Vehículo *</label>
+                {vehiculos.length === 0 && (
+                  <button
+                    type="button"
+                    onClick={handleRegistrarVehiculo}
+                    className={styles.registrarVehiculoBtn}
+                  >
+                    + Registrar Vehículo
+                  </button>
+                )}
+              </div>
               <select 
                 name="idVehiculo" 
                 value={formData.idVehiculo} 
@@ -213,10 +229,27 @@ export default function SolicitarCitaPage() {
                   ))
                 )}
               </select>
-              {vehiculos.length === 0 && (
+              {vehiculos.length === 0 ? (
                 <small className={styles.warningText}>
-                  No tiene vehículos registrados. 
-                  <Link href="/vehiculos"> Regístrelo aquí</Link>
+                  ⚠️ Este trámite requiere un vehículo. 
+                  <button 
+                    type="button"
+                    onClick={handleRegistrarVehiculo}
+                    className={styles.warningLink}
+                  >
+                    Regístrelo aquí
+                  </button>
+                </small>
+              ) : (
+                <small className={styles.infoText}>
+                  ¿No encuentras tu vehículo? 
+                  <button 
+                    type="button"
+                    onClick={handleRegistrarVehiculo}
+                    className={styles.infoLink}
+                  >
+                    Regístrate otro aquí
+                  </button>
                 </small>
               )}
             </div>

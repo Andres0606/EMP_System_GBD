@@ -12,6 +12,13 @@ const ArrowLeftIcon = () => (
   </svg>
 );
 
+const PlusIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
 const CarIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
@@ -19,6 +26,7 @@ const CarIcon = () => (
   </svg>
 );
 
+// 👇 Interfaz actualizada con los nuevos campos
 interface Vehiculo {
   placa: string;
   marca: string;
@@ -31,6 +39,8 @@ interface Vehiculo {
   color?: string;
   estado?: string;
   prendado?: string;
+  numeroVin?: string;      // 👈 Nuevo campo
+  combustible?: string;    // 👈 Nuevo campo
 }
 
 export default function VehiculosPage() {
@@ -84,6 +94,24 @@ export default function VehiculosPage() {
     return 'Activo';
   };
 
+  const getCombustibleIcon = (combustible?: string) => {
+    const tipos: Record<string, string> = {
+      'Gasolina': '⛽',
+      'Diesel': '🛢️',
+      'Gas': '🔥',
+      'Mixto': '🔀',
+      'Electrico': '⚡',
+      'Hidrogeno': '💧',
+      'Etanol': '🌽',
+      'Biodiesel': '🌿'
+    };
+    return tipos[combustible || ''] || '🚗';
+  };
+
+  const handleRegistrarVehiculo = () => {
+    router.push('/vehiculos/registrar');
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -99,7 +127,15 @@ export default function VehiculosPage() {
         <Link href="/dashboard" className={styles.backButton}>
           <ArrowLeftIcon /> Volver al Dashboard
         </Link>
-        <h1>Mis Vehículos</h1>
+        <div className={styles.headerTitle}>
+          <h1>Mis Vehículos</h1>
+          <button 
+            onClick={handleRegistrarVehiculo}
+            className={styles.registrarButton}
+          >
+            <PlusIcon /> Registrar Vehículo
+          </button>
+        </div>
       </div>
 
       {error && <div className={styles.errorAlert}>{error}</div>}
@@ -108,42 +144,58 @@ export default function VehiculosPage() {
         <div className={styles.emptyState}>
           <CarIcon />
           <h3>No tienes vehículos registrados</h3>
-          <p>Para registrar un vehículo, agenda una cita con el trámite "Matrícula/Registro"</p>
-          <Link href="/asesor/citas" className={styles.emptyButton}>
-            Agendar Cita
-          </Link>
+          <p>Registra tu primer vehículo para comenzar</p>
+          <button onClick={handleRegistrarVehiculo} className={styles.emptyButton}>
+            Registrar Vehículo
+          </button>
         </div>
       ) : (
-        <div className={styles.grid}>
-          {vehiculos.map((vehiculo) => (
-            <div key={vehiculo.placa} className={`${styles.card} ${vehiculo.estado === 'CANCELADO' ? styles.cardCancelado : ''}`}>
-              <div className={styles.cardHeader}>
-                <CarIcon />
-                <h3>{vehiculo.marca} {vehiculo.linea}</h3>
-                <div className={styles.badgesGroup}>
-                  <span className={`${styles.estadoBadge} ${getEstadoColor(vehiculo.estado)}`}>
-                    {getEstadoTexto(vehiculo.estado)}
-                  </span>
-
-                  {vehiculo.prendado === 'S' && (
-                    <span className={styles.prendaBadge}>
-                      Prendado
+        <>
+          <div className={styles.grid}>
+            {vehiculos.map((vehiculo) => (
+              <div key={vehiculo.placa} className={`${styles.card} ${vehiculo.estado === 'CANCELADO' ? styles.cardCancelado : ''}`}>
+                <div className={styles.cardHeader}>
+                  <CarIcon />
+                  <h3>{vehiculo.marca} {vehiculo.linea}</h3>
+                  <div className={styles.badgesGroup}>
+                    <span className={`${styles.estadoBadge} ${getEstadoColor(vehiculo.estado)}`}>
+                      {getEstadoTexto(vehiculo.estado)}
                     </span>
+
+                    {vehiculo.prendado === 'S' && (
+                      <span className={styles.prendaBadge}>
+                        Prendado
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className={styles.cardContent}>
+                  <p><strong>Placa:</strong> {vehiculo.placa}</p>
+                  <p><strong>Modelo:</strong> {vehiculo.modelo}</p>
+                  <p><strong>Clase:</strong> {vehiculo.clase}</p>
+                  <p><strong>Tipo Servicio:</strong> {vehiculo.tipoServicio}</p>
+                  {vehiculo.color && <p><strong>Color:</strong> {vehiculo.color}</p>}
+                  <p><strong>Núm. Motor:</strong> {vehiculo.numMotor || 'No registrado'}</p>
+                  <p><strong>Núm. Chasis:</strong> {vehiculo.numChasis || 'No registrado'}</p>
+                  
+                  {/* 👇 Nuevos campos */}
+                  {vehiculo.numeroVin && (
+                    <p><strong>Número VIN:</strong> {vehiculo.numeroVin}</p>
+                  )}
+                  {vehiculo.combustible && (
+                    <p><strong>Combustible:</strong> {getCombustibleIcon(vehiculo.combustible)} {vehiculo.combustible}</p>
                   )}
                 </div>
               </div>
-              <div className={styles.cardContent}>
-                <p><strong>Placa:</strong> {vehiculo.placa}</p>
-                <p><strong>Modelo:</strong> {vehiculo.modelo}</p>
-                <p><strong>Clase:</strong> {vehiculo.clase}</p>
-                <p><strong>Tipo Servicio:</strong> {vehiculo.tipoServicio}</p>
-                {vehiculo.color && <p><strong>Color:</strong> {vehiculo.color}</p>}
-                <p><strong>Núm. Motor:</strong> {vehiculo.numMotor || 'No registrado'}</p>
-                <p><strong>Núm. Chasis:</strong> {vehiculo.numChasis || 'No registrado'}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          
+          <div className={styles.footerButton}>
+            <button onClick={handleRegistrarVehiculo} className={styles.addButton}>
+              <PlusIcon /> Agregar otro vehículo
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
