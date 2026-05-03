@@ -31,6 +31,7 @@ interface Vehiculo {
   marca: string;
   linea: string;
   prendado?: string;
+  prendado?: string;
 }
 
 interface TipoTramite {
