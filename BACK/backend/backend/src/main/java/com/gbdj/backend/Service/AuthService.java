@@ -267,4 +267,95 @@ public class AuthService {
         return errorResponse;
     }
 }
+public Map<String, Object> obtenerAsesorPorCedula(Long cedula) {
+    String url = "https://oracleapex.com/ords/ucc/apiAsesor/getByCedula?P_CEDULA=" + cedula;
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+    
+    try {
+        log.info("Obteniendo asesor con cédula: {}", cedula);
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            requestEntity,
+            Map.class
+        );
+        log.info("Respuesta de APEX: {}", response.getBody());
+        return response.getBody();
+        
+    } catch (Exception e) {
+        log.error("Error al obtener asesor: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> actualizarAsesor(Map<String, Object> asesorData) {
+    String url = "https://oracleapex.com/ords/ucc/apiAsesor/update";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(asesorData, headers);
+    
+    try {
+        log.info("Actualizando asesor en APEX: {}", url);
+        log.info("Datos enviados: {}", asesorData);
+        
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        
+        log.info("Respuesta APEX: {}", response.getBody());
+        return response.getBody();
+        
+    } catch (Exception e) {
+        log.error("Error al actualizar asesor: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> eliminarAsesor(Long cedula) {
+    // Cambiar a POST (DELETE no funciona en APEX)
+    String url = "https://oracleapex.com/ords/ucc/apiAsesor/delete";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    // Enviar la cédula en el body
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("P_CEDULA", cedula);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+    
+    try {
+        log.info("Eliminando asesor con cédula: {}", cedula);
+        log.info("URL: {}", url);
+        
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,  // Cambiar a POST
+            requestEntity,
+            Map.class
+        );
+        
+        log.info("Respuesta APEX: {}", response.getBody());
+        return response.getBody();
+        
+    } catch (Exception e) {
+        log.error("Error al eliminar asesor: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
 }
