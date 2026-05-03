@@ -171,7 +171,11 @@ export default function RegistrarVehiculoPage() {
               <select name="tipoServicio" value={formData.tipoServicio} onChange={handleChange}>
                 <option value="">Seleccionar</option>
                 <option value="Particular">Particular</option>
-                <option value="Público">Público</option>
+                <option value="Particular">Público</option>
+                <option value="Público">Diplomático</option>
+                <option value="Público">Oficial</option>
+                <option value="Público">Especial</option>
+
               </select>
             </div>
 
