@@ -65,6 +65,8 @@ export default function TramiteDetallePage() {
   const [success, setSuccess] = useState('');
   const [updating, setUpdating] = useState(false);
   const [estado, setEstado] = useState('');
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+const [estadoPendiente, setEstadoPendiente] = useState('');
 
   const cedulaAsesor =
     typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
@@ -132,31 +134,77 @@ export default function TramiteDetallePage() {
     }
   };
 
-  const handleActualizarEstado = async (nuevoEstado: string) => {
-    setUpdating(true);
-    setError('');
-    setSuccess('');
-    try {
-      const response = await fetch('http://localhost:8080/api/tramite/estado', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idTramite: parseInt(idTramite), estado: nuevoEstado }),
-      });
-      const data = await response.json();
-      if (response.ok && data.status === 'OK') {
-        setEstado(nuevoEstado);
-        setTramite((prev) => prev ? { ...prev, estadoTramite: nuevoEstado } : null);
-        setSuccess('Estado actualizado exitosamente');
-        setTimeout(() => setSuccess(''), 3000);
-      } else {
-        setError(data.mensaje || 'Error al actualizar estado');
-      }
-    } catch {
-      setError('Error de conexión con el servidor');
-    } finally {
-      setUpdating(false);
+const ordenEstados: Record<string, number> = {
+  Activo: 1,
+  En_Proceso: 2,
+  Finalizado: 3,
+};
+
+const actualizarEstadoConfirmado = async (nuevoEstado: string) => {
+  setUpdating(true);
+  setError('');
+  setSuccess('');
+
+  try {
+    const response = await fetch('http://localhost:8080/api/tramite/estado', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idTramite: parseInt(idTramite), estado: nuevoEstado }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === 'OK') {
+      setEstado(nuevoEstado);
+      setTramite((prev) => prev ? { ...prev, estadoTramite: nuevoEstado } : null);
+
+      setSuccess(
+        nuevoEstado === 'Finalizado'
+          ? 'Trámite finalizado correctamente.'
+          : 'Trámite actualizado a En Proceso correctamente.'
+      );
+
+      setTimeout(() => setSuccess(''), 3000);
+    } else {
+      setError(data.mensaje || 'Error al actualizar estado');
     }
-  };
+  } catch {
+    setError('Error de conexión con el servidor');
+  } finally {
+    setUpdating(false);
+  }
+};
+
+const handleActualizarEstado = (nuevoEstado: string) => {
+  setError('');
+  setSuccess('');
+
+  if (estado === nuevoEstado) return;
+
+  if (ordenEstados[nuevoEstado] < ordenEstados[estado]) {
+    setError('No puedes devolver el trámite a un estado anterior.');
+    setTimeout(() => setError(''), 3000);
+    return;
+  }
+
+  if (estado === 'Finalizado') {
+    setError('Este trámite ya está finalizado y no se puede modificar.');
+    setTimeout(() => setError(''), 3000);
+    return;
+  }
+
+  setEstadoPendiente(nuevoEstado);
+  setMostrarConfirmacion(true);
+};
+
+const confirmarCambioEstado = async () => {
+  const nuevoEstado = estadoPendiente;
+
+  setMostrarConfirmacion(false);
+  setEstadoPendiente('');
+
+  await actualizarEstadoConfirmado(nuevoEstado);
+};
 
   const getEditarHref = () => {
     if (!tramite) return '#';
@@ -355,14 +403,19 @@ export default function TramiteDetallePage() {
           <h2>Actualizar Estado</h2>
           <div className={styles.estadoSelector}>
             {(['Activo', 'En_Proceso', 'Finalizado'] as const).map((e) => (
-              <button
-                key={e}
-                className={`${styles.estadoBtn} ${estado === e ? getEstadoClass(e) : ''}`}
-                onClick={() => handleActualizarEstado(e)}
-                disabled={updating || estado === e}
-              >
-                {e === 'En_Proceso' ? 'En Proceso' : e}
-              </button>
+          <button
+            key={e}
+            className={`${styles.estadoBtn} ${estado === e ? getEstadoClass(e) : ''}`}
+            onClick={() => handleActualizarEstado(e)}
+            disabled={
+              updating ||
+              estado === e ||
+              ordenEstados[e] < ordenEstados[estado] ||
+              estado === 'Finalizado'
+            }
+          >
+            {e === 'En_Proceso' ? 'En Proceso' : e}
+          </button>
             ))}
           </div>
           <p className={styles.estadoHelper}>
@@ -374,7 +427,48 @@ export default function TramiteDetallePage() {
           <ArrowLeftIcon /> Volver a trámites
         </Link>
 
+        {mostrarConfirmacion && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modalBox}>
+      <div className={styles.modalIcon}>
+        <AlertCircleIcon />
+      </div>
+
+      <h3>
+        {estadoPendiente === 'Finalizado'
+          ? 'Finalizar trámite'
+          : 'Pasar trámite a En Proceso'}
+      </h3>
+      <p>
+        {estadoPendiente === 'Finalizado'
+          ? 'Estás a punto de marcar este trámite como finalizado. Después de hacerlo no podrás volver a cambiar su estado.'
+          : 'Estás a punto de pasar este trámite a En Proceso. Después no podrás devolverlo a Activo.'}
+      </p>
+
+      <div className={styles.modalActions}>
+        <button
+          className={styles.btnCancelar}
+          onClick={() => {
+            setMostrarConfirmacion(false);
+            setEstadoPendiente('');
+          }}
+        >
+          Cancelar
+        </button>
+
+        <button
+          className={styles.btnConfirmar}
+          onClick={confirmarCambioEstado}
+        >
+        {estadoPendiente === 'Finalizado' ? 'Sí, finalizar' : 'Sí, pasar a En Proceso'}        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );
+
+  
 }

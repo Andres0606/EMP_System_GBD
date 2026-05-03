@@ -409,6 +409,106 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ══════════════════════
+   MODAL BONITO
+══════════════════════ */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(13, 31, 54, 0.45);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease;
+}
+
+.modalBox {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 1.8rem;
+  box-shadow: 0 20px 60px rgba(13, 31, 54, 0.25);
+  text-align: center;
+  animation: scaleIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modalIcon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  border-radius: 16px;
+  background: rgba(21, 101, 192, 0.1);
+  color: #1565C0;
+  display: grid;
+  place-items: center;
+}
+
+.modalIcon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.modalBox h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0d1f36;
+  margin-bottom: 0.4rem;
+}
+
+.modalBox p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 1.2rem;
+  line-height: 1.4;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.btnCancelar,
+.btnConfirmar {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btnCancelar {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btnCancelar:hover {
+  background: #e2e8f0;
+}
+
+.btnConfirmar {
+  background: #1565C0;
+  color: white;
+}
+
+.btnConfirmar:hover {
+  background: #0d47a1;
+}
+
+/* ══════════════════════
    RESPONSIVE
 ══════════════════════ */
 @media (max-width: 768px) {

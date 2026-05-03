@@ -345,3 +345,22 @@
 .emptyButton:hover {
   background: #0051a8;
 }
+
+.badgesGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.prendaBadge {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffe08a;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}

@@ -120,9 +120,17 @@ export default function VehiculosPage() {
               <div className={styles.cardHeader}>
                 <CarIcon />
                 <h3>{vehiculo.marca} {vehiculo.linea}</h3>
-                <span className={`${styles.estadoBadge} ${getEstadoColor(vehiculo.estado)}`}>
-                  {getEstadoTexto(vehiculo.estado)}
-                </span>
+                <div className={styles.badgesGroup}>
+                  <span className={`${styles.estadoBadge} ${getEstadoColor(vehiculo.estado)}`}>
+                    {getEstadoTexto(vehiculo.estado)}
+                  </span>
+
+                  {vehiculo.prendado === 'S' && (
+                    <span className={styles.prendaBadge}>
+                      Prendado
+                    </span>
+                  )}
+                </div>
               </div>
               <div className={styles.cardContent}>
                 <p><strong>Placa:</strong> {vehiculo.placa}</p>
@@ -132,9 +140,6 @@ export default function VehiculosPage() {
                 {vehiculo.color && <p><strong>Color:</strong> {vehiculo.color}</p>}
                 <p><strong>Núm. Motor:</strong> {vehiculo.numMotor || 'No registrado'}</p>
                 <p><strong>Núm. Chasis:</strong> {vehiculo.numChasis || 'No registrado'}</p>
-                {vehiculo.prendado === 'S' && (
-                  <p className={styles.prendado}>🔒 Vehículo con Prenda Activa</p>
-                )}
               </div>
             </div>
           ))}
