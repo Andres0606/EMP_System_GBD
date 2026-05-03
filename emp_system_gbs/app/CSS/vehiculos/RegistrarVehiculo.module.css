@@ -255,3 +255,67 @@
   font-size: 0.7rem;
   margin-top: 0.25rem;
 }
+/* En RegistrarVehiculo.module.css */
+
+.formGroupFull {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toggleGroup {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.toggleBtn {
+  padding: 0.5rem 1.5rem;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #4b5563;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.toggleBtn:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.toggleActive {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.toggleActive:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
+.helpText {
+  font-size: 0.7rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .formGroupFull {
+    grid-column: span 1;
+  }
+  
+  .toggleGroup {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .toggleBtn {
+    flex: 1;
+    text-align: center;
+  }
+}
