@@ -185,7 +185,7 @@ const generarHorasDisponibles = () => {
   const diaSemana = fechaObj.getDay();
   
   if (diaSemana === 0) {
-    setError('⚠️ No hay atención los domingos');
+    setError('No hay atención los domingos');
     return false;
   }
   
@@ -193,12 +193,12 @@ const generarHorasDisponibles = () => {
   
   if (diaSemana === 6) { // Sábado
     if (hora < 8 || hora >= 12) {
-      setError('⚠️ Los sábados la atención es de 8:00 AM a 12:00 PM');
+      setError('Los sábados la atención es de 8:00 AM a 12:00 PM');
       return false;
     }
   } else { // Lunes a Viernes
     if (hora < 8 || hora >= 17) {
-      setError('⚠️ El horario de atención es de 8:00 AM a 5:00 PM');
+      setError('El horario de atención es de 8:00 AM a 5:00 PM');
       return false;
     }
   }
@@ -208,6 +208,7 @@ const generarHorasDisponibles = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
     setError('');
     setSuccess('');
@@ -244,12 +245,31 @@ const generarHorasDisponibles = () => {
 
       const data = await response.json();
 
-      if (response.ok && data.status === 'OK') {
-        setSuccess('¡Cita agendada exitosamente! Redirigiendo...');
-        setTimeout(() => router.push('/asesor/citas'), 2200);
-      } else {
-        setError(data.mensaje || 'Error al agendar la cita');
-      }
+if (response.ok && data.status === 'OK') {
+  setSuccess('Cita agendada exitosamente. Abriendo WhatsApp...');
+
+  const telefonoLimpio = String(cita.telefono).replace(/\D/g, '');
+
+  const telefonoWhatsapp = telefonoLimpio.startsWith('57')
+    ? telefonoLimpio
+    : `57${telefonoLimpio}`;
+
+  const mensaje = `Hola ${cita.cliente}, tu cita para el trámite ${cita.tipoTramite} ha sido agendada.
+
+Fecha: ${fecha}
+Hora: ${hora}
+Vehículo: ${cita.vehiculo}
+
+Por favor confirma tu asistencia.`;
+
+  const whatsappUrl = `https://wa.me/${telefonoWhatsapp}?text=${encodeURIComponent(mensaje)}`;
+
+  window.open(whatsappUrl, '_blank');
+
+  setTimeout(() => router.push('/asesor/citas'), 2200);
+} else {
+  setError(data.mensaje || 'Error al agendar la cita');
+}
     } catch (err) {
       console.error('Error:', err);
       setError('Error de conexión con el servidor');

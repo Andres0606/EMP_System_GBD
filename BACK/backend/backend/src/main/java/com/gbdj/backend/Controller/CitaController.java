@@ -174,4 +174,36 @@ public ResponseEntity<?> completarCita(@RequestBody CompletarCitaRequest request
         ));
     }
 }
+
+@PostMapping("/cancelar")
+public ResponseEntity<?> cancelarCita(@RequestBody Map<String, Object> request) {
+    if (request.get("idCita") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El ID de la cita es requerido"
+        ));
+    }
+
+    Map<String, Object> data = new HashMap<>();
+    data.put("P_ID_CITA", request.get("idCita"));
+
+    Map<String, Object> response = citaService.cancelarCita(data);
+
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null
+            ? response.get("mensaje").toString()
+            : "Error al cancelar la cita";
+
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
+
+
+
+
 }

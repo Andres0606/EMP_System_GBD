@@ -412,6 +412,39 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.cardActions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.cardActions .btnCompletar {
+  flex: 1;
+}
+
+.btnCancelarCita {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: .65rem 1rem;
+  border-radius: 11px;
+  border: none;
+  background: linear-gradient(135deg, #ef5350, #c62828);
+  color: #fff;
+  font-family: var(--ffb, 'DM Sans', sans-serif);
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 14px rgba(198, 40, 40, 0.25);
+  transition: filter .2s, transform .2s, box-shadow .2s;
+}
+
+.btnCancelarCita:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(198, 40, 40, 0.35);
+}
+
 /* ══════════════════════
    RESPONSIVE
 ══════════════════════ */
@@ -437,3 +470,4 @@
     white-space: normal;
   }
 }
+

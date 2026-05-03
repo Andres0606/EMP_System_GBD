@@ -161,4 +161,34 @@ public Map<String, Object> completarCita(Map<String, Object> citaData) {
         return errorResponse;
     }
 }
+
+public Map<String, Object> cancelarCita(Map<String, Object> citaData) {
+    String url = "https://oracleapex.com/ords/ucc/apiCita/cancelar";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(citaData, headers);
+
+    try {
+        log.info("Cancelando cita en APEX: {}", url);
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al cancelar cita: ", e);
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+
 }

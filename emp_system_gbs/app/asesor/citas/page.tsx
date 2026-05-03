@@ -155,6 +155,29 @@ export default function AsesorCitasPage() {
     }
   };
 
+  const cancelarCitaAgendada = async (idCita: number) => {
+  const confirmar = confirm('¿Seguro que deseas cancelar esta cita agendada?');
+  if (!confirmar) return;
+
+  try {
+    const response = await fetch('http://localhost:8080/api/citas/cancelar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idCita }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === 'OK') {
+      await cargarCitas();
+    } else {
+      setError(data.mensaje || 'Error al cancelar la cita');
+    }
+  } catch {
+    setError('Error de conexión con el servidor');
+  }
+};
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -358,14 +381,23 @@ export default function AsesorCitasPage() {
                       </div>
                     </div>
 
-                    <div className={styles.cardFooter}>
-                      <button
-                        className={styles.btnCompletar}
-                        onClick={() => router.push(`/asesor/citas/${cita.idCita}/completar`)}
-                      >
-                        <CheckIcon /> Completar y crear trámite <ArrowIcon />
-                      </button>
-                    </div>
+                  <div className={styles.cardFooter}>
+                  <div className={styles.cardActions}>
+                    <button
+                      className={styles.btnCompletar}
+                      onClick={() => router.push(`/asesor/citas/${cita.idCita}/completar`)}
+                    >
+                      <CheckIcon /> Completar trámite
+                    </button>
+
+                    <button
+                      className={styles.btnCancelarCita}
+                      onClick={() => cancelarCitaAgendada(cita.idCita)}
+                    >
+                      Cancelar cita
+                    </button>
+                  </div>
+                </div>
                   </div>
                 ))}
               </div>

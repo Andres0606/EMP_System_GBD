@@ -246,61 +246,81 @@ export default function DashboardPage() {
 
         {/* ── Módulos ── */}
 <p className={styles.sectionTitle}>Módulos disponibles</p>
+
 <div className={styles.grid}>
+
+  {/* Solicitar Cita */}
+  <div className={styles.card}>
+    <div className={styles.cardIcon}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    </div>
+
+    <h3>Solicitar Cita</h3>
+    <p>Agenda una cita para realizar tu trámite</p>
+
+    <Link href="/citas/solicitar">
+      <button className={styles.cardBtn}>
+        Solicitar cita <ArrowIcon />
+      </button>
+    </Link>
+  </div>
+
+  {/* Mis Trámites */}
   <div className={styles.card}>
     <span className={styles.comingBadge}>Próximamente</span>
-    <div className={styles.cardIcon}><FileIcon /></div>
-    <h3>Trámites</h3>
+
+    <div className={styles.cardIcon}>
+      <FileIcon />
+    </div>
+
+    <h3>Mis Trámites</h3>
     <p>Gestiona y consulta el estado de tus trámites activos</p>
 
     <Link href="/mis-tramites">
-      <button className={styles.cardBtn}>Ver trámites <ArrowIcon /></button>
+      <button className={styles.cardBtn}>
+        Ver trámites <ArrowIcon />
+      </button>
     </Link>
   </div>
 
+  {/* Mis Vehículos */}
   <div className={styles.card}>
-    <span className={styles.comingBadge}>Próximamente</span>
-    <div className={styles.cardIcon}><UserIcon /></div>
-    <h3>Perfil</h3>
-    <p>Actualiza tu información personal y preferencias de cuenta</p>
-   
-<Link href="/perfil">
-  <button className={styles.cardBtn}>Editar perfil <ArrowIcon /></button>
-</Link>
-  </div>
+    <div className={styles.cardIcon}>
+      <VehicleIcon />
+    </div>
 
-  <div className={styles.card}>
-    <span className={styles.comingBadge}>Próximamente</span>
-    <div className={styles.cardIcon}><BellIcon /></div>
-    <h3>Notificaciones</h3>
-    <p>Revisa alertas y novedades importantes de tus trámites</p>
-    <button className={styles.cardBtn}>Ver todo <ArrowIcon /></button>
-  </div>
-
-  <div className={styles.card}>
-    <div className={styles.cardIcon}><VehicleIcon /></div>
     <h3>Mis Vehículos</h3>
     <p>Registra y consulta los vehículos asociados a tu cuenta</p>
+
     <Link href="/vehiculos">
-      <button className={styles.cardBtn}>Ver vehículos <ArrowIcon /></button>
+      <button className={styles.cardBtn}>
+        Ver vehículos <ArrowIcon />
+      </button>
     </Link>
   </div>
 
-<div className={styles.card}>
-  <div className={styles.cardIcon}>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
+  {/* Perfil */}
+  <div className={styles.card}>
+    <span className={styles.comingBadge}>Próximamente</span>
+
+    <div className={styles.cardIcon}>
+      <UserIcon />
+    </div>
+
+    <h3>Perfil</h3>
+    <p>Actualiza tu información personal y preferencias de cuenta</p>
+
+    <Link href="/perfil">
+      <button className={styles.cardBtn}>
+        Editar perfil <ArrowIcon />
+      </button>
+    </Link>
   </div>
-  <h3>Solicitar Cita</h3>
-  <p>Agenda una cita para realizar tu trámite</p>
-  <Link href="/citas/solicitar">
-    <button className={styles.cardBtn}>Solicitar cita <ArrowIcon /></button>
-  </Link>
-</div>
 
 </div>
       </div>
