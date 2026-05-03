@@ -17,6 +17,7 @@ export default function RegistrarVehiculoPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [prendado, setPrendado] = useState(false); // 👈 Estado para prendado
   
   const [formData, setFormData] = useState({
     placa: '',
@@ -64,7 +65,8 @@ export default function RegistrarVehiculoPage() {
       numChasis: formData.numChasis,
       color: formData.color,
       numeroVin: formData.numeroVin,
-      combustible: formData.combustible
+      combustible: formData.combustible,
+      prendado: prendado ? 'S' : 'N'  // 👈 Enviar 'S' o 'N'
     };
 
     try {
@@ -232,6 +234,30 @@ export default function RegistrarVehiculoPage() {
                 <option value="Etanol">Etanol</option>
                 <option value="Biodiesel">Biodiesel</option>
               </select>
+            </div>
+
+            {/* 👇 Campo de prendado */}
+            <div className={styles.formGroupFull}>
+              <label>¿Vehículo prendado?</label>
+              <div className={styles.toggleGroup}>
+                <button
+                  type="button"
+                  className={`${styles.toggleBtn} ${!prendado ? styles.toggleActive : ''}`}
+                  onClick={() => setPrendado(false)}
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.toggleBtn} ${prendado ? styles.toggleActive : ''}`}
+                  onClick={() => setPrendado(true)}
+                >
+                  Sí
+                </button>
+              </div>
+              <small className={styles.helpText}>
+                Indica si el vehículo tiene una prenda vigente (crédito activo)
+              </small>
             </div>
           </div>
 

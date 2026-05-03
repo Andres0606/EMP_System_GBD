@@ -55,7 +55,7 @@ public ResponseEntity<?> registrarVehiculo(@RequestBody Map<String, Object> requ
     vehiculoData.put("P1_COLOR", request.get("color")); 
     vehiculoData.put("P1_NUMEROVIN", request.get("numeroVin"));      // 👈 Nuevo
     vehiculoData.put("P1_COMBUSTIBLE", request.get("combustible"));  // 👈 Agrega esta línea
-    
+    vehiculoData.put("P1_PRENDADO", request.get("prendado")); // 👈 Agregar esta línea
     log.info("Enviando a APEX: {}", vehiculoData);
     
     Map<String, Object> response = vehiculoService.registrarVehiculo(vehiculoData);
