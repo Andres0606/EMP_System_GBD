@@ -13,29 +13,53 @@ export default function CancelarMatriculaPage() {
   const placa = searchParams.get('placa') || '';
   const idCliente = searchParams.get('idCliente') || '';
   
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+const [submitting, setSubmitting] = useState(false);
+const [error, setError] = useState('');
+const [success, setSuccess] = useState('');
+const [vehiculoPrendado, setVehiculoPrendado] = useState(false);
 
-  useEffect(() => {
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-    const rol = sessionStorage.getItem('userRol');
-    
-    if (!isLoggedIn || rol !== '2') {
-      router.push('/login');
-      return;
+useEffect(() => {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  const rol = sessionStorage.getItem('userRol');
+  
+  if (!isLoggedIn || rol !== '2') {
+    router.push('/login');
+    return;
+  }
+  
+  if (!placa || !idCliente) {
+    setError('Falta información del vehículo o cliente');
+    return;
+  }
+
+  verificarPrenda();
+}, []);
+
+const verificarPrenda = async () => {
+  try {
+    const response = await fetch(`http://localhost:8080/api/vehiculos/cliente/${idCliente}`);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.vehiculos) {
+      const vehiculo = data.vehiculos.find((v: any) => v.placa === placa);
+      setVehiculoPrendado(vehiculo?.prendado === 'S');
     }
-    
-    if (!placa || !idCliente) {
-      setError('Falta información del vehículo o cliente');
-    }
-  }, []);
+  } catch (error) {
+    console.error('Error verificando prenda:', error);
+  }
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError('');
     setSuccess('');
+
+    if (vehiculoPrendado) {
+  setError('❌ No se puede cancelar la matrícula. Este vehículo tiene una prenda activa. Primero debe realizarse el levantamiento de prenda.');
+  setSubmitting(false);
+  return;
+}
 
     const cancelacionData = {
       placa: placa,
@@ -98,11 +122,21 @@ export default function CancelarMatriculaPage() {
           <p><strong>ID Cliente:</strong> {idCliente}</p>
         </div>
 
+        {vehiculoPrendado && (
+  <div className={styles.errorAlert}>
+    ❌ Este vehículo tiene prenda activa. Primero debe realizarse el levantamiento de prenda.
+  </div>
+)}
+
         <form onSubmit={handleSubmit}>
           <div className={styles.buttonGroup}>
-            <button type="submit" disabled={submitting} className={styles.cancelButton}>
-              {submitting ? 'Procesando...' : 'Confirmar Cancelación'}
-            </button>
+          <button 
+            type="submit" 
+            disabled={submitting || vehiculoPrendado} 
+            className={styles.cancelButton}
+          >
+            {submitting ? 'Procesando...' : 'Confirmar Cancelación'}
+          </button>
             <Link href={`/asesor/tramites/${idTramite}`} className={styles.backButtonForm}>
               Volver
             </Link>
