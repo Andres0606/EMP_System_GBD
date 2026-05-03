@@ -31,7 +31,6 @@ interface Vehiculo {
   marca: string;
   linea: string;
   prendado?: string;
-  prendado?: string;
 }
 
 interface TipoTramite {
@@ -363,9 +362,8 @@ const mostrarAdvertenciaPrenda =
           onClick={() => seleccionarTipoTramite(tipo)}
         >
           <span>
-          {tipo.nombre}
-          {tipo.requiereVehiculo === 'S' && ' 🚗'}
-        </span>
+          {tipo.nombre}       
+          </span>
         <strong>${tipo.valorBase.toLocaleString()}</strong>
         </button>
       ))}
