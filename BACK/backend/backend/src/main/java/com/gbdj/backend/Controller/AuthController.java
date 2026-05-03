@@ -427,4 +427,97 @@ public ResponseEntity<?> registerCliente(@RequestBody ClienteRegisterRequest req
             "mensaje", "Backend funcionando correctamente"
         ));
     }
+    @GetMapping("/asesores/{cedula}")
+public ResponseEntity<?> obtenerAsesorPorCedula(@PathVariable Long cedula) {
+    log.info("=== OBTENER ASESOR POR CÉDULA ===");
+    log.info("Cédula: {}", cedula);
+    
+    try {
+        Map<String, Object> response = authService.obtenerAsesorPorCedula(cedula);
+        
+        if (response != null && "OK".equals(response.get("status"))) {
+            return ResponseEntity.ok(response);
+        } else {
+            String mensaje = response != null ? 
+                              response.get("mensaje").toString() : "Asesor no encontrado";
+            return ResponseEntity.status(404).body(Map.of(
+                "status", "ERROR",
+                "mensaje", mensaje
+            ));
+        }
+    } catch (Exception e) {
+        log.error("Error al obtener asesor: ", e);
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", "Error interno: " + e.getMessage()
+        ));
+    }
+}
+@PutMapping("/asesores/{cedula}")
+public ResponseEntity<?> actualizarAsesor(
+        @PathVariable Long cedula, 
+        @RequestBody Map<String, Object> request) {
+    
+    log.info("=== ACTUALIZAR ASESOR ===");
+    log.info("Cédula: {}", cedula);
+    log.info("Request: {}", request);
+    
+    try {
+        // Preparar datos para APEX
+        Map<String, Object> asesorData = new HashMap<>();
+        asesorData.put("P_CEDULA", cedula);
+        asesorData.put("P_NOMBRES", request.get("nombres"));
+        asesorData.put("P_APELLIDO", request.get("apellido"));
+        asesorData.put("P_CORREO", request.get("correo"));
+        asesorData.put("P_TELEFONO", request.get("telefono"));
+        asesorData.put("P_ESPECIALIDAD", request.get("especialidad"));
+        asesorData.put("P_SUELDO", request.get("sueldo"));
+        asesorData.put("P_TIPOUSUARIO", 2);
+        
+        Map<String, Object> response = authService.actualizarAsesor(asesorData);
+        
+        if (response != null && "OK".equals(response.get("status"))) {
+            return ResponseEntity.ok(response);
+        } else {
+            String mensaje = response != null ? 
+                              response.get("mensaje").toString() : "Error al actualizar asesor";
+            return ResponseEntity.status(500).body(Map.of(
+                "status", "ERROR",
+                "mensaje", mensaje
+            ));
+        }
+    } catch (Exception e) {
+        log.error("Error al actualizar asesor: ", e);
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", "Error interno: " + e.getMessage()
+        ));
+    }
+}
+@DeleteMapping("/asesores/{cedula}")
+public ResponseEntity<?> eliminarAsesor(@PathVariable Long cedula) {
+    log.info("=== ELIMINAR ASESOR ===");
+    log.info("Cédula: {}", cedula);
+    
+    try {
+        Map<String, Object> response = authService.eliminarAsesor(cedula);
+        
+        if (response != null && "OK".equals(response.get("status"))) {
+            return ResponseEntity.ok(response);
+        } else {
+            String mensaje = response != null ? 
+                              response.get("mensaje").toString() : "Error al eliminar asesor";
+            return ResponseEntity.status(500).body(Map.of(
+                "status", "ERROR",
+                "mensaje", mensaje
+            ));
+        }
+    } catch (Exception e) {
+        log.error("Error al eliminar asesor: ", e);
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", "Error interno: " + e.getMessage()
+        ));
+    }
+}
 }
