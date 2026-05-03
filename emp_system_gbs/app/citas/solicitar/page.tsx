@@ -45,6 +45,7 @@ export default function SolicitarCitaPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const enviandoRef = useRef(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
@@ -155,15 +156,24 @@ setRequiereVehiculo(
     setError('');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSubmitting(false);
+};
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (enviandoRef.current) return;
+
+      enviandoRef.current = true;
+      setSubmitting(true);
+      setError('');
+      setSuccess('');
 
     if (!formData.idTipoTramite) {
       setError('Seleccione un tipo de trámite');
-      setSubmitting(false);
+      desbloquearEnvio();
       return;
     }
 
@@ -182,32 +192,32 @@ if (requiereVehiculo && !formData.idVehiculo) {
       : 'Este trámite requiere seleccionar un vehículo'
   );
 
-  setSubmitting(false);
+desbloquearEnvio();
   return;
 }
 
 if (tipoTramiteSeleccionado === 'Traspaso' && esDuenioRegistrado && !formData.idVehiculo) {
   setError('Debe seleccionar el vehículo para realizar el traspaso');
-  setSubmitting(false);
+desbloquearEnvio();
   return;
 }
 
 if (tipoTramiteSeleccionado === 'Traspaso' && !esDuenioRegistrado) {
   if (!duenioActual.cedula) {
     setError('La cédula del dueño actual es requerida');
-    setSubmitting(false);
+desbloquearEnvio();
     return;
   }
 
   if (!duenioActual.nombres) {
     setError('Los nombres del dueño actual son requeridos');
-    setSubmitting(false);
+desbloquearEnvio();
     return;
   }
 
   if (!duenioActual.apellido) {
     setError('Los apellidos del dueño actual son requeridos');
-    setSubmitting(false);
+desbloquearEnvio();
     return;
   }
 }
@@ -238,27 +248,32 @@ const citaData: any = {
       : null
 };
 
-    try {
-      const response = await fetch('http://localhost:8080/api/citas/solicitar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(citaData),
-      });
+    let citaCreada = false;
 
-      const data = await response.json();
+try {
+  const response = await fetch('http://localhost:8080/api/citas/solicitar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(citaData),
+  });
 
-      if (response.ok && data.status === 'OK') {
-        setSuccess('¡Cita solicitada exitosamente! Redirigiendo...');
-        setTimeout(() => router.push('/dashboard'), 2000);
-      } else {
-        setError(data.mensaje || 'Error al solicitar cita');
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Error de conexión con el servidor');
-    } finally {
-      setSubmitting(false);
-    }
+  const data = await response.json();
+
+  if (response.ok && data.status === 'OK') {
+    citaCreada = true;
+    setSuccess('¡Cita solicitada exitosamente! Redirigiendo...');
+    setTimeout(() => router.push('/dashboard'), 2000);
+  } else {
+    setError(data.mensaje || 'Error al solicitar cita');
+  }
+} catch (err) {
+  console.error('Error:', err);
+  setError('Error de conexión con el servidor');
+} finally {
+  if (!citaCreada) {
+    desbloquearEnvio();
+  }
+}
   };
 
   const handleRegistrarVehiculo = () => router.push('/vehiculos');
