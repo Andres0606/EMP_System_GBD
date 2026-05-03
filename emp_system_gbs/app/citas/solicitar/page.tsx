@@ -9,6 +9,7 @@ interface Vehiculo {
   placa: string;
   marca: string;
   linea: string;
+  prendado?: string;
 }
 
 interface TipoTramite {
@@ -16,7 +17,7 @@ interface TipoTramite {
   nombre: string;
   descripcion: string;
   valorBase: number;
-  requiereVehiculo: string;
+  requiereVehiculo: string; // 'S', 'N', o 'M' (Mixto)
 }
 
 export default function SolicitarCitaPage() {
@@ -92,7 +93,6 @@ export default function SolicitarCitaPage() {
         setValorTramite(tipoSeleccionado.valorBase);
         setTipoTramiteSeleccionado(tipoSeleccionado.nombre);
         
-        // 👇 Manejar los tres casos
         if (tipoSeleccionado.requiereVehiculo === 'S') {
           setRequiereVehiculo(true);
         } else {
@@ -125,7 +125,19 @@ export default function SolicitarCitaPage() {
     }
 
     if (requiereVehiculo && !formData.idVehiculo) {
-      setError('Este trámite requiere seleccionar un vehículo');
+      const tipoActual = tiposTramite.find(
+        t => t.id.toString() === formData.idTipoTramite
+      );
+
+      const esLevantarPrendaSubmit =
+        tipoActual?.nombre.toLowerCase().includes('levantar') &&
+        tipoActual?.nombre.toLowerCase().includes('prenda');
+
+      setError(
+        esLevantarPrendaSubmit
+          ? 'No puedes solicitar levantamiento de prenda porque no seleccionaste un vehículo prendado'
+          : 'Este trámite requiere seleccionar un vehículo'
+      );
       setSubmitting(false);
       return;
     }
@@ -184,6 +196,35 @@ export default function SolicitarCitaPage() {
     }
   };
 
+  // Lógica de filtrado de vehículos para Levantar Prenda y Cancelación Matrícula
+  const tipoSeleccionado = tiposTramite.find(
+    t => t.id.toString() === formData.idTipoTramite
+  );
+
+  const esLevantarPrenda =
+    tipoSeleccionado?.nombre.toLowerCase().includes('levantar') &&
+    tipoSeleccionado?.nombre.toLowerCase().includes('prenda');
+
+  const vehiculosDisponibles = esLevantarPrenda
+    ? vehiculos.filter(v => v.prendado === 'S')
+    : vehiculos;
+
+  const nombreTramite = tipoSeleccionado?.nombre
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') || '';
+
+  const esCancelacionMatricula =
+    nombreTramite.includes('cancel') &&
+    nombreTramite.includes('matricula');
+
+  const vehiculoSeleccionado = vehiculos.find(
+    v => v.placa === formData.idVehiculo
+  );
+
+  const mostrarAdvertenciaPrenda =
+    esCancelacionMatricula && vehiculoSeleccionado?.prendado === 'S';
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -231,10 +272,17 @@ export default function SolicitarCitaPage() {
             )}
           </div>
 
-          {/* Campo de vehículo cuando es obligatorio (S) */}
+          {/* Campo de vehículo - solo se muestra si el trámite lo requiere */}
           {requiereVehiculo && (
             <div className={styles.formGroup}>
-              <label>Vehículo *</label>
+              <div className={styles.vehiculoHeader}>
+                <label>Vehículo *</label>
+                {vehiculosDisponibles.length === 0 && (
+                  <Link href="/vehiculos" className={styles.registrarVehiculoBtn}>
+                    Regístralo aquí
+                  </Link>
+                )}
+              </div>
               <select 
                 name="idVehiculo" 
                 value={formData.idVehiculo} 
@@ -242,16 +290,47 @@ export default function SolicitarCitaPage() {
                 required={requiereVehiculo}
               >
                 <option value="">Seleccione un vehículo</option>
-                {vehiculos.length === 0 ? (
-                  <option value="" disabled>No tiene vehículos registrados</option>
+                {vehiculosDisponibles.length === 0 ? (
+                  <option value="" disabled>
+                    {esLevantarPrenda
+                      ? 'No tienes vehículos prendados'
+                      : 'No tiene vehículos registrados'}
+                  </option>
                 ) : (
-                  vehiculos.map((vehiculo) => (
+                  vehiculosDisponibles.map((vehiculo) => (
                     <option key={vehiculo.placa} value={vehiculo.placa}>
                       {vehiculo.placa} - {vehiculo.marca} {vehiculo.linea}
+                      {vehiculo.prendado === 'S' ? ' - Prendado' : ''}
                     </option>
                   ))
                 )}
               </select>
+
+              {mostrarAdvertenciaPrenda && (
+                <small className={styles.warningText}>
+                  ⚠️ Este vehículo tiene prenda activa. Puedes solicitar la cita, pero primero debe completarse el levantamiento de prenda antes de cancelar la matrícula.
+                </small>
+              )}
+
+              {vehiculosDisponibles.length === 0 ? (
+                <small className={styles.warningText}>
+                  {esLevantarPrenda
+                    ? '⚠️ No tienes vehículos prendados. Si no aparece, '
+                    : '⚠️ Este trámite requiere un vehículo. '}
+                  <Link href="/vehiculos" className={styles.warningLink}>
+                    Regístralo aquí
+                  </Link>
+                </small>
+              ) : (
+                <small className={styles.infoText}>
+                  {esLevantarPrenda
+                    ? 'Solo aparecen vehículos con prenda activa. ¿No encuentras tu vehículo? '
+                    : '¿No encuentras tu vehículo? '}
+                  <Link href="/vehiculos" className={styles.infoLink}>
+                    Regístralo aquí
+                  </Link>
+                </small>
+              )}
             </div>
           )}
 
