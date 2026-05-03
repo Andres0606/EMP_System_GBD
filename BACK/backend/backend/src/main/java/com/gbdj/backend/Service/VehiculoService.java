@@ -132,16 +132,27 @@ public Map<String, Object> realizarTraspaso(Map<String, Object> traspasoData) {
     HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(traspasoData, headers);
     
     try {
-        log.info("Realizando traspaso en APEX: {}", url);
-        log.info("Datos traspaso: {}", traspasoData);
+        log.info("=== REALIZAR TRASPASO SERVICE ===");
+        log.info("URL: {}", url);
+        log.info("Datos enviados a APEX: {}", traspasoData);
+        
         ResponseEntity<Map> response = restTemplate.exchange(
             url,
             HttpMethod.POST,
             requestEntity,
             Map.class
         );
-        log.info("Respuesta APEX: {}", response.getBody());
+        
+        log.info("Status code: {}", response.getStatusCode());
+        log.info("Respuesta de APEX: {}", response.getBody());
         return response.getBody();
+        
+    } catch (HttpClientErrorException e) {
+        log.error("Error HTTP: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error HTTP: " + e.getResponseBodyAsString());
+        return errorResponse;
     } catch (Exception e) {
         log.error("Error en traspaso: ", e);
         Map<String, Object> errorResponse = new HashMap<>();
@@ -244,6 +255,34 @@ public Map<String, Object> levantarPrenda(Map<String, Object> prendaData) {
         return response.getBody();
     } catch (Exception e) {
         log.error("Error en levantamiento de prenda: ", e);
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "ERROR");
+        errorResponse.put("mensaje", "Error: " + e.getMessage());
+        return errorResponse;
+    }
+}
+public Map<String, Object> registrarHistorial(Map<String, Object> historialData) {
+    String url = "https://oracleapex.com/ords/ucc/apiHistorial/register";
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    
+    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(historialData, headers);
+    
+    try {
+        log.info("Registrando historial en APEX: {}", url);
+        log.info("Datos: {}", historialData);
+        
+        ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.POST,
+            requestEntity,
+            Map.class
+        );
+        
+        return response.getBody();
+    } catch (Exception e) {
+        log.error("Error al registrar historial: ", e);
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", "ERROR");
         errorResponse.put("mensaje", "Error: " + e.getMessage());

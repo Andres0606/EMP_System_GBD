@@ -16,7 +16,7 @@ interface TipoTramite {
   nombre: string;
   descripcion: string;
   valorBase: number;
-  requiereVehiculo: string; // 'S' o 'N'
+  requiereVehiculo: string;
 }
 
 export default function SolicitarCitaPage() {
@@ -29,7 +29,15 @@ export default function SolicitarCitaPage() {
   const [tiposTramite, setTiposTramite] = useState<TipoTramite[]>([]);
   const [valorTramite, setValorTramite] = useState<number | null>(null);
   const [requiereVehiculo, setRequiereVehiculo] = useState<boolean>(false);
-  const [mostrarModalRegistro, setMostrarModalRegistro] = useState(false);
+  const [tipoTramiteSeleccionado, setTipoTramiteSeleccionado] = useState<string>('');
+  
+  // 👇 Estados para traspaso
+  const [esDuenioRegistrado, setEsDuenioRegistrado] = useState<boolean>(true);
+  const [duenioActual, setDuenioActual] = useState({
+    cedula: '',
+    nombres: '',
+    apellido: ''
+  });
   
   const [formData, setFormData] = useState({
     idVehiculo: '',
@@ -82,11 +90,19 @@ export default function SolicitarCitaPage() {
       const tipoSeleccionado = tiposTramite.find(t => t.id.toString() === idTipo);
       if (tipoSeleccionado) {
         setValorTramite(tipoSeleccionado.valorBase);
-        setRequiereVehiculo(tipoSeleccionado.requiereVehiculo === 'S');
+        setTipoTramiteSeleccionado(tipoSeleccionado.nombre);
+        
+        // 👇 Manejar los tres casos
+        if (tipoSeleccionado.requiereVehiculo === 'S') {
+          setRequiereVehiculo(true);
+        } else {
+          setRequiereVehiculo(false);
+        }
       }
     } else {
       setValorTramite(null);
       setRequiereVehiculo(false);
+      setTipoTramiteSeleccionado('');
     }
   };
 
@@ -114,10 +130,33 @@ export default function SolicitarCitaPage() {
       return;
     }
 
-    const citaData = {
+    // 👇 Validar datos del dueño para traspaso cuando NO es dueño
+    if (tipoTramiteSeleccionado === 'Traspaso' && !esDuenioRegistrado) {
+      if (!duenioActual.cedula) {
+        setError('La cédula del dueño actual es requerida');
+        setSubmitting(false);
+        return;
+      }
+      if (!duenioActual.nombres) {
+        setError('Los nombres del dueño actual son requeridos');
+        setSubmitting(false);
+        return;
+      }
+      if (!duenioActual.apellido) {
+        setError('Los apellidos del dueño actual son requeridos');
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    const citaData: any = {
       idCliente: parseInt(idCliente!),
       idVehiculo: formData.idVehiculo || null,
-      idTipoTramite: parseInt(formData.idTipoTramite)
+      idTipoTramite: parseInt(formData.idTipoTramite),
+      esDuenioRegistrado: tipoTramiteSeleccionado === 'Traspaso' ? (esDuenioRegistrado ? 'S' : 'N') : null,
+      cedulaDuenioActual: tipoTramiteSeleccionado === 'Traspaso' && !esDuenioRegistrado ? parseInt(duenioActual.cedula) : null,
+      nombreDuenioActual: tipoTramiteSeleccionado === 'Traspaso' && !esDuenioRegistrado ? duenioActual.nombres : null,
+      apellidoDuenioActual: tipoTramiteSeleccionado === 'Traspaso' && !esDuenioRegistrado ? duenioActual.apellido : null,
     };
 
     try {
@@ -143,11 +182,6 @@ export default function SolicitarCitaPage() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  // Redirigir a la página de registro de vehículo
-  const handleRegistrarVehiculo = () => {
-    router.push('/vehiculos');
   };
 
   if (loading) {
@@ -197,21 +231,10 @@ export default function SolicitarCitaPage() {
             )}
           </div>
 
-          {/* Campo de vehículo - solo se muestra si el trámite lo requiere */}
+          {/* Campo de vehículo cuando es obligatorio (S) */}
           {requiereVehiculo && (
             <div className={styles.formGroup}>
-              <div className={styles.vehiculoHeader}>
-                <label>Vehículo *</label>
-                {vehiculos.length === 0 && (
-                  <button
-                    type="button"
-                    onClick={handleRegistrarVehiculo}
-                    className={styles.registrarVehiculoBtn}
-                  >
-                    + Registrar Vehículo
-                  </button>
-                )}
-              </div>
+              <label>Vehículo *</label>
               <select 
                 name="idVehiculo" 
                 value={formData.idVehiculo} 
@@ -229,30 +252,103 @@ export default function SolicitarCitaPage() {
                   ))
                 )}
               </select>
-              {vehiculos.length === 0 ? (
-                <small className={styles.warningText}>
-                  ⚠️ Este trámite requiere un vehículo. 
-                  <button 
-                    type="button"
-                    onClick={handleRegistrarVehiculo}
-                    className={styles.warningLink}
-                  >
-                    Regístrelo aquí
-                  </button>
-                </small>
-              ) : (
-                <small className={styles.infoText}>
-                  ¿No encuentras tu vehículo? 
-                  <button 
-                    type="button"
-                    onClick={handleRegistrarVehiculo}
-                    className={styles.infoLink}
-                  >
-                    Regístrate otro aquí
-                  </button>
-                </small>
-              )}
             </div>
+          )}
+
+          {/* 👇 Campos específicos para Traspaso (M - Mixto) */}
+          {tipoTramiteSeleccionado === 'Traspaso' && (
+            <>
+              <div className={styles.formGroup}>
+                <label>¿Es usted el dueño actual del vehículo?</label>
+                <div className={styles.toggleGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.toggleBtn} ${esDuenioRegistrado ? styles.toggleActive : ''}`}
+                    onClick={() => {
+                      setEsDuenioRegistrado(true);
+                      setFormData(prev => ({ ...prev, idVehiculo: '' }));
+                    }}
+                  >
+                    Sí, soy el dueño
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.toggleBtn} ${!esDuenioRegistrado ? styles.toggleActive : ''}`}
+                    onClick={() => {
+                      setEsDuenioRegistrado(false);
+                      setFormData(prev => ({ ...prev, idVehiculo: '' }));
+                    }}
+                  >
+                    No, el dueño es otra persona
+                  </button>
+                </div>
+              </div>
+
+              {/* Si es dueño, mostrar selector de vehículos */}
+              {esDuenioRegistrado && (
+                <div className={styles.formGroup}>
+                  <label>Seleccione su vehículo *</label>
+                  <select 
+                    name="idVehiculo" 
+                    value={formData.idVehiculo} 
+                    onChange={handleChange}
+                    required={esDuenioRegistrado}
+                  >
+                    <option value="">Seleccione un vehículo</option>
+                    {vehiculos.length === 0 ? (
+                      <option value="" disabled>No tiene vehículos registrados</option>
+                    ) : (
+                      vehiculos.map((vehiculo) => (
+                        <option key={vehiculo.placa} value={vehiculo.placa}>
+                          {vehiculo.placa} - {vehiculo.marca} {vehiculo.linea}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  {vehiculos.length === 0 && (
+                    <small className={styles.warningText}>
+                      No tiene vehículos registrados. Debe registrar un vehículo primero.
+                    </small>
+                  )}
+                </div>
+              )}
+
+              {/* Si no es dueño, mostrar campos para ingresar datos del dueño actual */}
+              {!esDuenioRegistrado && (
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label>Cédula del dueño actual *</label>
+                    <input
+                      type="text"
+                      value={duenioActual.cedula}
+                      onChange={(e) => setDuenioActual(prev => ({ ...prev, cedula: e.target.value }))}
+                      placeholder="Número de cédula"
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Nombres del dueño actual *</label>
+                    <input
+                      type="text"
+                      value={duenioActual.nombres}
+                      onChange={(e) => setDuenioActual(prev => ({ ...prev, nombres: e.target.value }))}
+                      placeholder="Nombres completos"
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Apellidos del dueño actual *</label>
+                    <input
+                      type="text"
+                      value={duenioActual.apellido}
+                      onChange={(e) => setDuenioActual(prev => ({ ...prev, apellido: e.target.value }))}
+                      placeholder="Apellidos completos"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <button type="submit" disabled={submitting} className={styles.submitButton}>

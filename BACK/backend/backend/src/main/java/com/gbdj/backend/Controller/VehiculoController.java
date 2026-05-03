@@ -174,6 +174,11 @@ public ResponseEntity<?> realizarTraspaso(@RequestBody Map<String, Object> reque
     traspasoData.put("P_CEDULA_NUEVA", request.get("cedulaNueva"));
     traspasoData.put("P_ID_TRAMITE", request.get("idTramite"));
     
+    // 👇 Agregar este parámetro (si no viene, por defecto es 'S')
+    String esDuenioRegistrado = request.get("esDuenioRegistrado") != null ? 
+                                  request.get("esDuenioRegistrado").toString() : "S";
+    traspasoData.put("P_ES_DUENIO_REGISTRADO", esDuenioRegistrado);
+    
     log.info("Enviando a APEX: {}", traspasoData);
     
     Map<String, Object> response = vehiculoService.realizarTraspaso(traspasoData);
@@ -331,6 +336,45 @@ public ResponseEntity<?> levantarPrenda(@RequestBody Map<String, Object> request
     } else {
         String mensaje = response != null ? 
                           response.get("mensaje").toString() : "Error al levantar prenda";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
+@PostMapping("/historial")
+public ResponseEntity<?> registrarHistorial(@RequestBody Map<String, Object> request) {
+    log.info("=== REGISTRAR HISTORIAL ===");
+    log.info("Request: {}", request);
+    
+    // Validaciones
+    if (request.get("placa") == null || request.get("placa").toString().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La placa es requerida"
+        ));
+    }
+    
+    if (request.get("cedulaNueva") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La cédula del nuevo propietario es requerida"
+        ));
+    }
+    
+    Map<String, Object> historialData = new HashMap<>();
+    historialData.put("P_PLACA", request.get("placa"));
+    historialData.put("P_CEDULA_ANTERIOR", request.get("cedulaAnterior"));
+    historialData.put("P_CEDULA_NUEVA", request.get("cedulaNueva"));
+    historialData.put("P_ID_TRAMITE", request.get("idTramite"));
+    
+    Map<String, Object> response = vehiculoService.registrarHistorial(historialData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al registrar historial";
         return ResponseEntity.status(500).body(Map.of(
             "status", "ERROR",
             "mensaje", mensaje

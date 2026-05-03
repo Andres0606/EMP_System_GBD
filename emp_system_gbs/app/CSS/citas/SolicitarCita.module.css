@@ -166,4 +166,52 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+/* En SolicitarCita.module.css */
 
+.toggleGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.toggleBtn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #4b5563;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.toggleBtn:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.toggleActive {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.toggleActive:hover {
+  background: #5a67d8;
+  border-color: #5a67d8;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
