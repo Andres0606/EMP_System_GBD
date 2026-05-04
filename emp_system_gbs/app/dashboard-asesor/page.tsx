@@ -422,37 +422,49 @@ const cargarEstadisticas = async (cedula: string) => {
           </div>
         </div>
 
-        {/* Módulos */}
-        <p className={styles.sectionTitle}>Módulos de gestión</p>
-        <div className={styles.grid}>
-          <Link href="/asesor/citas" className={styles.card}>
-            <div className={styles.cardIcon}><CalendarIcon /></div>
-            <h3>Gestión de Citas</h3>
-            <p>Visualiza y gestiona las citas asignadas</p>
-            <span className={styles.cardLink}>Administrar citas <ArrowIcon /></span>
-          </Link>
+      {/* Módulos */}
+<p className={styles.sectionTitle}>Módulos de gestión</p>
+<div className={styles.grid}>
+  <Link href="/asesor/citas" className={styles.card}>
+    <div className={styles.cardIcon}><CalendarIcon /></div>
+    <h3>Gestión de Citas</h3>
+    <p>Visualiza y gestiona las citas asignadas</p>
+    <span className={styles.cardLink}>Administrar citas <ArrowIcon /></span>
+  </Link>
 
-          <Link href="/asesor/tramites" className={styles.card}>
-            <div className={styles.cardIcon}><DocumentIcon /></div>
-            <h3>Trámites</h3>
-            <p>Revisa y actualiza el estado de los trámites</p>
-            <span className={styles.cardLink}>Ver trámites <ArrowIcon /></span>
-          </Link>
+  <Link href="/asesor/tramites" className={styles.card}>
+    <div className={styles.cardIcon}><DocumentIcon /></div>
+    <h3>Trámites</h3>
+    <p>Revisa y actualiza el estado de los trámites</p>
+    <span className={styles.cardLink}>Ver trámites <ArrowIcon /></span>
+  </Link>
 
-          <Link href="/asesor/clientes" className={styles.card}>
-            <div className={styles.cardIcon}><UsersIcon /></div>
-            <h3>Clientes</h3>
-            <p>Consulta información de tus clientes</p>
-            <span className={styles.cardLink}>Ver clientes <ArrowIcon /></span>
-          </Link>
+  <Link href="/asesor/clientes" className={styles.card}>
+    <div className={styles.cardIcon}><UsersIcon /></div>
+    <h3>Clientes</h3>
+    <p>Consulta información de tus clientes</p>
+    <span className={styles.cardLink}>Ver clientes <ArrowIcon /></span>
+  </Link>
 
-          <Link href="/perfil" className={styles.card}>
-            <div className={styles.cardIcon}><ShieldIcon /></div>
-            <h3>Mi Perfil</h3>
-            <p>Actualiza tu información personal</p>
-            <span className={styles.cardLink}>Editar perfil <ArrowIcon /></span>
-          </Link>
-        </div>
+  <Link href="/perfil" className={styles.card}>
+    <div className={styles.cardIcon}><ShieldIcon /></div>
+    <h3>Mi Perfil</h3>
+    <p>Actualiza tu información personal</p>
+    <span className={styles.cardLink}>Editar perfil <ArrowIcon /></span>
+  </Link>
+
+  {/* Consultas */}
+  <Link href="/asesor/consultas" className={styles.card}>
+  <div className={styles.cardIcon}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  </div>
+  <h3>Consultas</h3>
+  <p>Revisa y responde las consultas de los clientes</p>
+  <span className={styles.cardLink}>Gestionar consultas <ArrowIcon /></span>
+</Link>
+</div>
       </div>
     </div>
   );

@@ -94,4 +94,58 @@ public ResponseEntity<?> listarConsultasPorCliente(@PathVariable Long idCliente)
         ));
     }
 }
+@GetMapping("/asesor/todas")
+public ResponseEntity<?> listarTodasConsultas() {
+    log.info("=== LISTAR TODAS CONSULTAS (ASESOR) ===");
+    
+    Map<String, Object> response = consultaService.listarTodasConsultas();
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al listar consultas";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
+@PostMapping("/responder")
+public ResponseEntity<?> responderConsulta(@RequestBody Map<String, Object> request) {
+    log.info("=== RESPONDER CONSULTA ===");
+    log.info("idConsulta: {}", request.get("idConsulta"));
+    log.info("respuesta: {}", request.get("respuesta"));
+    
+    if (request.get("idConsulta") == null) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "El ID de la consulta es requerido"
+        ));
+    }
+    
+    if (request.get("respuesta") == null || request.get("respuesta").toString().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "status", "ERROR",
+            "mensaje", "La respuesta es requerida"
+        ));
+    }
+    
+    Map<String, Object> consultaData = new HashMap<>();
+    consultaData.put("P_ID_CONSULTA", request.get("idConsulta"));
+    consultaData.put("P_RESPUESTA", request.get("respuesta"));
+    
+    Map<String, Object> response = consultaService.responderConsulta(consultaData);
+    
+    if (response != null && "OK".equals(response.get("status"))) {
+        return ResponseEntity.ok(response);
+    } else {
+        String mensaje = response != null ? 
+                          response.get("mensaje").toString() : "Error al responder consulta";
+        return ResponseEntity.status(500).body(Map.of(
+            "status", "ERROR",
+            "mensaje", mensaje
+        ));
+    }
+}
 }
