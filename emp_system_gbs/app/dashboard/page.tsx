@@ -170,10 +170,13 @@ export default function DashboardPage() {
 
         {/* ── Header ── */}
         <div className={styles.header}>
-          <div className={styles.headerLeft}>
-            <span className={styles.logoMark}><CarIcon /></span>
-            <span className={styles.logoText}>Trans<strong>Meta</strong></span>
-          </div>
+        <div
+        className={styles.headerLeft}
+        onClick={() => router.push('/')}
+      >
+        <span className={styles.logoMark}><CarIcon /></span>
+        <span className={styles.logoText}>Trans<strong>Meta</strong></span>
+      </div>
           <div className={styles.headerRight}>
             <span className={styles.headerBadge}>Panel de usuario</span>
             <button onClick={handleLogout} className={styles.logoutBtn}>
@@ -223,26 +226,10 @@ export default function DashboardPage() {
                 <strong>Rol:</strong>&nbsp;{rolNombre}
               </span>
             </div>
-
-            <div className={styles.heroDivider} />
-
-            {/* Stats decorativas */}
-            <div className={styles.statsRow}>
-              <div className={styles.statItem}>
-                <div className={styles.statNumber}><span>0</span></div>
-                <div className={styles.statLabel}>Trámites activos</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statNumber}><span>0</span></div>
-                <div className={styles.statLabel}>Notificaciones</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statNumber}><span>—</span></div>
-                <div className={styles.statLabel}>Última sesión</div>
-              </div>
             </div>
-          </div>
-        </div>
+            </div>
+
+
 
         {/* ── Módulos ── */}
 <p className={styles.sectionTitle}>Módulos disponibles</p>

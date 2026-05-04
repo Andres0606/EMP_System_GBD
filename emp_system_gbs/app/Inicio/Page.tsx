@@ -212,6 +212,14 @@ export default function HomePage() {
   const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [slide, setSlide] = useState(0);
+  const [estaLogueado, setEstaLogueado] = useState(false);
+
+  useEffect(() => {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  const cedula = sessionStorage.getItem('userCedula');
+
+  setEstaLogueado(!!isLoggedIn && !!cedula);
+}, []);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80);
@@ -223,12 +231,35 @@ export default function HomePage() {
     return () => clearInterval(t);
   }, []);
 
+  const irAlPanel = () => {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  const cedula = sessionStorage.getItem('userCedula');
+  const rol = sessionStorage.getItem('userRol');
+
+  if (!isLoggedIn || !cedula) {
+    router.push('/login');
+    return;
+  }
+
+  if (rol === '1') {
+    router.push('/dashboard');
+  } else if (rol === '2') {
+    router.push('/dashboard-asesor');
+  } else if (rol === '3') {
+    router.push('/dashboard-admin');
+  } else {
+    router.push('/login');
+  }
+};
+
   const current = HERO_SLIDES[slide];
 
   return (
     <div className={styles.pg}>
-      <Header onLoginClick={() => router.push('/login')} />
-
+    <Header 
+      onLoginClick={irAlPanel}
+      textoBoton={estaLogueado ? 'Mi perfil' : 'Ingresar'}
+    />
       {/* ═══════════════════════════════════
           HERO — Split: imagen izq · texto der
           (mismo layout que Arepas El Poblado)

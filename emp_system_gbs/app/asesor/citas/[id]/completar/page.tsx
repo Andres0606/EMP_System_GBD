@@ -176,7 +176,7 @@ export default function CompletarCitaPage() {
       const dataTramite = await resTramite.json();
       if (resTramite.ok && dataTramite.status === 'OK') {
         setSuccess(`Trámite #${dataTramite.idTramite} creado exitosamente — Valor total: $${total.toLocaleString()}`);
-        setTimeout(() => router.push('/asesor/citas'), 2500);
+        setTimeout(() => router.push('/asesor/tramites'), 2500);
       } else {
         throw new Error(dataTramite.mensaje || 'Error al crear el trámite');
       }

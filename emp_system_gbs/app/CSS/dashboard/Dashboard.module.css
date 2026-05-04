@@ -88,7 +88,14 @@
   box-shadow: 0 4px 24px rgba(21,101,192,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
   animation: fadeUp 0.5s ease 0.08s both;
 }
-.headerLeft { display:flex; align-items:center; gap:0.7rem; }
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
 .logoMark {
   width:34px; height:34px; border-radius:10px;
   background: linear-gradient(135deg, #42A5F5, #1565C0);
@@ -232,7 +239,6 @@
 .statsRow {
   display:grid; grid-template-columns:repeat(3,1fr); gap:1rem;
 }
-@media(max-width:500px){ .statsRow { grid-template-columns:1fr 1fr; } }
 .statItem { text-align:center; }
 .statNumber {
   font-family:var(--ff,'Sora',sans-serif);
@@ -335,5 +341,4 @@
   .container { padding:1.2rem; }
   .heroBody { padding:0 1.3rem 1.5rem; }
   .card { padding:1.3rem 1.4rem; }
-  .statsRow { grid-template-columns:1fr 1fr; }
 }

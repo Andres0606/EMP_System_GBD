@@ -37,10 +37,10 @@ const NAV_LINKS = [
 
 interface HeaderProps {
   onLoginClick?: () => void;
+  textoBoton?: string;
 }
 
-export default function Header({ onLoginClick }: HeaderProps) {
-  const router = useRouter();
+export default function Header({ onLoginClick, textoBoton = 'Ingresar' }: HeaderProps) {  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted,  setMounted]  = useState(false);
@@ -87,10 +87,10 @@ export default function Header({ onLoginClick }: HeaderProps) {
 
       {/* Desktop actions */}
 <div className={styles.actions}>
-  <button className={styles.loginBtn} onClick={handleLogin}>
-    <UserIcon />
-    <span>Ingresar</span>
-  </button>
+<button className={styles.loginBtn} onClick={handleLogin}>
+  <UserIcon />
+  <span>{textoBoton}</span>
+</button>
   <button className={styles.registerBtn} onClick={handleRegister}>
     Registrarse →
   </button>
@@ -118,13 +118,13 @@ export default function Header({ onLoginClick }: HeaderProps) {
               {label}
             </Link>
           ))}
-          <button
-            className={styles.mobileCta}
-            style={{ animationDelay: '0.33s' }}
-            onClick={() => { setMenuOpen(false); handleLogin(); }}
-          >
-            Ingresar
-          </button>
+        <button
+          className={styles.mobileCta}
+          style={{ animationDelay: '0.33s' }}
+          onClick={() => { setMenuOpen(false); handleLogin(); }}
+        >
+          {textoBoton}
+        </button>
           <button
             className={styles.mobileCtaOutline}
             style={{ animationDelay: '0.4s' }}

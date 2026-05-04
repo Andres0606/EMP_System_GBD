@@ -246,7 +246,7 @@ const generarHorasDisponibles = () => {
       const data = await response.json();
 
 if (response.ok && data.status === 'OK') {
-  setSuccess('Cita agendada exitosamente. Abriendo WhatsApp...');
+  setSuccess('Cita agendada exitosamente.');
 
   const telefonoLimpio = String(cita.telefono).replace(/\D/g, '');
 
@@ -266,7 +266,7 @@ Por favor confirma tu asistencia.`;
 
   window.open(whatsappUrl, '_blank');
 
-  setTimeout(() => router.push('/asesor/citas'), 2200);
+setTimeout(() => router.push('/asesor/citas?tab=agendadas'), 2200);
 } else {
   setError(data.mensaje || 'Error al agendar la cita');
 }
@@ -327,7 +327,7 @@ Por favor confirma tu asistencia.`;
         )}
         {success && (
           <div className={styles.successAlert}>
-            <CheckCircleIcon /> {success}
+            {success}
           </div>
         )}
 

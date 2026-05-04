@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/Asesor/Citas.module.css';
 
@@ -115,11 +115,20 @@ interface CitaAgendada {
 
 export default function AsesorCitasPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [citasPendientes, setCitasPendientes] = useState<CitaPendiente[]>([]);
   const [citasAgendadas, setCitasAgendadas] = useState<CitaAgendada[]>([]);
   const [tab, setTab] = useState<'pendientes' | 'agendadas'>('pendientes');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+  const tabUrl = searchParams.get('tab');
+
+  if (tabUrl === 'agendadas') {
+    setTab('agendadas');
+  }
+}, [searchParams]);
 
   const cedulaAsesor =
     typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
