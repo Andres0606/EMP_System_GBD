@@ -122,6 +122,10 @@ public ResponseEntity<?> actualizarVehiculo(@PathVariable String placa, @Request
     if (updates.containsKey("clase")) {
         vehiculoData.put("P_CLASE", updates.get("clase"));
     }
+
+    if (updates.containsKey("combustible")) {
+    vehiculoData.put("P_COMBUSTIBLE", updates.get("combustible"));
+}
     
     Map<String, Object> response = vehiculoService.actualizarVehiculo(vehiculoData);
     

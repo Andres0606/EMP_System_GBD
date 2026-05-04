@@ -153,20 +153,158 @@ export default function DashboardAsesorPage() {
     setLoading(false);
   }, [router]);
 
-  const cargarEstadisticas = async (cedula: string) => {
-    try {
-      // Aquí puedes llamar a tus endpoints para obtener estadísticas reales
-      // Por ahora son datos de ejemplo
-      setStats({
-        citasHoy: 3,
-        citasPendientes: 5,
-        tramitesActivos: 8,
-        clientesAtendidos: 12
-      });
-    } catch (error) {
-      console.error('Error cargando estadísticas:', error);
-    }
-  };
+const cargarEstadisticas = async (cedula: string) => {
+  try {
+    const API_URL = 'http://localhost:8080';
+
+    const leerJsonSeguro = async (response: Response) => {
+      if (!response.ok) return {};
+      return await response.json();
+    };
+
+    const extraerLista = (data: any, posiblesCampos: string[]) => {
+      if (Array.isArray(data)) return data;
+
+      for (const campo of posiblesCampos) {
+        if (Array.isArray(data?.[campo])) {
+          return data[campo];
+        }
+      }
+
+      return [];
+    };
+
+    const normalizar = (valor: any) =>
+      String(valor || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    const obtenerCampo = (obj: any, campos: string[]) => {
+      for (const campo of campos) {
+        if (obj?.[campo] !== undefined && obj?.[campo] !== null) {
+          return obj[campo];
+        }
+      }
+      return null;
+    };
+
+    const esHoy = (valorFecha: any) => {
+      if (!valorFecha) return false;
+
+      const fechaTexto = String(valorFecha);
+      const hoy = new Date().toISOString().slice(0, 10);
+
+      return fechaTexto.includes(hoy);
+    };
+
+    const [resPendientes, resAgendadas, resTramites] = await Promise.all([
+      fetch(`${API_URL}/api/citas/pendientes/${cedula}`),
+      fetch(`${API_URL}/api/citas/agendadas/${cedula}`),
+      fetch(`${API_URL}/api/tramite/asesor/${cedula}`)
+    ]);
+
+    const dataPendientes = await leerJsonSeguro(resPendientes);
+    const dataAgendadas = await leerJsonSeguro(resAgendadas);
+    const dataTramites = await leerJsonSeguro(resTramites);
+
+    console.log('DATA PENDIENTES:', dataPendientes);
+    console.log('DATA AGENDADAS:', dataAgendadas);
+    console.log('DATA TRAMITES:', dataTramites);
+
+    const citasPendientesLista = extraerLista(dataPendientes, [
+      'citas',
+      'pendientes',
+      'items',
+      'data'
+    ]);
+
+    const citasAgendadasLista = extraerLista(dataAgendadas, [
+      'citas',
+      'agendadas',
+      'items',
+      'data'
+    ]);
+
+    const tramitesLista = extraerLista(dataTramites, [
+      'tramites',
+      'items',
+      'data'
+    ]);
+
+    const citasHoy = citasAgendadasLista.filter((cita: any) => {
+      const fecha = obtenerCampo(cita, [
+        'fechaProgramada',
+        'fecha_programada',
+        'FECHA_PROGRAMADA',
+        'fecha',
+        'FECHA',
+        'fechaCita',
+        'FECHA_CITA'
+      ]);
+
+      return esHoy(fecha);
+    }).length;
+
+    const tramitesActivos = tramitesLista.filter((tramite: any) => {
+      const estado = normalizar(
+        obtenerCampo(tramite, [
+          'estado',
+          'ESTADO',
+          'estadoTramite',
+          'ESTADO_TRAMITE'
+        ])
+      );
+
+      return estado === 'activo' || estado === 'en_proceso' || estado === 'en proceso';
+    }).length;
+
+    const clientesFinalizados = new Set(
+      tramitesLista
+        .filter((tramite: any) => {
+          const estado = normalizar(
+            obtenerCampo(tramite, [
+              'estado',
+              'ESTADO',
+              'estadoTramite',
+              'ESTADO_TRAMITE'
+            ])
+          );
+
+          return estado === 'finalizado';
+        })
+        .map((tramite: any) =>
+          obtenerCampo(tramite, [
+            'idCliente',
+            'IDCLIENTE',
+            'idcliente',
+            'cedulaCliente',
+            'CEDULA_CLIENTE',
+            'clienteCedula'
+          ])
+        )
+        .filter(Boolean)
+    );
+
+    setStats({
+      citasHoy: citasHoy,
+      citasPendientes: citasPendientesLista.length,
+      tramitesActivos: tramitesActivos,
+      clientesAtendidos: clientesFinalizados.size
+    });
+
+  } catch (error) {
+    console.error('Error cargando estadísticas:', error);
+
+    setStats({
+      citasHoy: 0,
+      citasPendientes: 0,
+      tramitesActivos: 0,
+      clientesAtendidos: 0
+    });
+  }
+};
 
   const handleLogout = () => {
     sessionStorage.removeItem('isLoggedIn');

@@ -1,9 +1,51 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/TramiteSimple.module.css';
+
+/* ── Icons ── */
+const ClipboardIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+    <rect x="9" y="3" width="6" height="4" rx="1"/>
+  </svg>
+);
+const CarIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+    <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
+  </svg>
+);
+const ArrowLeftIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+const InfoIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+);
+const WrenchIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </svg>
+);
+const WarningIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
 
 export default function TramiteSimplePage() {
   const router = useRouter();
@@ -11,240 +53,345 @@ export default function TramiteSimplePage() {
   const searchParams = useSearchParams();
   const idTramite = params.id as string;
   const tipo = searchParams.get('tipo') || '';
-  
+  const placa = searchParams.get('placa') || '';
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  
-  // Solo para Transformación
+  const enviandoRef = useRef(false);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [nuevoCombustible, setNuevoCombustible] = useState('');
+  const [transformacionRealizada, setTransformacionRealizada] = useState(false);
   const [tipoTransformacion, setTipoTransformacion] = useState('');
-  const [descripcion, setDescripcion] = useState('');
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     const rol = sessionStorage.getItem('userRol');
-    
-    if (!isLoggedIn || rol !== '2') {
-      router.push('/login');
-      return;
-    }
+    if (!isLoggedIn || rol !== '2') { router.push('/login'); return; }
   }, []);
 
   const getTitulo = () => {
-    switch(tipo) {
-      case 'Cambio de Carrocería':
-        return 'Cambio de Carrocería';
-      case 'Duplicado de Placas':
-        return 'Duplicado de Placas';
-      case 'Transformación':
-        return 'Transformación del Vehículo';
-      case 'Duplicado de Licencia':
-        return 'Duplicado de Licencia de Conducción';
-      case 'Otros':
-        return 'Otros Trámites';
-      default:
-        return 'Realizar Trámite';
+    switch (tipo) {
+      case 'Cambio de Carrocería':    return 'Cambio de Carrocería';
+      case 'Duplicado de Placas':     return 'Duplicado de Placas';
+      case 'Transformación':          return 'Transformación del Vehículo';
+      case 'Duplicado de Licencia':   return 'Duplicado de Licencia de Conducción';
+      case 'Otros':                   return 'Otros Trámites';
+      default:                        return 'Realizar Trámite';
     }
   };
 
   const getDescripcion = () => {
-    switch(tipo) {
-      case 'Cambio de Carrocería':
-        return 'Registrar el cambio de tipo de carrocería del vehículo.';
-      case 'Duplicado de Placas':
-        return 'Generar un duplicado de las placas por pérdida, robo o deterioro.';
-      case 'Transformación':
-        return 'Registrar modificaciones importantes en el vehículo.';
-      case 'Duplicado de Licencia':
-        return 'Generar un duplicado de la licencia de conducción.';
-      case 'Otros':
-        return 'Realizar un trámite no especificado en las categorías anteriores.';
-      default:
-        return 'Realizar trámite';
+    switch (tipo) {
+      case 'Cambio de Carrocería':  return 'Registrar el cambio de tipo de carrocería del vehículo.';
+      case 'Duplicado de Placas':   return 'Generar un duplicado de las placas por pérdida, robo o deterioro.';
+      case 'Transformación':        return 'Registrar modificaciones importantes en el vehículo.';
+      case 'Duplicado de Licencia': return 'Generar un duplicado de la licencia de conducción.';
+      case 'Otros':                 return 'Realizar un trámite no especificado en las categorías anteriores.';
+      default:                      return 'Realizar trámite.';
     }
+  };
+
+  const esConversionCombustible = tipoTransformacion === 'CONVERSION_COMBUSTIBLE';
+
+  const desbloquearEnvio = () => { enviandoRef.current = false; setSubmitting(false); };
+
+  const finalizarTramite = async () => {
+    const response = await fetch('http://localhost:8080/api/tramite/estado', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idTramite: parseInt(idTramite), estado: 'Finalizado' }),
+    });
+    const data = await response.json();
+    if (!response.ok || data.status !== 'OK')
+      throw new Error(data.mensaje || 'No se pudo finalizar el trámite');
+  };
+
+  const actualizarCombustible = async () => {
+    const response = await fetch(`http://localhost:8080/api/vehiculos/${placa}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ combustible: nuevoCombustible }),
+    });
+    const data = await response.json();
+    if (!response.ok || data.status !== 'OK')
+      throw new Error(data.mensaje || 'No se pudo actualizar el combustible');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (enviandoRef.current) return;
+    setError(''); setSuccess('');
+
+    if (tipo === 'Transformación') {
+      if (!tipoTransformacion) { setError('Seleccione el tipo de transformación.'); return; }
+      if (esConversionCombustible && !nuevoCombustible) { setError('Seleccione el nuevo tipo de combustible.'); return; }
+      if (esConversionCombustible && !placa) { setError('No se recibió la placa del vehículo. Vuelva al detalle del trámite e intente de nuevo.'); return; }
+      if (!esConversionCombustible && !transformacionRealizada) { setError('Debe confirmar que la transformación fue realizada.'); return; }
+    }
+    setMostrarConfirmacion(true);
+  };
+
+  const confirmarTramite = async () => {
+    if (enviandoRef.current) return;
+    setMostrarConfirmacion(false);
+    enviandoRef.current = true;
     setSubmitting(true);
-    setError('');
-    setSuccess('');
-
-    // Solo actualizar el estado del trámite a Finalizado
+    setError(''); setSuccess('');
+    let tramiteRealizado = false;
     try {
-      const response = await fetch('http://localhost:8080/api/tramite/estado', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          idTramite: parseInt(idTramite),
-          estado: 'Finalizado'
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.status === 'OK') {
-        let mensaje = '';
-        switch(tipo) {
-          case 'Cambio de Carrocería':
-            mensaje = '✅ Cambio de Carrocería registrado exitosamente';
-            break;
-          case 'Duplicado de Placas':
-            mensaje = '✅ Duplicado de Placas realizado exitosamente';
-            break;
-          case 'Transformación':
-            mensaje = `✅ Transformación registrada: ${tipoTransformacion}`;
-            break;
-          case 'Duplicado de Licencia':
-            mensaje = '✅ Duplicado de Licencia realizado exitosamente';
-            break;
-          case 'Otros':
-            mensaje = '✅ Trámite realizado exitosamente';
-            break;
-          default:
-            mensaje = '✅ Trámite realizado exitosamente';
-        }
-        setSuccess(mensaje);
-        setTimeout(() => {
-          router.push(`/asesor/tramites/${idTramite}`);
-        }, 2000);
-      } else {
-        setError(data.mensaje || 'Error al realizar el trámite');
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Error de conexión con el servidor');
+      if (tipo === 'Transformación' && esConversionCombustible) await actualizarCombustible();
+      await finalizarTramite();
+      tramiteRealizado = true;
+      setSuccess(
+        tipo === 'Transformación'
+          ? esConversionCombustible
+            ? `Conversión de combustible registrada. Nuevo: ${nuevoCombustible}. Trámite finalizado.`
+            : 'Transformación confirmada. Trámite finalizado correctamente.'
+          : 'Trámite realizado exitosamente.'
+      );
+      setTimeout(() => router.push(`/asesor/tramites/${idTramite}`), 1800);
+    } catch {
+      setError('Error de conexión o no se pudo finalizar el trámite.');
     } finally {
-      setSubmitting(false);
+      if (!tramiteRealizado) desbloquearEnvio();
     }
   };
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <Link href={`/asesor/tramites/${idTramite}`} className={styles.backButton}>
-          ← Volver al Trámite
-        </Link>
-        <h1>{getTitulo()}</h1>
-      </div>
+      <div className={styles.inner}>
 
-      {error && <div className={styles.errorAlert}>{error}</div>}
-      {success && <div className={styles.successAlert}>{success}</div>}
-
-      <div className={styles.formCard}>
-        <div className={styles.infoBox}>
-          <h3>📋 Información del Trámite</h3>
-          <p><strong>ID Trámite:</strong> {idTramite}</p>
-          <p><strong>Tipo:</strong> {tipo}</p>
-          <p>{getDescripcion()}</p>
+        {/* ── Header ── */}
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <span className={styles.logoMark}><CarIcon /></span>
+            <span className={styles.logoText}>Trans<strong>Meta</strong></span>
+            <span className={styles.badgeAsesor}>Asesor</span>
+          </div>
+          <button
+            type="button"
+            disabled={submitting}
+            className={`${styles.backButton} ${submitting ? styles.cancelButtonDisabled : ''}`}
+            onClick={() => { if (!submitting) router.push(`/asesor/tramites/${idTramite}`); }}
+          >
+            <ArrowLeftIcon /> Volver al Trámite
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* Campos específicos para Transformación */}
-          {tipo === 'Transformación' && (
-            <>
+        {/* ── Page title ── */}
+        <div className={styles.pageTitleRow}>
+          <div className={styles.pageIcon}><ClipboardIcon /></div>
+          <div>
+            <h1 className={styles.pageTitle}>{getTitulo()}</h1>
+            <p className={styles.pageSub}>Trámite #{idTramite}{placa ? ` · Placa ${placa}` : ''}</p>
+          </div>
+        </div>
+
+        {/* ── Alerts ── */}
+        {error   && <div className={styles.errorAlert}>{error}</div>}
+        {success && <div className={styles.successAlert}>{success}</div>}
+
+        {/* ── Form Card ── */}
+        <div className={styles.formCard}>
+
+          {/* Info box */}
+          <div className={styles.infoBox}>
+            <div className={styles.infoBoxHeader}>
+              <div className={styles.infoBoxIcon}><InfoIcon /></div>
+              <h3 className={styles.infoBoxTitle}>Información del Trámite</h3>
+            </div>
+            <div className={styles.infoBoxRow}>
+              <span className={styles.infoBoxLabel}>ID:</span>
+              <span>{idTramite}</span>
+            </div>
+            <div className={styles.infoBoxRow}>
+              <span className={styles.infoBoxLabel}>Tipo:</span>
+              <span>{tipo}</span>
+            </div>
+            {placa && (
+              <div className={styles.infoBoxRow}>
+                <span className={styles.infoBoxLabel}>Placa:</span>
+                <span>{placa}</span>
+              </div>
+            )}
+            <p className={styles.infoBoxDesc}>{getDescripcion()}</p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+
+            {/* ── Transformación ── */}
+            {tipo === 'Transformación' && (
+              <>
+                <div className={styles.formGroup}>
+                  <label>Tipo de Transformación *</label>
+                  <select
+                    value={tipoTransformacion}
+                    onChange={e => {
+                      setTipoTransformacion(e.target.value);
+                      setNuevoCombustible('');
+                      setTransformacionRealizada(false);
+                      setError('');
+                    }}
+                    required
+                  >
+                    <option value="">Seleccionar</option>
+                    <option value="CONVERSION_COMBUSTIBLE">Conversión de combustible</option>
+                    <option value="CAMBIO_EJES">Cambio número de ejes</option>
+                    <option value="AMPLIACION_CARGA">Ampliación de capacidad de carga</option>
+                    <option value="REDUCCION_CARGA">Reducción de capacidad de carga</option>
+                    <option value="EQUIPOS_ESPECIALES">Instalación de equipos especiales</option>
+                  </select>
+                </div>
+
+                {esConversionCombustible && (
+                  <div className={styles.formGroup}>
+                    <label>Nuevo tipo de combustible *</label>
+                    <select value={nuevoCombustible} onChange={e => setNuevoCombustible(e.target.value)} required>
+                      <option value="">Seleccionar</option>
+                      <option value="Gasolina">Gasolina</option>
+                      <option value="Diesel">Diesel</option>
+                      <option value="Gas">Gas</option>
+                      <option value="Mixto">Mixto</option>
+                      <option value="Electrico">Eléctrico</option>
+                      <option value="Hidrogeno">Hidrógeno</option>
+                      <option value="Etanol">Etanol</option>
+                      <option value="Biodiesel">Biodiesel</option>
+                    </select>
+                  </div>
+                )}
+
+                {tipoTransformacion && !esConversionCombustible && (
+                  <div className={styles.actionBox}>
+                    <div className={styles.actionBoxHeader}>
+                      <div className={styles.actionBoxHeaderIcon}><WrenchIcon /></div>
+                      <p className={styles.actionBoxHeaderText}>Confirmación requerida</p>
+                    </div>
+                    <div className={styles.actionBoxBody}>
+                      <p className={styles.actionBoxDesc}>
+                        Confirma que la transformación solicitada fue realizada correctamente
+                        antes de finalizar el trámite.
+                      </p>
+                      <div
+                        role="checkbox"
+                        aria-checked={transformacionRealizada}
+                        tabIndex={0}
+                        className={`${styles.checkRow} ${transformacionRealizada ? styles.checkRowActive : ''}`}
+                        onClick={() => setTransformacionRealizada(prev => !prev)}
+                        onKeyDown={e => e.key === ' ' && setTransformacionRealizada(prev => !prev)}
+                      >
+                        <div className={`${styles.checkBox} ${transformacionRealizada ? styles.checkBoxActive : ''}`}>
+                          <CheckIcon />
+                        </div>
+                        <span className={`${styles.checkLabel} ${transformacionRealizada ? styles.checkLabelActive : ''}`}>
+                          {transformacionRealizada ? 'Transformación realizada correctamente' : 'Marcar como realizada'}
+                        </span>
+                        <span className={`${styles.checkStatusBadge} ${transformacionRealizada ? styles.checkStatusDone : styles.checkStatusPending}`}>
+                          {transformacionRealizada ? 'Confirmado' : 'Pendiente'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── Cambio de Carrocería ── */}
+            {tipo === 'Cambio de Carrocería' && (
               <div className={styles.formGroup}>
-                <label>Tipo de Transformación *</label>
-                <select 
-                  value={tipoTransformacion} 
-                  onChange={(e) => setTipoTransformacion(e.target.value)}
-                  required
-                >
+                <label>Nueva Carrocería *</label>
+                <select required>
                   <option value="">Seleccionar</option>
-                  <option value="Cambio de Motor">Cambio de Motor</option>
-                  <option value="Conversión a Gas">Conversión a Gas Natural Vehicular</option>
-                  <option value="Cambio de Carrocería a Blindaje">Cambio de Carrocería a Blindaje</option>
-                  <option value="Cambio de Número de Ejes">Cambio de Número de Ejes</option>
-                  <option value="Ampliación de Capacidad">Ampliación de Capacidad de Carga</option>
-                  <option value="Reducción de Capacidad">Reducción de Capacidad de Carga</option>
-                  <option value="Cambio de Color Corporativo">Cambio de Color Corporativo</option>
-                  <option value="Instalación de Equipos Especiales">Instalación de Equipos Especiales</option>
-                  <option value="Otro">Otro tipo de transformación</option>
+                  <option value="Sedán">Sedán</option>
+                  <option value="Hatchback">Hatchback</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Pickup">Pickup</option>
+                  <option value="Furgón">Furgón</option>
+                  <option value="Bus">Bus</option>
+                  <option value="Camión">Camión</option>
                 </select>
               </div>
+            )}
 
-              {tipoTransformacion === 'Otro' && (
-                <div className={styles.formGroup}>
-                  <label>Especifique la transformación *</label>
-                  <input 
-                    type="text"
-                    value={descripcion}
-                    onChange={(e) => setDescripcion(e.target.value)}
-                    placeholder="Ej: Modificación de sistema eléctrico"
-                    required
-                  />
-                </div>
-              )}
-            </>
-          )}
+            {/* ── Duplicado de Placas ── */}
+            {tipo === 'Duplicado de Placas' && (
+              <div className={styles.formGroup}>
+                <label>Motivo *</label>
+                <select required>
+                  <option value="">Seleccionar</option>
+                  <option value="Pérdida">Pérdida</option>
+                  <option value="Robo">Robo</option>
+                  <option value="Deterioro">Deterioro</option>
+                  <option value="Daño">Daño</option>
+                </select>
+              </div>
+            )}
 
-          {/* Campos específicos para Cambio de Carrocería */}
-          {tipo === 'Cambio de Carrocería' && (
-            <div className={styles.formGroup}>
-              <label>Nueva Carrocería *</label>
-              <select required>
-                <option value="">Seleccionar</option>
-                <option value="Sedán">Sedán</option>
-                <option value="Hatchback">Hatchback</option>
-                <option value="SUV">SUV</option>
-                <option value="Pickup">Pickup</option>
-                <option value="Furgón">Furgón</option>
-                <option value="Bus">Bus</option>
-                <option value="Camión">Camión</option>
-              </select>
+            {/* ── Duplicado de Licencia ── */}
+            {tipo === 'Duplicado de Licencia' && (
+              <div className={styles.formGroup}>
+                <label>Motivo *</label>
+                <select required>
+                  <option value="">Seleccionar</option>
+                  <option value="Pérdida">Pérdida</option>
+                  <option value="Robo">Robo</option>
+                  <option value="Deterioro">Deterioro</option>
+                  <option value="Cambio de Datos">Cambio de Datos Personales</option>
+                </select>
+              </div>
+            )}
+
+            {/* ── Otros ── */}
+            {tipo === 'Otros' && (
+              <div className={styles.formGroup}>
+                <label>Descripción del Trámite *</label>
+                <textarea rows={4} placeholder="Describa el trámite a realizar..." required />
+              </div>
+            )}
+
+            {/* Botones */}
+            <div className={styles.buttonGroup}>
+              <button
+                type="button"
+                disabled={submitting}
+                className={`${styles.cancelButton} ${submitting ? styles.cancelButtonDisabled : ''}`}
+                onClick={() => { if (!submitting) router.push(`/asesor/tramites/${idTramite}`); }}
+              >
+                Cancelar
+              </button>
+              <button type="submit" disabled={submitting} className={styles.realizarButton}>
+                {submitting ? 'Procesando...' : 'Realizar Trámite'}
+              </button>
             </div>
-          )}
+          </form>
+        </div>
 
-          {/* Campos específicos para Duplicado de Placas */}
-          {tipo === 'Duplicado de Placas' && (
-            <div className={styles.formGroup}>
-              <label>Motivo *</label>
-              <select required>
-                <option value="">Seleccionar</option>
-                <option value="Pérdida">Pérdida</option>
-                <option value="Robo">Robo</option>
-                <option value="Deterioro">Deterioro</option>
-                <option value="Daño">Daño</option>
-              </select>
-            </div>
-          )}
-
-          {/* Campos específicos para Duplicado de Licencia */}
-          {tipo === 'Duplicado de Licencia' && (
-            <div className={styles.formGroup}>
-              <label>Motivo *</label>
-              <select required>
-                <option value="">Seleccionar</option>
-                <option value="Pérdida">Pérdida</option>
-                <option value="Robo">Robo</option>
-                <option value="Deterioro">Deterioro</option>
-                <option value="Cambio de Datos">Cambio de Datos Personales</option>
-              </select>
-            </div>
-          )}
-
-          {/* Campos específicos para Otros */}
-          {tipo === 'Otros' && (
-            <div className={styles.formGroup}>
-              <label>Descripción del Trámite *</label>
-              <textarea
-                rows={4}
-                placeholder="Describa el trámite a realizar..."
-                required
-              />
-            </div>
-          )}
-
-          <div className={styles.buttonGroup}>
-            <button type="submit" disabled={submitting} className={styles.realizarButton}>
-              {submitting ? 'Procesando...' : 'Realizar Trámite'}
-            </button>
-            <Link href={`/asesor/tramites/${idTramite}`} className={styles.cancelButton}>
-              Cancelar
-            </Link>
-          </div>
-        </form>
       </div>
+
+      {/* ── Modal ── */}
+      {mostrarConfirmacion && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalBox}>
+            <div className={styles.modalIconWrap}><WarningIcon /></div>
+            <h3>Confirmar trámite</h3>
+            <p>
+              {tipo === 'Transformación'
+                ? esConversionCombustible
+                  ? `Se actualizará el combustible del vehículo ${placa} a ${nuevoCombustible} y el trámite quedará finalizado.`
+                  : 'Se confirmará la transformación realizada y el trámite quedará finalizado.'
+                : 'Este trámite quedará finalizado y no podrá volver a modificarse desde este registro.'}
+            </p>
+            <div className={styles.modalActions}>
+              <button type="button" className={styles.btnModalCancelar} onClick={() => setMostrarConfirmacion(false)}>
+                Cancelar
+              </button>
+              <button type="button" className={styles.btnModalConfirmar} onClick={confirmarTramite}>
+                Sí, finalizar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

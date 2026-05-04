@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/EditarVehiculo.module.css';
@@ -106,8 +106,11 @@ export default function EditarVehiculoPage() {
   const [campos, setCampos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const enviandoRef = useRef(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+const [updatePendiente, setUpdatePendiente] = useState<Record<string, string> | null>(null);
 
   const [nuevoColor, setNuevoColor] = useState('');
   const [nuevoTipoServicio, setNuevoTipoServicio] = useState('');
@@ -116,6 +119,8 @@ export default function EditarVehiculoPage() {
   const [nuevaPlaca, setNuevaPlaca] = useState('');
   const [nuevaClase, setNuevaClase] = useState('');
   const [nuevoPropietario, setNuevoPropietario] = useState('');
+  const [regrabacionMotorRealizada, setRegrabacionMotorRealizada] = useState(false);
+  const [regrabacionChasisRealizada, setRegrabacionChasisRealizada] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
@@ -125,46 +130,144 @@ export default function EditarVehiculoPage() {
     setLoading(false);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
+const esRegrabarMotor = campos.includes('numMotor') && campos.length === 1;
+const esRegrabarChasis = campos.includes('numChasis') && campos.length === 1;
+const esRegrabacion = esRegrabarMotor || esRegrabarChasis;
 
-    const updateData: Record<string, string> = {};
-    if (campos.includes('color')        && nuevoColor)        updateData.color        = nuevoColor;
-    if (campos.includes('tipoServicio') && nuevoTipoServicio) updateData.tipoServicio = nuevoTipoServicio;
-    if (campos.includes('numMotor')     && nuevoNumMotor)     updateData.numMotor     = nuevoNumMotor;
-    if (campos.includes('numChasis')    && nuevoNumChasis)    updateData.numChasis    = nuevoNumChasis;
-    if (campos.includes('placa')        && nuevaPlaca)        updateData.placa        = nuevaPlaca;
-    if (campos.includes('clase')        && nuevaClase)        updateData.clase        = nuevaClase;
-    if (campos.includes('propietario')  && nuevoPropietario)  updateData.propietario  = nuevoPropietario;
 
-    if (Object.keys(updateData).length === 0) {
-      setError('Debe ingresar al menos un valor para actualizar');
-      setSubmitting(false);
-      return;
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSubmitting(false);
+};
+
+const finalizarTramite = async () => {
+  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      idTramite: parseInt(idTramite),
+      estado: 'Finalizado',
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || data.status !== 'OK') {
+    throw new Error(data.mensaje || 'No se pudo finalizar el trámite');
+  }
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (enviandoRef.current) return;
+
+  setError('');
+  setSuccess('');
+
+if (esRegrabarMotor) {
+  if (!regrabacionMotorRealizada) {
+    setError('Debe confirmar que la regrabación del número de motor fue realizada.');
+    return;
+  }
+
+  setUpdatePendiente({ accionRealizada: 'REGRABAR_MOTOR' });
+  setMostrarConfirmacion(true);
+  return;
+}
+
+if (esRegrabarChasis) {
+  if (!regrabacionChasisRealizada) {
+    setError('Debe confirmar que la regrabación del número de chasis fue realizada.');
+    return;
+  }
+
+  setUpdatePendiente({ accionRealizada: 'REGRABAR_CHASIS' });
+  setMostrarConfirmacion(true);
+  return;
+}
+
+  const updateData: Record<string, string> = {};
+
+  if (campos.includes('color') && nuevoColor) updateData.color = nuevoColor;
+  if (campos.includes('tipoServicio') && nuevoTipoServicio) updateData.tipoServicio = nuevoTipoServicio;
+  if (campos.includes('numMotor') && nuevoNumMotor) updateData.numMotor = nuevoNumMotor;
+  if (campos.includes('numChasis') && nuevoNumChasis) updateData.numChasis = nuevoNumChasis;
+  if (campos.includes('placa') && nuevaPlaca) updateData.placa = nuevaPlaca;
+  if (campos.includes('clase') && nuevaClase) updateData.clase = nuevaClase;
+  if (campos.includes('propietario') && nuevoPropietario) updateData.propietario = nuevoPropietario;
+
+  if (Object.keys(updateData).length === 0) {
+    setError('Debe ingresar al menos un valor para actualizar');
+    return;
+  }
+
+  setUpdatePendiente(updateData);
+  setMostrarConfirmacion(true);
+};
+
+const confirmarGuardado = async () => {
+  if (!updatePendiente || enviandoRef.current) return;
+
+  setMostrarConfirmacion(false);
+  enviandoRef.current = true;
+  setSubmitting(true);
+  setError('');
+  setSuccess('');
+
+  let cambiosGuardados = false;
+
+  try {
+if (esRegrabacion) {
+  await finalizarTramite();
+
+  cambiosGuardados = true;
+
+  setSuccess(
+    esRegrabarMotor
+      ? 'Regrabación de motor confirmada. Trámite finalizado correctamente.'
+      : 'Regrabación de chasis confirmada. Trámite finalizado correctamente.'
+  );
+
+  setUpdatePendiente(null);
+
+  setTimeout(() => {
+    router.push(`/asesor/tramites/${idTramite}`);
+  }, 1800);
+
+  return;
+}
+
+    const response = await fetch(`http://localhost:8080/api/vehiculos/${placaOriginal}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatePendiente),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === 'OK') {
+      cambiosGuardados = true;
+
+      await finalizarTramite();
+
+      setSuccess('Cambios guardados exitosamente. Trámite finalizado correctamente.');
+      setUpdatePendiente(null);
+
+      setTimeout(() => {
+        router.push(`/asesor/tramites/${idTramite}`);
+      }, 1800);
+    } else {
+      setError(data.mensaje || 'Error al actualizar');
     }
-
-    try {
-      const response = await fetch(`http://localhost:8080/api/vehiculos/${placaOriginal}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
-      });
-      const data = await response.json();
-      if (response.ok && data.status === 'OK') {
-        setSuccess('Vehículo actualizado exitosamente');
-        setTimeout(() => router.push(`/asesor/tramites/${idTramite}`), 1500);
-      } else {
-        setError(data.mensaje || 'Error al actualizar');
-      }
-    } catch {
-      setError('Error de conexión');
-    } finally {
-      setSubmitting(false);
+  } catch {
+    setError('Error de conexión o no se pudo finalizar el trámite');
+  } finally {
+    if (!cambiosGuardados) {
+      desbloquearEnvio();
     }
-  };
+  }
+};
 
   if (loading) {
     return (
@@ -269,51 +372,153 @@ export default function EditarVehiculoPage() {
                       <option value="">Seleccionar...</option>
                       <option value="Particular">Particular</option>
                       <option value="Público">Público</option>
+                      <option value="Diplomático">Diplomático</option>
+                      <option value="Oficial">Oficial</option>
+                      <option value="Especial">Especial</option>
                     </select>
                     <span className={styles.selectChevron}><ChevronIcon /></span>
                   </div>
                 </div>
               )}
 
-              {/* Número de motor */}
-              {campos.includes('numMotor') && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>
-                    <span className={styles.fieldLabelIcon}><WrenchIcon /></span>
-                    Nuevo Número de Motor
-                  </label>
-                  <div className={styles.fieldInputWrap}>
-                    <input
-                      type="text"
-                      value={nuevoNumMotor}
-                      onChange={e => setNuevoNumMotor(e.target.value.toUpperCase())}
-                      placeholder="Ingrese el nuevo número de motor"
-                      className={styles.fieldInput}
-                      required
-                    />
-                  </div>
-                </div>
-              )}
+              {/* Regrabar motor */}
+{esRegrabarMotor && (
+
+  <div className={styles.fieldGroup}>
+
+    <label className={styles.fieldLabel}>
+
+      <span className={styles.fieldLabelIcon}><WrenchIcon /></span>
+
+      Regrabación de Motor
+
+    </label>
+
+    <div className={styles.actionBox}>
+
+      {/* Encabezado del box */}
+
+      <div className={styles.actionBoxHeader}>
+
+        <div className={styles.actionBoxHeaderIcon}><WrenchIcon /></div>
+
+        <p className={styles.actionBoxHeaderText}>Acción física requerida</p>
+
+      </div>
+
+      {/* Cuerpo */}
+
+      <div className={styles.actionBoxBody}>
+
+        <p className={styles.actionBoxDesc}>
+
+          Este trámite no modifica el número de motor registrado. Confirma que
+
+          la regrabación física del número existente fue realizada correctamente
+
+          antes de finalizar.
+
+        </p>
+
+        {/* Checkbox custom */}
+
+        <div
+
+          role="checkbox"
+
+          aria-checked={regrabacionMotorRealizada}
+
+          tabIndex={0}
+
+          className={`${styles.checkRow} ${regrabacionMotorRealizada ? styles.checkRowActive : ''}`}
+
+          onClick={() => setRegrabacionMotorRealizada(prev => !prev)}
+
+          onKeyDown={e => e.key === ' ' && setRegrabacionMotorRealizada(prev => !prev)}
+
+        >
+
+          <div className={`${styles.checkBox} ${regrabacionMotorRealizada ? styles.checkBoxActive : ''}`}>
+
+            <CheckIcon />
+
+          </div>
+
+          <span className={`${styles.checkLabel} ${regrabacionMotorRealizada ? styles.checkLabelActive : ''}`}>
+
+            {regrabacionMotorRealizada
+
+              ? 'Regrabación realizada correctamente'
+
+              : 'Marcar como realizada'}
+
+          </span>
+
+          <span className={`${styles.checkStatusBadge} ${regrabacionMotorRealizada ? styles.checkStatusDone : styles.checkStatusPending}`}>
+
+            {regrabacionMotorRealizada ? 'Confirmado' : 'Pendiente'}
+
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+              
 
               {/* Número de chasis */}
-              {campos.includes('numChasis') && (
-                <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>
-                    <span className={styles.fieldLabelIcon}><WrenchIcon /></span>
-                    Nuevo Número de Chasis
-                  </label>
-                  <div className={styles.fieldInputWrap}>
-                    <input
-                      type="text"
-                      value={nuevoNumChasis}
-                      onChange={e => setNuevoNumChasis(e.target.value.toUpperCase())}
-                      placeholder="Ingrese el nuevo número de chasis"
-                      className={styles.fieldInput}
-                      required
-                    />
-                  </div>
-                </div>
-              )}
+              {/* Regrabar chasis */}
+{esRegrabarChasis && (
+  <div className={styles.fieldGroup}>
+    <label className={styles.fieldLabel}>
+      <span className={styles.fieldLabelIcon}><WrenchIcon /></span>
+      Regrabación de Chasis
+    </label>
+
+    <div className={styles.actionBox}>
+      <div className={styles.actionBoxHeader}>
+        <div className={styles.actionBoxHeaderIcon}><WrenchIcon /></div>
+        <p className={styles.actionBoxHeaderText}>Acción física requerida</p>
+      </div>
+
+      <div className={styles.actionBoxBody}>
+        <p className={styles.actionBoxDesc}>
+          Este trámite no modifica el número de chasis registrado. Confirma que
+          la regrabación física del número existente fue realizada correctamente
+          antes de finalizar.
+        </p>
+
+        <div
+          role="checkbox"
+          aria-checked={regrabacionChasisRealizada}
+          tabIndex={0}
+          className={`${styles.checkRow} ${regrabacionChasisRealizada ? styles.checkRowActive : ''}`}
+          onClick={() => setRegrabacionChasisRealizada(prev => !prev)}
+          onKeyDown={e => e.key === ' ' && setRegrabacionChasisRealizada(prev => !prev)}
+        >
+          <div className={`${styles.checkBox} ${regrabacionChasisRealizada ? styles.checkBoxActive : ''}`}>
+            <CheckIcon />
+          </div>
+
+          <span className={`${styles.checkLabel} ${regrabacionChasisRealizada ? styles.checkLabelActive : ''}`}>
+            {regrabacionChasisRealizada
+              ? 'Regrabación realizada correctamente'
+              : 'Marcar como realizada'}
+          </span>
+
+          <span className={`${styles.checkStatusBadge} ${regrabacionChasisRealizada ? styles.checkStatusDone : styles.checkStatusPending}`}>
+            {regrabacionChasisRealizada ? 'Confirmado' : 'Pendiente'}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
               {/* Placa */}
               {campos.includes('placa') && (
@@ -393,19 +598,75 @@ export default function EditarVehiculoPage() {
             {/* ── Buttons ── */}
             <div className={styles.btnGroup}>
               <button type="submit" disabled={submitting} className={styles.btnSave}>
-                {submitting ? (
-                  <><span className={styles.btnSpinner} /> Guardando...</>
-                ) : (
-                  <><CheckIcon /> Guardar cambios</>
-                )}
-              </button>
-              <Link href={`/asesor/tramites/${idTramite}`} className={styles.btnCancel}>
-                <ArrowLeftIcon /> Cancelar
-              </Link>
+              {submitting ? (
+              <><span className={styles.btnSpinner} /> Guardando y finalizando...</>
+            ) : esRegrabacion ? (
+              <><CheckIcon /> Confirmar regrabación</>
+            ) : (
+              <><CheckIcon /> Guardar cambios</>
+            )}
+            </button>
+              <button
+              type="button"
+              disabled={submitting}
+              className={`${styles.btnCancel} ${submitting ? styles.btnCancelDisabled : ''}`}
+              onClick={() => {
+                if (!submitting) {
+                  router.push(`/asesor/tramites/${idTramite}`);
+                }
+              }}
+            >
+              <ArrowLeftIcon /> Cancelar
+            </button>
             </div>
           </form>
         </div>
+        {mostrarConfirmacion && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modalBox}>
+      <div className={styles.modalIcon}>
+        <WarningIcon />
+      </div>
 
+      <h3>
+  {esRegrabarMotor
+    ? 'Confirmar regrabación de motor'
+    : esRegrabarChasis
+      ? 'Confirmar regrabación de chasis'
+      : 'Confirmar cambios'}
+</h3>
+
+<p>
+  {esRegrabarMotor
+    ? 'Estás a punto de confirmar que la regrabación del número de motor fue realizada y finalizar este trámite. Después no podrás volver a modificarlo desde este trámite.'
+    : esRegrabarChasis
+      ? 'Estás a punto de confirmar que la regrabación del número de chasis fue realizada y finalizar este trámite. Después no podrás volver a modificarlo desde este trámite.'
+      : 'Estás a punto de guardar los cambios del vehículo y finalizar este trámite. Después de confirmar, no podrás volver a modificarlo desde este trámite.'}
+</p>
+
+      <div className={styles.modalActions}>
+        <button
+          type="button"
+          className={styles.btnModalCancelar}
+          onClick={() => {
+            setMostrarConfirmacion(false);
+            setUpdatePendiente(null);
+          }}
+        >
+          Cancelar
+        </button>
+
+        <button
+        type="button"
+        className={styles.btnModalConfirmar}
+        onClick={confirmarGuardado}
+      >
+        {esRegrabacion ? 'Sí, confirmar y finalizar' : 'Sí, guardar y finalizar'}
+      </button>     
+      </div>
+    </div>
+  </div>
+)}        
       </div>
     </div>
   );

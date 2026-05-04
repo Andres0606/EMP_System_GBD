@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/RegistrarVehiculo.module.css';
@@ -44,6 +44,7 @@ export default function RegistrarVehiculoPage() {
   const idCliente = searchParams.get('idCliente') || '';
 
   const [submitting, setSubmitting] = useState(false);
+  const enviandoRef = useRef(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [vehiculo, setVehiculo] = useState({
@@ -56,6 +57,8 @@ export default function RegistrarVehiculoPage() {
     numMotor: '',
     numChasis: '',
     color: '',
+    numeroVin: '',
+    combustible: ''
   });
 
   useEffect(() => {
@@ -76,11 +79,37 @@ export default function RegistrarVehiculoPage() {
     setVehiculo({ ...vehiculo, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSubmitting(false);
+};
+
+const finalizarTramite = async () => {
+  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      idTramite: parseInt(idTramite),
+      estado: 'Finalizado'
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || data.status !== 'OK') {
+    throw new Error(data.mensaje || 'No se pudo finalizar el trámite');
+  }
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (enviandoRef.current) return;
+
+  enviandoRef.current = true;
+  setSubmitting(true);
+  setError('');
+  setSuccess('');
 
     const vehiculoData = {
       placa: vehiculo.placa.toUpperCase(),
@@ -93,33 +122,52 @@ export default function RegistrarVehiculoPage() {
       numMotor: vehiculo.numMotor,
       numChasis: vehiculo.numChasis,
       color: vehiculo.color,
+      numeroVin: vehiculo.numeroVin,
+      combustible: vehiculo.combustible,
     };
 
+let vehiculoRegistrado = false;
+
+try {
+  const response = await fetch('http://localhost:8080/api/vehiculos/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(vehiculoData),
+  });
+
+  const data = await response.json();
+
+  if (response.ok && data.status === 'OK') {
+    vehiculoRegistrado = true;
+
     try {
-      const response = await fetch('http://localhost:8080/api/vehiculos/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(vehiculoData),
-      });
+      await finalizarTramite();
 
-      const data = await response.json();
-
-      if (response.ok && data.status === 'OK') {
-        setSuccess(`Vehículo ${vehiculo.placa.toUpperCase()} registrado exitosamente`);
-        setTimeout(() => {
-          router.push(`/asesor/tramites/${idTramite}`);
-        }, 2000);
-      } else {
-        setError(data.mensaje || 'Error al registrar vehículo');
-      }
-    } catch (err) {
-      setError('Error de conexión con el servidor');
-    } finally {
-      setSubmitting(false);
+      setSuccess(
+        `Vehículo ${vehiculo.placa.toUpperCase()} registrado exitosamente. Trámite finalizado correctamente.`
+      );
+    } catch (error) {
+      setSuccess(
+        `Vehículo ${vehiculo.placa.toUpperCase()} registrado exitosamente, pero no se pudo finalizar automáticamente el trámite.`
+      );
     }
-  };
 
-  return (
+    setTimeout(() => {
+      router.push(`/asesor/tramites/${idTramite}`);
+    }, 2000);
+  } else {
+    setError(data.mensaje || 'Error al registrar vehículo');
+  }
+} catch (err) {
+  setError('Error de conexión con el servidor');
+} finally {
+  if (!vehiculoRegistrado) {
+    desbloquearEnvio();
+  }
+}
+};
+
+return (
     <div className={styles.container}>
       <div className={styles.inner}>
 
@@ -153,7 +201,7 @@ export default function RegistrarVehiculoPage() {
             <p><strong>ID Cliente:</strong> {idCliente}</p>
           </div>
 
-          <p className={styles.sectionTitle}><CarIcon /> Datos del Vehículo</p>
+          <p className={styles.sectionTitle}> Datos del Vehículo</p>
 
           <form onSubmit={handleSubmit}>
             <div className={styles.formGrid}>
@@ -210,6 +258,18 @@ export default function RegistrarVehiculoPage() {
               </div>
 
               <div className={styles.formGroup}>
+                <label>Color *</label>
+                <input
+                  type="text"
+                  name="color"
+                  value={vehiculo.color}
+                  onChange={handleChange}
+                  placeholder="Ej: Rojo, Azul, Negro"
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
                 <label>Clase *</label>
                 <select name="clase" value={vehiculo.clase} onChange={handleChange} required>
                   <option value="">Seleccionar</option>
@@ -226,8 +286,32 @@ export default function RegistrarVehiculoPage() {
                   <option value="">Seleccionar</option>
                   <option value="Particular">Particular</option>
                   <option value="Público">Público</option>
+                  <option value="Diplomático">Diplomático</option>
+                  <option value="Oficial">Oficial</option>
+                  <option value="Especial">Especial</option>
+
+
                 </select>
               </div>
+
+              <div className={styles.formGroup}>
+              <label>Tipo de Combustible</label>
+              <select
+                name="combustible"
+                value={vehiculo.combustible}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar</option>
+                <option value="Gasolina">Gasolina</option>
+                <option value="Diesel">Diesel</option>
+                <option value="Gas">Gas</option>
+                <option value="Mixto">Mixto</option>
+                <option value="Electrico">Eléctrico</option>
+                <option value="Hidrogeno">Hidrógeno</option>
+                <option value="Etanol">Etanol</option>
+                <option value="Biodiesel">Biodiesel</option>
+              </select>
+            </div>
 
               <div className={styles.formGroup}>
                 <label>Número de Motor</label>
@@ -252,16 +336,17 @@ export default function RegistrarVehiculoPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label>Color *</label>
-                <input
-                  type="text"
-                  name="color"
-                  value={vehiculo.color}
-                  onChange={handleChange}
-                  placeholder="Ej: Rojo, Azul, Negro"
-                  required
-                />
-              </div>
+              <label>Número de VIN</label>
+              <input
+                type="text"
+                name="numeroVin"
+                value={vehiculo.numeroVin}
+                onChange={handleChange}
+                placeholder="Número de identificación vehicular"
+              />
+            </div>
+
+              
 
             </div>
 

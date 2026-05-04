@@ -150,8 +150,9 @@ export default function CompletarCitaPage() {
     setError('');
     setSuccess('');
 
-    const base = cita?.valorBase || 0;
-    const total = base + valorOtrosConceptos;
+    const base = Number(cita?.valorBase || 0);
+    const otros = Number(valorOtrosConceptos || 0);
+    const total = base + otros;
 
     try {
       const resCita = await fetch('http://localhost:8080/api/citas/completar', {
@@ -167,10 +168,10 @@ export default function CompletarCitaPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          idCita: parseInt(idCita),
-          valorTramite: total,
-          valorOtrosConceptos,
-        }),
+        idCita: parseInt(idCita),
+        valorTramite: base,
+        valorOtrosConceptos: otros,
+      }),
       });
       const dataTramite = await resTramite.json();
       if (resTramite.ok && dataTramite.status === 'OK') {
@@ -220,8 +221,9 @@ export default function CompletarCitaPage() {
     );
   }
 
-  const base = cita.valorBase || 0;
-  const total = base + valorOtrosConceptos;
+const base = Number(cita.valorBase || 0);
+const otros = Number(valorOtrosConceptos || 0);
+const total = base + otros;
 
   return (
     <div className={styles.container}>

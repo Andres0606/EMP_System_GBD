@@ -12,4 +12,5 @@ public class VehiculoResponse {
     private String tipoServicio;
     private String numMotor;
     private String numChasis;
+    private String combustible;
 }

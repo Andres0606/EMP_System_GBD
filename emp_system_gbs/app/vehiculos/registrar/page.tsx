@@ -5,10 +5,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/vehiculos/RegistrarVehiculo.module.css';
 
+/* ── Icons ── */
+const CarIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+    <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>
+  </svg>
+);
 const ArrowLeftIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="19" y1="12" x2="5" y2="12"/>
-    <polyline points="12 19 5 12 12 5"/>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
   </svg>
 );
 
@@ -17,8 +23,8 @@ export default function RegistrarVehiculoPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [prendado, setPrendado] = useState(false); // 👈 Estado para prendado
-  
+  const [prendado, setPrendado] = useState(false);
+
   const [formData, setFormData] = useState({
     placa: '',
     marca: '',
@@ -66,7 +72,7 @@ export default function RegistrarVehiculoPage() {
       color: formData.color,
       numeroVin: formData.numeroVin,
       combustible: formData.combustible,
-      prendado: prendado ? 'S' : 'N'  // 👈 Enviar 'S' o 'N'
+      prendado: prendado ? 'S' : 'N'
     };
 
     try {
@@ -80,9 +86,7 @@ export default function RegistrarVehiculoPage() {
 
       if (response.ok && data.status === 'OK') {
         setSuccess('¡Vehículo registrado exitosamente!');
-        setTimeout(() => {
-          router.push('/vehiculos');
-        }, 2000);
+        setTimeout(() => router.push('/vehiculos'), 2000);
       } else {
         setError(data.mensaje || 'Error al registrar vehículo');
       }
@@ -96,184 +100,181 @@ export default function RegistrarVehiculoPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <Link href="/vehiculos" className={styles.backButton}>
-          <ArrowLeftIcon /> Volver a mis vehículos
-        </Link>
-        <h1>Registrar Vehículo</h1>
-      </div>
+      <div className={styles.inner}>
 
-      {error && <div className={styles.errorAlert}>{error}</div>}
-      {success && <div className={styles.successAlert}>{success}</div>}
+        {/* ── Header ── */}
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <span className={styles.logoMark}><CarIcon /></span>
+            <span className={styles.logoText}>Trans<strong>Meta</strong></span>
+          </div>
+          <Link href="/vehiculos" className={styles.backButton}>
+            <ArrowLeftIcon /> Volver a mis vehículos
+          </Link>
+        </div>
 
-      <div className={styles.formCard}>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label>Placa *</label>
-              <input 
-                type="text" 
-                name="placa"
-                value={formData.placa} 
-                onChange={handleChange}
-                placeholder="ABC123"
-                required
-                maxLength={10}
-              />
-            </div>
+        {/* ── Page title ── */}
+        <div className={styles.pageTitleRow}>
+          <div className={styles.pageIcon}><CarIcon /></div>
+          <div>
+            <h1 className={styles.pageTitle}>Registrar Vehículo</h1>
+            <p className={styles.pageSub}>Completa los datos del vehículo para asociarlo a tu cuenta</p>
+          </div>
+        </div>
 
-            <div className={styles.formGroup}>
-              <label>Marca</label>
-              <input 
-                type="text" 
-                name="marca"
-                value={formData.marca} 
-                onChange={handleChange}
-                placeholder="Chevrolet, Renault, Mazda"
-              />
-            </div>
+        {/* ── Alerts ── */}
+        {error   && <div className={styles.errorAlert}>{error}</div>}
+        {success && <div className={styles.successAlert}>{success}</div>}
 
-            <div className={styles.formGroup}>
-              <label>Línea</label>
-              <input 
-                type="text" 
-                name="linea"
-                value={formData.linea} 
-                onChange={handleChange}
-                placeholder="Spark, Logan, 3"
-              />
-            </div>
+        {/* ── Form Card ── */}
+        <div className={styles.formCard}>
+          <form onSubmit={handleSubmit} className={styles.form}>
 
-            <div className={styles.formGroup}>
-              <label>Modelo</label>
-              <input 
-                type="number" 
-                name="modelo"
-                value={formData.modelo} 
-                onChange={handleChange}
-                placeholder="2020"
-                min="1900"
-                max="2026"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Clase</label>
-              <select name="clase" value={formData.clase} onChange={handleChange}>
-                <option value="">Seleccionar</option>
-                <option value="Automóvil">Automóvil</option>
-                <option value="Camioneta">Camioneta</option>
-                <option value="Motocicleta">Motocicleta</option>
-                <option value="Camión">Camión</option>
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Tipo Servicio</label>
-              <select name="tipoServicio" value={formData.tipoServicio} onChange={handleChange}>
-                <option value="">Seleccionar</option>
-                <option value="Particular">Particular</option>
-                <option value="Particular">Público</option>
-                <option value="Público">Diplomático</option>
-                <option value="Público">Oficial</option>
-                <option value="Público">Especial</option>
-
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Número de Motor</label>
-              <input 
-                type="text" 
-                name="numMotor"
-                value={formData.numMotor} 
-                onChange={handleChange}
-                placeholder="Número de motor"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Número de Chasis</label>
-              <input 
-                type="text" 
-                name="numChasis"
-                value={formData.numChasis} 
-                onChange={handleChange}
-                placeholder="Número de chasis"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Color</label>
-              <input 
-                type="text" 
-                name="color"
-                value={formData.color} 
-                onChange={handleChange}
-                placeholder="Rojo, Azul, Negro"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Número VIN</label>
-              <input 
-                type="text" 
-                name="numeroVin"
-                value={formData.numeroVin} 
-                onChange={handleChange}
-                placeholder="Número de identificación vehicular"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Tipo de Combustible</label>
-              <select name="combustible" value={formData.combustible} onChange={handleChange}>
-                <option value="">Seleccionar</option>
-                <option value="Gasolina">Gasolina</option>
-                <option value="Diesel">Diesel</option>
-                <option value="Gas">Gas</option>
-                <option value="Mixto">Mixto</option>
-                <option value="Electrico">Eléctrico</option>
-                <option value="Hidrogeno">Hidrógeno</option>
-                <option value="Etanol">Etanol</option>
-                <option value="Biodiesel">Biodiesel</option>
-              </select>
-            </div>
-
-            {/* 👇 Campo de prendado */}
-            <div className={styles.formGroupFull}>
-              <label>¿Vehículo prendado?</label>
-              <div className={styles.toggleGroup}>
-                <button
-                  type="button"
-                  className={`${styles.toggleBtn} ${!prendado ? styles.toggleActive : ''}`}
-                  onClick={() => setPrendado(false)}
-                >
-                  No
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.toggleBtn} ${prendado ? styles.toggleActive : ''}`}
-                  onClick={() => setPrendado(true)}
-                >
-                  Sí
-                </button>
+            {/* Sección: Identificación */}
+            <div>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label>Placa *</label>
+                  <input
+                    type="text" name="placa" value={formData.placa}
+                    onChange={handleChange} placeholder="ABC123"
+                    required maxLength={10}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Marca</label>
+                  <input
+                    type="text" name="marca" value={formData.marca}
+                    onChange={handleChange} placeholder="Chevrolet, Renault, Mazda"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Línea</label>
+                  <input
+                    type="text" name="linea" value={formData.linea}
+                    onChange={handleChange} placeholder="Spark, Logan, 3"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Modelo</label>
+                  <input
+                    type="number" name="modelo" value={formData.modelo}
+                    onChange={handleChange} placeholder="2020"
+                    min="1900" max="2026"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Color</label>
+                  <input
+                    type="text" name="color" value={formData.color}
+                    onChange={handleChange} placeholder="Rojo, Azul, Negro"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Clase</label>
+                  <select name="clase" value={formData.clase} onChange={handleChange}>
+                    <option value="">Seleccionar</option>
+                    <option value="Automóvil">Automóvil</option>
+                    <option value="Camioneta">Camioneta</option>
+                    <option value="Motocicleta">Motocicleta</option>
+                    <option value="Camión">Camión</option>
+                  </select>
+                </div>
+                
               </div>
-              <small className={styles.helpText}>
-                Indica si el vehículo tiene una prenda vigente (crédito activo)
-              </small>
             </div>
-          </div>
 
-          <div className={styles.buttonGroup}>
-            <button type="submit" disabled={submitting} className={styles.submitButton}>
-              {submitting ? 'Registrando...' : 'Registrar Vehículo'}
-            </button>
-            <Link href="/vehiculos" className={styles.cancelButton}>
-              Cancelar
-            </Link>
-          </div>
-        </form>
+            {/* Sección: Características */}
+            <div>
+              <div className={styles.formGrid}>
+                
+                <div className={styles.formGroup}>
+                  <label>Tipo de Servicio</label>
+                  <select name="tipoServicio" value={formData.tipoServicio} onChange={handleChange}>
+                    <option value="">Seleccionar</option>
+                    <option value="Particular">Particular</option>
+                    <option value="Público">Público</option>
+                    <option value="Diplomático">Diplomático</option>
+                    <option value="Oficial">Oficial</option>
+                    <option value="Especial">Especial</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Tipo de Combustible</label>
+                  <select name="combustible" value={formData.combustible} onChange={handleChange}>
+                    <option value="">Seleccionar</option>
+                    <option value="Gasolina">Gasolina</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Gas">Gas</option>
+                    <option value="Mixto">Mixto</option>
+                    <option value="Electrico">Eléctrico</option>
+                    <option value="Hidrogeno">Hidrógeno</option>
+                    <option value="Etanol">Etanol</option>
+                    <option value="Biodiesel">Biodiesel</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Número de Motor</label>
+                  <input
+                    type="text" name="numMotor" value={formData.numMotor}
+                    onChange={handleChange} placeholder="Número de motor"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Número de Chasis</label>
+                  <input
+                    type="text" name="numChasis" value={formData.numChasis}
+                    onChange={handleChange} placeholder="Número de chasis"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Número de VIN</label>
+                  <input
+                    type="text" name="numeroVin" value={formData.numeroVin}
+                    onChange={handleChange} placeholder="Número de identificación vehicular"
+                  />
+                </div>
+
+
+                {/* Toggle prendado */}
+                <div className={styles.formGroupFull}>
+                  <label>¿Vehículo prendado?</label>
+                  <div className={styles.toggleGroup}>
+                    <button
+                      type="button"
+                      className={`${styles.toggleBtn} ${!prendado ? styles.toggleActive : ''}`}
+                      onClick={() => setPrendado(false)}
+                    >
+                      No
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.toggleBtn} ${prendado ? styles.toggleActive : ''}`}
+                      onClick={() => setPrendado(true)}
+                    >
+                      Sí
+                    </button>
+                  </div>
+                  <small className={styles.helpText}>
+                    Indica si el vehículo tiene una prenda vigente (crédito activo)
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            {/* Botones */}
+            <div className={styles.buttonGroup}>
+              <Link href="/vehiculos" className={styles.cancelButton}>
+                Cancelar
+              </Link>
+              <button type="submit" disabled={submitting} className={styles.submitButton}>
+                {submitting ? 'Registrando...' : 'Registrar Vehículo'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+
       </div>
     </div>
   );
