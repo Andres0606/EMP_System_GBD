@@ -121,6 +121,8 @@ export default function AsesorCitasPage() {
   const [tab, setTab] = useState<'pendientes' | 'agendadas'>('pendientes');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [citaParaCancelar, setCitaParaCancelar] = useState<CitaAgendada | null>(null);
+const [cancelando, setCancelando] = useState(false);
 
   useEffect(() => {
   const tabUrl = searchParams.get('tab');
@@ -164,26 +166,35 @@ export default function AsesorCitasPage() {
     }
   };
 
-  const cancelarCitaAgendada = async (idCita: number) => {
-  const confirmar = confirm('¿Seguro que deseas cancelar esta cita agendada?');
-  if (!confirmar) return;
+const cancelarCitaAgendada = (cita: CitaAgendada) => {
+  setError('');
+  setCitaParaCancelar(cita);
+};
+
+const confirmarCancelacionCita = async () => {
+  if (!citaParaCancelar || cancelando) return;
 
   try {
+    setCancelando(true);
+
     const response = await fetch('http://localhost:8080/api/citas/cancelar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idCita }),
+      body: JSON.stringify({ idCita: citaParaCancelar.idCita }),
     });
 
     const data = await response.json();
 
     if (response.ok && data.status === 'OK') {
+      setCitaParaCancelar(null);
       await cargarCitas();
     } else {
       setError(data.mensaje || 'Error al cancelar la cita');
     }
   } catch {
     setError('Error de conexión con el servidor');
+  } finally {
+    setCancelando(false);
   }
 };
 
@@ -400,11 +411,11 @@ export default function AsesorCitasPage() {
                     </button>
 
                     <button
-                      className={styles.btnCancelarCita}
-                      onClick={() => cancelarCitaAgendada(cita.idCita)}
-                    >
-                      Cancelar cita
-                    </button>
+                    className={styles.btnCancelarCita}
+                    onClick={() => cancelarCitaAgendada(cita)}
+                  >
+                    Cancelar cita
+                  </button>
                   </div>
                 </div>
                   </div>
@@ -413,7 +424,70 @@ export default function AsesorCitasPage() {
             )}
           </>
         )}
+
       </div>
+
+      {citaParaCancelar && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalBox}>
+            <div className={styles.modalHeader}>
+              <h3>Cancelar cita agendada</h3>
+              <p>
+                Confirma si deseas cancelar esta cita. La solicitud volverá a quedar disponible.
+              </p>
+            </div>
+
+            <div className={styles.modalInfo}>
+              <div>
+                <span>Cliente</span>
+                <strong>{citaParaCancelar.cliente}</strong>
+              </div>
+
+              <div>
+                <span>Vehículo</span>
+                <strong>{citaParaCancelar.vehiculo || 'No aplica'}</strong>
+              </div>
+
+              <div>
+                <span>Trámite</span>
+                <strong>{citaParaCancelar.tipoTramite}</strong>
+              </div>
+
+              <div>
+                <span>Programada</span>
+                <strong>
+                  {new Date(citaParaCancelar.fechaProgramada).toLocaleString('es-CO', {
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </strong>
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalBtnVolver}
+                onClick={() => setCitaParaCancelar(null)}
+                disabled={cancelando}
+              >
+                Volver
+              </button>
+
+              <button
+                type="button"
+                className={styles.modalBtnCancelar}
+                onClick={confirmarCancelacionCita}
+                disabled={cancelando}
+              >
+                {cancelando ? 'Cancelando...' : 'Cancelar cita'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

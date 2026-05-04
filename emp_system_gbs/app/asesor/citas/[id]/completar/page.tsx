@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/CompletarCita.module.css';
@@ -101,13 +101,15 @@ interface CitaInfo {
 }
 
 export default function CompletarCitaPage() {
-  const router = useRouter();
-  const params = useParams();
-  const idCita = params.id as string;
+const router = useRouter();
+const params = useParams();
+const idCita = params.id as string;
 
-  const [cita, setCita] = useState<CitaInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+const enviandoRef = useRef(false);
+
+const [cita, setCita] = useState<CitaInfo | null>(null);
+const [loading, setLoading] = useState(true);
+const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [valorOtrosConceptos, setValorOtrosConceptos] = useState<number>(0);
@@ -144,48 +146,69 @@ export default function CompletarCitaPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSubmitting(false);
+};
 
-    const base = Number(cita?.valorBase || 0);
-    const otros = Number(valorOtrosConceptos || 0);
-    const total = base + otros;
+const handleVolver = () => {
+  if (enviandoRef.current || submitting) return;
+  router.push('/asesor/citas');
+};
 
-    try {
-      const resCita = await fetch('http://localhost:8080/api/citas/completar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idCita: parseInt(idCita) }),
-      });
-      const dataCita = await resCita.json();
-      if (!resCita.ok || dataCita.status !== 'OK')
-        throw new Error(dataCita.mensaje || 'Error al completar la cita');
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-      const resTramite = await fetch('http://localhost:8080/api/tramite/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+  if (enviandoRef.current) return;
+
+  enviandoRef.current = true;
+  setSubmitting(true);
+  setError('');
+  setSuccess('');
+
+  const base = Number(cita?.valorBase || 0);
+  const otros = Number(valorOtrosConceptos || 0);
+  const total = base + otros;
+
+  try {
+    const resCita = await fetch('http://localhost:8080/api/citas/completar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idCita: parseInt(idCita) }),
+    });
+
+    const dataCita = await resCita.json();
+
+    if (!resCita.ok || dataCita.status !== 'OK') {
+      throw new Error(dataCita.mensaje || 'Error al completar la cita');
+    }
+
+    const resTramite = await fetch('http://localhost:8080/api/tramite/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         idCita: parseInt(idCita),
         valorTramite: base,
         valorOtrosConceptos: otros,
       }),
-      });
-      const dataTramite = await resTramite.json();
-      if (resTramite.ok && dataTramite.status === 'OK') {
-        setSuccess(`Trámite #${dataTramite.idTramite} creado exitosamente — Valor total: $${total.toLocaleString()}`);
-        setTimeout(() => router.push('/asesor/tramites'), 2500);
-      } else {
-        throw new Error(dataTramite.mensaje || 'Error al crear el trámite');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Error de conexión con el servidor');
-    } finally {
-      setSubmitting(false);
+    });
+
+    const dataTramite = await resTramite.json();
+
+    if (resTramite.ok && dataTramite.status === 'OK') {
+      setSuccess(
+        `Trámite #${dataTramite.idTramite} creado exitosamente — Valor total: $${total.toLocaleString()}`
+      );
+
+      setTimeout(() => router.push('/asesor/tramites'), 2500);
+    } else {
+      throw new Error(dataTramite.mensaje || 'Error al crear el trámite');
     }
-  };
+  } catch (err: any) {
+    setError(err.message || 'Error de conexión con el servidor');
+    desbloquearEnvio();
+  }
+};
 
   /* ── Loading ── */
   if (loading) {
@@ -209,9 +232,14 @@ export default function CompletarCitaPage() {
               <span className={styles.logoText}>Trans<strong>Meta</strong></span>
               <span className={styles.badgeAsesor}>Asesor</span>
             </div>
-            <Link href="/asesor/citas" className={styles.backBtn}>
+            <button
+              type="button"
+              className={styles.backBtn}
+              onClick={handleVolver}
+              disabled={submitting}
+            >
               <ArrowLeftIcon /> Volver a Citas
-            </Link>
+            </button>
           </div>
           <div className={styles.errorAlert}>
             <AlertIcon /> Cita no encontrada
@@ -351,13 +379,14 @@ const total = base + otros;
                 <div className={styles.fieldInputWrap}>
                   <span className={styles.fieldInputIcon}><PlusIcon /></span>
                   <input
-                    type="number"
-                    min="0"
-                    value={valorOtrosConceptos}
-                    onChange={e => setValorOtrosConceptos(parseFloat(e.target.value) || 0)}
-                    placeholder="Ej: 50000"
-                    className={styles.fieldInput}
-                  />
+                  type="number"
+                  min="0"
+                  value={valorOtrosConceptos}
+                  onChange={e => setValorOtrosConceptos(parseFloat(e.target.value) || 0)}
+                  placeholder="Ej: 50000"
+                  className={styles.fieldInput}
+                  disabled={submitting}
+                />
                 </div>
                 <small className={styles.helperText}>Impuestos, certificados u otros costos adicionales</small>
               </div>
@@ -389,9 +418,14 @@ const total = base + otros;
                   </>
                 )}
               </button>
-              <Link href="/asesor/citas" className={styles.btnCancel}>
+              <button
+                type="button"
+                className={styles.btnCancel}
+                onClick={handleVolver}
+                disabled={submitting}
+              >
                 <ArrowLeftIcon /> Cancelar
-              </Link>
+              </button>
             </div>
           </form>
         </div>

@@ -207,7 +207,7 @@ const confirmarCancelacion = async () => {
 
           {vehiculoPrendado && (
             <div className={styles.errorAlert}>
-              🔒 Este vehículo tiene prenda activa. Primero debe realizarse el levantamiento de prenda.
+              Este vehículo tiene prenda activa. Primero debe realizarse el levantamiento de prenda.
             </div>
           )}
 

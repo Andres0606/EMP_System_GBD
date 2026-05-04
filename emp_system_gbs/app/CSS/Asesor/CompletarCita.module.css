@@ -116,7 +116,7 @@
   transition: background .2s, transform .2s;
 }
 .backBtn svg { width: 14px; height: 14px; }
-.backBtn:hover { background: rgba(21, 101, 192, 0.13); transform: translateY(-1px); }
+.backBtn:hover:not(:disabled) { background: rgba(21, 101, 192, 0.13); transform: translateY(-1px); }
 
 /* ══════════════════════════════════════
    PAGE TITLE
@@ -358,7 +358,7 @@
   transition: background .2s, transform .2s;
 }
 .btnCancel svg { width: 14px; height: 14px; }
-.btnCancel:hover { background: rgba(21, 101, 192, 0.12); transform: translateY(-1px); }
+.btnCancel:hover:not(:disabled) { background: rgba(21, 101, 192, 0.12); transform: translateY(-1px); }
 
 /* ══════════════════════════════════════
    LOADING
@@ -374,6 +374,29 @@
   border: 3px solid rgba(21, 101, 192, 0.2); border-top-color: #1565C0;
   border-radius: 50%; animation: spin .75s linear infinite;
 }
+
+.backBtn,
+.btnCancel {
+  cursor: pointer;
+}
+
+.backBtn:disabled,
+.btnCancel:disabled,
+.btnConfirm:disabled,
+.fieldInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.backBtn:disabled:hover,
+.btnCancel:disabled:hover,
+.btnConfirm:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  filter: none;
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ══════════════════════
