@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/GestionarPrenda.module.css';
@@ -53,6 +53,9 @@ export default function GestionarPrendaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const enviandoRef = useRef(false);
+const [accionConfirmada, setAccionConfirmada] = useState(false);
+const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
@@ -68,49 +71,109 @@ export default function GestionarPrendaPage() {
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSubmitting(false);
+};
 
-    const endpoint =
-      tipo === 'inscribir'
-        ? 'http://localhost:8080/api/vehiculos/inscribirPrenda'
-        : 'http://localhost:8080/api/vehiculos/levantarPrenda';
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const data = {
-      placa,
+  if (enviandoRef.current) return;
+
+  setError('');
+  setSuccess('');
+
+  if (!placa) {
+    setError('Falta información del vehículo.');
+    return;
+  }
+
+  if (!accionConfirmada) {
+    setError(
+      esInscripcion
+        ? 'Debe confirmar que la inscripción de prenda fue realizada.'
+        : 'Debe confirmar que el levantamiento de prenda fue realizado.'
+    );
+    return;
+  }
+
+  setMostrarConfirmacion(true);
+};
+
+const finalizarTramite = async () => {
+  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       idTramite: parseInt(idTramite),
-    };
+      estado: 'Finalizado',
+    }),
+  });
 
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+  const data = await response.json();
 
-      const result = await response.json();
+  if (!response.ok || data.status !== 'OK') {
+    throw new Error(data.mensaje || 'No se pudo finalizar el trámite');
+  }
+};
 
-      if (response.ok && result.status === 'OK') {
-        const mensaje =
-          tipo === 'inscribir'
-            ? `Prenda inscrita exitosamente para el vehículo ${placa}`
-            : `Prenda levantada exitosamente para el vehículo ${placa}`;
-        setSuccess(mensaje);
-        setTimeout(() => {
-          router.push(`/asesor/tramites/${idTramite}`);
-        }, 2000);
-      } else {
-        setError(result.mensaje || 'Error al procesar la prenda');
-      }
-    } catch (err) {
-      setError('Error de conexión con el servidor');
-    } finally {
-      setSubmitting(false);
-    }
+const confirmarGestionPrenda = async () => {
+  if (enviandoRef.current) return;
+
+  setMostrarConfirmacion(false);
+  enviandoRef.current = true;
+  setSubmitting(true);
+  setError('');
+  setSuccess('');
+
+  const endpoint =
+    tipo === 'inscribir'
+      ? 'http://localhost:8080/api/vehiculos/inscribirPrenda'
+      : 'http://localhost:8080/api/vehiculos/levantarPrenda';
+
+  const data = {
+    placa,
+    idTramite: parseInt(idTramite),
   };
+
+  let procesoRealizado = false;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+if (response.ok && result.status === 'OK') {
+  await finalizarTramite();
+
+  procesoRealizado = true;
+
+  setSuccess(
+    esInscripcion
+      ? `Prenda inscrita correctamente. El vehículo ${placa} quedó marcado como prendado. Trámite finalizado correctamente.`
+      : `Prenda levantada correctamente. El vehículo ${placa} ya no queda marcado como prendado. Trámite finalizado correctamente.`
+  );
+
+  setTimeout(() => {
+    router.push(`/asesor/tramites/${idTramite}`);
+  }, 1800);
+} else {
+      setError(result.mensaje || 'Error al procesar la prenda');
+    }
+  } catch {
+    setError('Error de conexión con el servidor');
+  } finally {
+    if (!procesoRealizado) {
+      desbloquearEnvio();
+    }
+  }
+};
+ 
 
   const esInscripcion = tipo === 'inscribir';
   const titulo = esInscripcion ? 'Inscripción de Prenda' : 'Levantamiento de Prenda';
@@ -123,9 +186,18 @@ export default function GestionarPrendaPage() {
 
         {/* Header */}
         <div className={styles.header}>
-          <Link href={`/asesor/tramites/${idTramite}`} className={styles.backButton}>
-            <ArrowLeftIcon /> Volver al Trámite
-          </Link>
+        <button
+          type="button"
+          disabled={submitting}
+          className={`${styles.backButton} ${submitting ? styles.buttonDisabled : ''}`}
+          onClick={() => {
+            if (!submitting) {
+              router.push(`/asesor/tramites/${idTramite}`);
+            }
+          }}
+        >
+          <ArrowLeftIcon /> Volver al Trámite
+        </button>
           <h1>{titulo}</h1>
         </div>
 
@@ -153,20 +225,109 @@ export default function GestionarPrendaPage() {
             <p><strong>ID Trámite:</strong> #{idTramite}</p>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className={styles.buttonGroup}>
-              <Link href={`/asesor/tramites/${idTramite}`} className={styles.backButtonForm}>
-                Cancelar
-              </Link>
-              <button type="submit" disabled={submitting} className={colorBoton}>
-                {esInscripcion ? <LockIcon /> : <UnlockIcon />}
-                {submitting ? 'Procesando...' : accion}
-              </button>
-            </div>
-          </form>
+       <form onSubmit={handleSubmit}>
+  <div className={styles.actionBox}>
+    <div className={styles.actionBoxHeader}>
+      <div className={styles.actionBoxHeaderIcon}>
+        {esInscripcion ? <LockIcon /> : <UnlockIcon />}
+      </div>
+      <p className={styles.actionBoxHeaderText}>Confirmación requerida</p>
+    </div>
+
+    <div className={styles.actionBoxBody}>
+      <p className={styles.actionBoxDesc}>
+        {esInscripcion
+          ? 'Confirma que la prenda fue inscrita correctamente para este vehículo antes de finalizar el trámite.'
+          : 'Confirma que la prenda fue levantada correctamente para este vehículo antes de finalizar el trámite.'}
+      </p>
+
+      <div
+        role="checkbox"
+        aria-checked={accionConfirmada}
+        tabIndex={0}
+        className={`${styles.checkRow} ${accionConfirmada ? styles.checkRowActive : ''}`}
+        onClick={() => setAccionConfirmada(prev => !prev)}
+        onKeyDown={e => e.key === ' ' && setAccionConfirmada(prev => !prev)}
+      >
+        <div className={`${styles.checkBox} ${accionConfirmada ? styles.checkBoxActive : ''}`}>
+          <CheckCircleIcon />
+        </div>
+
+        <span className={`${styles.checkLabel} ${accionConfirmada ? styles.checkLabelActive : ''}`}>
+          {accionConfirmada
+            ? esInscripcion
+              ? 'Inscripción de prenda confirmada'
+              : 'Levantamiento de prenda confirmado'
+            : 'Marcar como realizado'}
+        </span>
+
+        <span className={`${styles.checkStatusBadge} ${accionConfirmada ? styles.checkStatusDone : styles.checkStatusPending}`}>
+          {accionConfirmada ? 'Confirmado' : 'Pendiente'}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div className={styles.buttonGroup}>
+    <button
+      type="button"
+      disabled={submitting}
+      className={`${styles.backButtonForm} ${submitting ? styles.buttonDisabled : ''}`}
+      onClick={() => {
+        if (!submitting) {
+          router.push(`/asesor/tramites/${idTramite}`);
+        }
+      }}
+    >
+      Cancelar
+    </button>
+
+    <button type="submit" disabled={submitting} className={colorBoton}>
+      {esInscripcion ? <LockIcon /> : <UnlockIcon />}
+      {submitting ? 'Procesando...' : accion}
+    </button>
+  </div>
+</form>
 
         </div>
       </div>
+      {mostrarConfirmacion && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modalBox}>
+      <div className={styles.modalIcon}>
+        <AlertCircleIcon />
+      </div>
+
+      <h3>
+        {esInscripcion ? 'Confirmar inscripción de prenda' : 'Confirmar levantamiento de prenda'}
+      </h3>
+
+      <p>
+        {esInscripcion
+        ? `Se marcará el vehículo ${placa} como prendado y el trámite quedará finalizado.`
+        : `Se quitará la marca de prendado al vehículo ${placa} y el trámite quedará finalizado.` }    
+      </p>
+
+      <div className={styles.modalActions}>
+        <button
+          type="button"
+          className={styles.btnModalCancelar}
+          onClick={() => setMostrarConfirmacion(false)}
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          className={styles.btnModalConfirmar}
+          onClick={confirmarGestionPrenda}
+        >
+          Sí, confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

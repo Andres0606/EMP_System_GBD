@@ -50,6 +50,8 @@ export default function SolicitarCitaPage() {
   const [success, setSuccess] = useState('');
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [tiposTramite, setTiposTramite] = useState<TipoTramite[]>([]);
+  const [tieneLicencia, setTieneLicencia] = useState<boolean | null>(null);
+const [validandoLicencia, setValidandoLicencia] = useState(false);
   const [valorTramite, setValorTramite] = useState<number | null>(null);
   const [requiereVehiculo, setRequiereVehiculo] = useState<boolean>(false);
   const [tipoDropdownOpen, setTipoDropdownOpen] = useState(false);
@@ -72,6 +74,35 @@ export default function SolicitarCitaPage() {
 
   const idCliente = typeof window !== 'undefined' ? sessionStorage.getItem('userCedula') : null;
 
+const cargarLicenciaCliente = async () => {
+  if (!idCliente) return;
+
+  try {
+    setValidandoLicencia(true);
+
+    const response = await fetch(`http://localhost:8080/api/auth/perfil/${idCliente}`);
+    const data = await response.json();
+
+    if (response.ok && data.status === 'OK') {
+      const licencia =
+        data.licenciaConduccion ??
+        data.LICENCIACONDUCCION ??
+        data.licenciaconduccion ??
+        data.licencia_conduccion ??
+        '';
+
+      setTieneLicencia(licencia.toString().toUpperCase() === 'S');
+    } else {
+      setTieneLicencia(false);
+    }
+  } catch (error) {
+    console.error('Error validando licencia:', error);
+    setTieneLicencia(false);
+  } finally {
+    setValidandoLicencia(false);
+  }
+};
+
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (!isLoggedIn || !idCliente) {
@@ -80,6 +111,7 @@ export default function SolicitarCitaPage() {
     }
     cargarVehiculos();
     cargarTiposTramite();
+    cargarLicenciaCliente();
   }, []);
 
   useEffect(() => {
@@ -177,20 +209,45 @@ setRequiereVehiculo(
       return;
     }
 
+    if (esDuplicadoLicencia) {
+  if (validandoLicencia) {
+    setError('Estamos validando si tienes licencia registrada. Intenta nuevamente en unos segundos.');
+    desbloquearEnvio();
+    return;
+  }
+
+  if (tieneLicencia !== true) {
+    setError('No puedes solicitar un duplicado de licencia porque no tienes una licencia registrada en tu perfil.');
+    desbloquearEnvio();
+    return;
+  }
+}
+
 if (requiereVehiculo && !formData.idVehiculo) {
   const tipoActual = tiposTramite.find(
     t => t.id.toString() === formData.idTipoTramite
   );
 
-  const esLevantarPrendaSubmit =
-    tipoActual?.nombre.toLowerCase().includes('levantar') &&
-    tipoActual?.nombre.toLowerCase().includes('prenda');
+const nombreTipoActual = tipoActual?.nombre
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '') || '';
 
-  setError(
-    esLevantarPrendaSubmit
-      ? 'No puedes solicitar levantamiento de prenda porque no seleccionaste un vehículo prendado'
-      : 'Este trámite requiere seleccionar un vehículo'
-  );
+const esLevantarPrendaSubmit =
+  nombreTipoActual.includes('levantar') &&
+  nombreTipoActual.includes('prenda');
+
+const esInscripcionPrendaSubmit =
+  (nombreTipoActual.includes('inscripcion') || nombreTipoActual.includes('inscribir')) &&
+  nombreTipoActual.includes('prenda');
+
+setError(
+  esLevantarPrendaSubmit
+    ? 'No puedes solicitar levantamiento de prenda porque no seleccionaste un vehículo prendado.'
+    : esInscripcionPrendaSubmit
+      ? 'No puedes solicitar inscripción de prenda porque no seleccionaste un vehículo sin prenda activa.'
+      : 'Este trámite requiere seleccionar un vehículo.'
+);
 
 desbloquearEnvio();
   return;
@@ -286,13 +343,23 @@ const nombreTramite = tipoSeleccionado?.nombre
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '') || '';
 
+const esDuplicadoLicencia =
+  nombreTramite.includes('duplicado') &&
+  nombreTramite.includes('licencia');
+
 const esLevantarPrenda =
   nombreTramite.includes('levantar') &&
   nombreTramite.includes('prenda');
 
+const esInscripcionPrenda =
+  (nombreTramite.includes('inscripcion') || nombreTramite.includes('inscribir')) &&
+  nombreTramite.includes('prenda');
+
 const vehiculosDisponibles = esLevantarPrenda
   ? vehiculos.filter(v => v.prendado === 'S')
-  : vehiculos;
+  : esInscripcionPrenda
+    ? vehiculos.filter(v => v.prendado !== 'S')
+    : vehiculos;
 
 const esCancelacionMatricula =
   nombreTramite.includes('cancel') &&
@@ -304,7 +371,9 @@ const vehiculoSeleccionado = vehiculos.find(
 
 const mostrarAdvertenciaPrenda =
   esCancelacionMatricula && vehiculoSeleccionado?.prendado === 'S';
-
+const bloquearDuplicadoLicencia =
+  esDuplicadoLicencia && tieneLicencia === false && !validandoLicencia;
+  
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -393,6 +462,19 @@ const mostrarAdvertenciaPrenda =
               )}
             </div>
 
+            {bloquearDuplicadoLicencia && (
+              <small className={styles.warningText}>
+                No tienes una licencia registrada. Para solicitar un duplicado, primero debes registrarla en tu perfil.{' '}
+                <button
+                  type="button"
+                  onClick={() => router.push('/perfil')}
+                  className={styles.warningLink}
+                >
+                  Ir al perfil
+                </button>
+              </small>
+            )}
+
             {/* Vehículo — solo si aplica */}
 
             {/* Vehículo — solo si aplica */}
@@ -425,7 +507,9 @@ const mostrarAdvertenciaPrenda =
                     <option value="" disabled>
                       {esLevantarPrenda
                         ? 'No tienes vehículos prendados'
-                        : 'No tiene vehículos registrados'}
+                        : esInscripcionPrenda
+                          ? 'No tienes vehículos disponibles sin prenda'
+                          : 'No tiene vehículos registrados'}
                     </option>
                   ) : (
                     vehiculosDisponibles.map((vehiculo) => (
@@ -447,7 +531,9 @@ const mostrarAdvertenciaPrenda =
                   <small className={styles.warningText}>
                     {esLevantarPrenda
                       ? 'No tienes vehículos prendados. Si no aparece, '
-                      : 'Este trámite requiere un vehículo. '}
+                      : esInscripcionPrenda
+                        ? 'No tienes vehículos disponibles para inscripción de prenda. Si necesitas usar otro vehículo, '
+                        : 'Este trámite requiere un vehículo. '}
                     <button
                       type="button"
                       onClick={handleRegistrarVehiculo}
@@ -460,7 +546,9 @@ const mostrarAdvertenciaPrenda =
                   <small className={styles.infoText}>
                     {esLevantarPrenda
                       ? 'Solo aparecen vehículos con prenda activa. ¿No encuentras tu vehículo? '
-                      : '¿No encuentras tu vehículo? '}
+                      : esInscripcionPrenda
+                        ? 'Solo aparecen vehículos sin prenda activa. ¿No encuentras tu vehículo? '
+                        : '¿No encuentras tu vehículo? '}
                     <button
                       type="button"
                       onClick={handleRegistrarVehiculo}
@@ -590,9 +678,19 @@ const mostrarAdvertenciaPrenda =
 )}
 
 
-            <button type="submit" disabled={submitting} className={styles.submitButton}>
-              {submitting ? 'Enviando...' : 'Solicitar Cita'}
-            </button>
+            <button
+            type="submit"
+            disabled={submitting || bloquearDuplicadoLicencia || (esDuplicadoLicencia && validandoLicencia)}
+            className={styles.submitButton}
+          >
+            {submitting
+              ? 'Enviando...'
+              : esDuplicadoLicencia && validandoLicencia
+                ? 'Validando licencia...'
+                : bloquearDuplicadoLicencia
+                  ? 'Licencia requerida'
+                  : 'Solicitar Cita'}
+          </button>
           </form>
         </div>
 

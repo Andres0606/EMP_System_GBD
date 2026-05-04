@@ -62,6 +62,7 @@ export default function TramiteSimplePage() {
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [nuevoCombustible, setNuevoCombustible] = useState('');
   const [transformacionRealizada, setTransformacionRealizada] = useState(false);
+  const [duplicadoRealizado, setDuplicadoRealizado] = useState(false);
   const [tipoTransformacion, setTipoTransformacion] = useState('');
 
   useEffect(() => {
@@ -75,7 +76,9 @@ export default function TramiteSimplePage() {
       case 'Cambio de Carrocería':    return 'Cambio de Carrocería';
       case 'Duplicado de Placas':     return 'Duplicado de Placas';
       case 'Transformación':          return 'Transformación del Vehículo';
-      case 'Duplicado de Licencia':   return 'Duplicado de Licencia de Conducción';
+      case 'Duplicado de Licencia':
+      case 'Duplicado Licencia':
+        return 'Duplicado de Licencia de Conducción';      
       case 'Otros':                   return 'Otros Trámites';
       default:                        return 'Realizar Trámite';
     }
@@ -86,13 +89,18 @@ export default function TramiteSimplePage() {
       case 'Cambio de Carrocería':  return 'Registrar el cambio de tipo de carrocería del vehículo.';
       case 'Duplicado de Placas':   return 'Generar un duplicado de las placas por pérdida, robo o deterioro.';
       case 'Transformación':        return 'Registrar modificaciones importantes en el vehículo.';
-      case 'Duplicado de Licencia': return 'Generar un duplicado de la licencia de conducción.';
+      case 'Duplicado de Licencia':
+      case 'Duplicado Licencia':
+        return 'Generar un duplicado de la licencia de conducción.';
       case 'Otros':                 return 'Realizar un trámite no especificado en las categorías anteriores.';
       default:                      return 'Realizar trámite.';
     }
   };
 
   const esConversionCombustible = tipoTransformacion === 'CONVERSION_COMBUSTIBLE';
+const esDuplicadoPlacas = tipo === 'Duplicado de Placas';
+const esDuplicadoLicencia = tipo === 'Duplicado de Licencia' || tipo === 'Duplicado Licencia';
+const esDuplicado = esDuplicadoPlacas || esDuplicadoLicencia;
 
   const desbloquearEnvio = () => { enviandoRef.current = false; setSubmitting(false); };
 
@@ -129,6 +137,17 @@ export default function TramiteSimplePage() {
       if (esConversionCombustible && !placa) { setError('No se recibió la placa del vehículo. Vuelva al detalle del trámite e intente de nuevo.'); return; }
       if (!esConversionCombustible && !transformacionRealizada) { setError('Debe confirmar que la transformación fue realizada.'); return; }
     }
+
+    if (esDuplicado) {
+  if (!duplicadoRealizado) {
+    setError(
+      esDuplicadoPlacas
+        ? 'Debe confirmar que el duplicado de placas fue realizado.'
+        : 'Debe confirmar que el duplicado de licencia fue realizado.'
+    );
+    return;
+  }
+}
     setMostrarConfirmacion(true);
   };
 
@@ -144,12 +163,16 @@ export default function TramiteSimplePage() {
       await finalizarTramite();
       tramiteRealizado = true;
       setSuccess(
-        tipo === 'Transformación'
-          ? esConversionCombustible
-            ? `Conversión de combustible registrada. Nuevo: ${nuevoCombustible}. Trámite finalizado.`
-            : 'Transformación confirmada. Trámite finalizado correctamente.'
-          : 'Trámite realizado exitosamente.'
-      );
+      tipo === 'Transformación'
+        ? esConversionCombustible
+          ? `Conversión de combustible registrada. Nuevo: ${nuevoCombustible}. Trámite finalizado.`
+          : 'Transformación confirmada. Trámite finalizado correctamente.'
+        : esDuplicadoPlacas
+          ? 'Duplicado de placas confirmado. Trámite finalizado correctamente.'
+          : esDuplicadoLicencia
+            ? 'Duplicado de licencia confirmado. Trámite finalizado correctamente.'
+            : 'Trámite realizado exitosamente.'
+    );
       setTimeout(() => router.push(`/asesor/tramites/${idTramite}`), 1800);
     } catch {
       setError('Error de conexión o no se pudo finalizar el trámite.');
@@ -314,33 +337,78 @@ export default function TramiteSimplePage() {
             )}
 
             {/* ── Duplicado de Placas ── */}
-            {tipo === 'Duplicado de Placas' && (
-              <div className={styles.formGroup}>
-                <label>Motivo *</label>
-                <select required>
-                  <option value="">Seleccionar</option>
-                  <option value="Pérdida">Pérdida</option>
-                  <option value="Robo">Robo</option>
-                  <option value="Deterioro">Deterioro</option>
-                  <option value="Daño">Daño</option>
-                </select>
-              </div>
-            )}
+{esDuplicadoPlacas && (
+  <div className={styles.actionBox}>
+    <div className={styles.actionBoxHeader}>
+      <div className={styles.actionBoxHeaderIcon}><ClipboardIcon /></div>
+      <p className={styles.actionBoxHeaderText}>Confirmación requerida</p>
+    </div>
+
+    <div className={styles.actionBoxBody}>
+      <p className={styles.actionBoxDesc}>
+        Confirma que el duplicado de placas fue realizado correctamente antes de finalizar el trámite.
+      </p>
+
+      <div
+        role="checkbox"
+        aria-checked={duplicadoRealizado}
+        tabIndex={0}
+        className={`${styles.checkRow} ${duplicadoRealizado ? styles.checkRowActive : ''}`}
+        onClick={() => setDuplicadoRealizado(prev => !prev)}
+        onKeyDown={e => e.key === ' ' && setDuplicadoRealizado(prev => !prev)}
+      >
+        <div className={`${styles.checkBox} ${duplicadoRealizado ? styles.checkBoxActive : ''}`}>
+          <CheckIcon />
+        </div>
+
+        <span className={`${styles.checkLabel} ${duplicadoRealizado ? styles.checkLabelActive : ''}`}>
+          {duplicadoRealizado ? 'Duplicado de placas realizado correctamente' : 'Marcar como realizado'}
+        </span>
+
+        <span className={`${styles.checkStatusBadge} ${duplicadoRealizado ? styles.checkStatusDone : styles.checkStatusPending}`}>
+          {duplicadoRealizado ? 'Confirmado' : 'Pendiente'}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
 
             {/* ── Duplicado de Licencia ── */}
-            {tipo === 'Duplicado de Licencia' && (
-              <div className={styles.formGroup}>
-                <label>Motivo *</label>
-                <select required>
-                  <option value="">Seleccionar</option>
-                  <option value="Pérdida">Pérdida</option>
-                  <option value="Robo">Robo</option>
-                  <option value="Deterioro">Deterioro</option>
-                  <option value="Cambio de Datos">Cambio de Datos Personales</option>
-                </select>
-              </div>
-            )}
+{esDuplicadoLicencia && (
+  <div className={styles.actionBox}>
+    <div className={styles.actionBoxHeader}>
+      <div className={styles.actionBoxHeaderIcon}><ClipboardIcon /></div>
+      <p className={styles.actionBoxHeaderText}>Confirmación requerida</p>
+    </div>
 
+    <div className={styles.actionBoxBody}>
+      <p className={styles.actionBoxDesc}>
+        Confirma que el duplicado de licencia fue realizado correctamente antes de finalizar el trámite.
+      </p>
+
+      <div
+        role="checkbox"
+        aria-checked={duplicadoRealizado}
+        tabIndex={0}
+        className={`${styles.checkRow} ${duplicadoRealizado ? styles.checkRowActive : ''}`}
+        onClick={() => setDuplicadoRealizado(prev => !prev)}
+        onKeyDown={e => e.key === ' ' && setDuplicadoRealizado(prev => !prev)}
+      >
+        <div className={`${styles.checkBox} ${duplicadoRealizado ? styles.checkBoxActive : ''}`}>
+          <CheckIcon />
+        </div>
+
+        <span className={`${styles.checkLabel} ${duplicadoRealizado ? styles.checkLabelActive : ''}`}>
+          {duplicadoRealizado ? 'Duplicado de licencia realizado correctamente' : 'Marcar como realizado'}
+        </span>
+
+        <span className={`${styles.checkStatusBadge} ${duplicadoRealizado ? styles.checkStatusDone : styles.checkStatusPending}`}>
+          {duplicadoRealizado ? 'Confirmado' : 'Pendiente'}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
             {/* ── Otros ── */}
             {tipo === 'Otros' && (
               <div className={styles.formGroup}>
@@ -360,8 +428,12 @@ export default function TramiteSimplePage() {
                 Cancelar
               </button>
               <button type="submit" disabled={submitting} className={styles.realizarButton}>
-                {submitting ? 'Procesando...' : 'Realizar Trámite'}
-              </button>
+{submitting
+  ? 'Procesando...'
+  : esDuplicado
+    ? 'Confirmar duplicado'
+    : 'Realizar Trámite'}
+                  </button>
             </div>
           </form>
         </div>
@@ -375,12 +447,16 @@ export default function TramiteSimplePage() {
             <div className={styles.modalIconWrap}><WarningIcon /></div>
             <h3>Confirmar trámite</h3>
             <p>
-              {tipo === 'Transformación'
-                ? esConversionCombustible
-                  ? `Se actualizará el combustible del vehículo ${placa} a ${nuevoCombustible} y el trámite quedará finalizado.`
-                  : 'Se confirmará la transformación realizada y el trámite quedará finalizado.'
-                : 'Este trámite quedará finalizado y no podrá volver a modificarse desde este registro.'}
-            </p>
+            {tipo === 'Transformación'
+              ? esConversionCombustible
+                ? `Se actualizará el combustible del vehículo ${placa} a ${nuevoCombustible} y el trámite quedará finalizado.`
+                : 'Se confirmará la transformación realizada y el trámite quedará finalizado.'
+              : esDuplicadoPlacas
+                ? 'Se confirmará el duplicado de placas realizado y el trámite quedará finalizado.'
+                : esDuplicadoLicencia
+                  ? 'Se confirmará el duplicado de licencia realizado y el trámite quedará finalizado.'
+                  : 'Este trámite quedará finalizado y no podrá volver a modificarse desde este registro.'}
+          </p>
             <div className={styles.modalActions}>
               <button type="button" className={styles.btnModalCancelar} onClick={() => setMostrarConfirmacion(false)}>
                 Cancelar
