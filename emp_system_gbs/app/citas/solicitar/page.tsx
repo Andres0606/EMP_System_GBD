@@ -31,6 +31,7 @@ interface Vehiculo {
   marca: string;
   linea: string;
   prendado?: string;
+  estado?: string;
 }
 
 interface TipoTramite {
@@ -241,12 +242,24 @@ const esInscripcionPrendaSubmit =
   (nombreTipoActual.includes('inscripcion') || nombreTipoActual.includes('inscribir')) &&
   nombreTipoActual.includes('prenda');
 
+const esCancelacionMatriculaSubmit =
+  nombreTipoActual.includes('cancel') &&
+  (nombreTipoActual.includes('matricula') || nombreTipoActual.includes('registro'));
+
+const esRematriculaSubmit =
+  nombreTipoActual.includes('rematricula') ||
+  nombreTipoActual.includes('rematricular');
+
 setError(
   esLevantarPrendaSubmit
     ? 'No puedes solicitar levantamiento de prenda porque no seleccionaste un vehículo prendado.'
     : esInscripcionPrendaSubmit
       ? 'No puedes solicitar inscripción de prenda porque no seleccionaste un vehículo sin prenda activa.'
-      : 'Este trámite requiere seleccionar un vehículo.'
+      : esCancelacionMatriculaSubmit
+        ? 'No puedes solicitar cancelación de matrícula porque no seleccionaste un vehículo activo sin prenda.'
+        : esRematriculaSubmit
+          ? 'No puedes solicitar rematrícula porque no seleccionaste un vehículo con matrícula cancelada.'
+          : 'Este trámite requiere seleccionar un vehículo.'
 );
 
 desbloquearEnvio();
@@ -355,15 +368,27 @@ const esInscripcionPrenda =
   (nombreTramite.includes('inscripcion') || nombreTramite.includes('inscribir')) &&
   nombreTramite.includes('prenda');
 
-const vehiculosDisponibles = esLevantarPrenda
-  ? vehiculos.filter(v => v.prendado === 'S')
-  : esInscripcionPrenda
-    ? vehiculos.filter(v => v.prendado !== 'S')
-    : vehiculos;
-
 const esCancelacionMatricula =
   nombreTramite.includes('cancel') &&
-  nombreTramite.includes('matricula');
+  (nombreTramite.includes('matricula') || nombreTramite.includes('registro'));
+
+const esRematricula =
+  nombreTramite.includes('rematricula') ||
+  nombreTramite.includes('rematricular');
+
+const esVehiculoCancelado = (v: Vehiculo) =>
+  (v.estado || '').toUpperCase() === 'CANCELADO';
+
+const esVehiculoActivo = (v: Vehiculo) =>
+  (v.estado || '').toUpperCase() !== 'CANCELADO';
+
+const vehiculosDisponibles = esRematricula
+  ? vehiculos.filter(v => esVehiculoCancelado(v))
+  : esLevantarPrenda
+    ? vehiculos.filter(v => esVehiculoActivo(v) && v.prendado === 'S')
+    : esInscripcionPrenda || esCancelacionMatricula
+      ? vehiculos.filter(v => esVehiculoActivo(v) && v.prendado !== 'S')
+      : vehiculos.filter(v => esVehiculoActivo(v));
 
 const vehiculoSeleccionado = vehiculos.find(
   v => v.placa === formData.idVehiculo
@@ -505,10 +530,14 @@ const bloquearDuplicadoLicencia =
 
                   {vehiculosDisponibles.length === 0 ? (
                     <option value="" disabled>
-                      {esLevantarPrenda
-                        ? 'No tienes vehículos prendados'
-                        : esInscripcionPrenda
-                          ? 'No tienes vehículos disponibles sin prenda'
+                  {esLevantarPrenda
+                    ? 'No tienes vehículos prendados'
+                    : esInscripcionPrenda
+                      ? 'No tienes vehículos disponibles sin prenda'
+                      : esCancelacionMatricula
+                        ? 'No tienes vehículos disponibles para cancelación'
+                        : esRematricula
+                          ? 'No tienes vehículos con matrícula cancelada'
                           : 'No tiene vehículos registrados'}
                     </option>
                   ) : (
@@ -529,11 +558,15 @@ const bloquearDuplicadoLicencia =
 
                 {vehiculosDisponibles.length === 0 ? (
                   <small className={styles.warningText}>
-                    {esLevantarPrenda
-                      ? 'No tienes vehículos prendados. Si no aparece, '
-                      : esInscripcionPrenda
-                        ? 'No tienes vehículos disponibles para inscripción de prenda. Si necesitas usar otro vehículo, '
-                        : 'Este trámite requiere un vehículo. '}
+                  {esLevantarPrenda
+                    ? 'No tienes vehículos prendados. Si no aparece, '
+                    : esInscripcionPrenda
+                      ? 'No tienes vehículos disponibles para inscripción de prenda. Si necesitas usar otro vehículo, '
+                      : esCancelacionMatricula
+                        ? 'No tienes vehículos disponibles para cancelación. Si el vehículo tiene prenda activa, primero debes realizar el levantamiento de prenda. '
+                        : esRematricula
+                          ? 'No tienes vehículos con matrícula cancelada para rematricular. '
+                          : 'Este trámite requiere un vehículo. '}
                     <button
                       type="button"
                       onClick={handleRegistrarVehiculo}
@@ -544,11 +577,15 @@ const bloquearDuplicadoLicencia =
                   </small>
                 ) : (
                   <small className={styles.infoText}>
-                    {esLevantarPrenda
-                      ? 'Solo aparecen vehículos con prenda activa. ¿No encuentras tu vehículo? '
-                      : esInscripcionPrenda
-                        ? 'Solo aparecen vehículos sin prenda activa. ¿No encuentras tu vehículo? '
-                        : '¿No encuentras tu vehículo? '}
+                  {esLevantarPrenda
+                    ? 'Solo aparecen vehículos con prenda activa. ¿No encuentras tu vehículo? '
+                    : esInscripcionPrenda
+                      ? 'Solo aparecen vehículos sin prenda activa. ¿No encuentras tu vehículo? '
+                      : esCancelacionMatricula
+                        ? 'Solo aparecen vehículos activos sin prenda. '
+                        : esRematricula
+                          ? 'Solo aparecen vehículos con matrícula cancelada. '
+                          : '¿No encuentras tu vehículo? '}
                     <button
                       type="button"
                       onClick={handleRegistrarVehiculo}

@@ -265,6 +265,186 @@
   transform: translateY(-2px);
 }
 
+.buttonDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.actionBox {
+  background: rgba(46, 125, 50, 0.06);
+  border: 1.5px solid rgba(46, 125, 50, 0.18);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.actionBoxHeader {
+  font-weight: 800;
+  color: #2E7D32;
+  margin-bottom: 8px;
+}
+
+.actionBox p {
+  margin: 0 0 14px;
+  color: #2f5d34;
+  line-height: 1.45;
+  font-size: 0.92rem;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(46, 125, 50, 0.25);
+  background: white;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkRowActive {
+  border-color: #2E7D32;
+  background: rgba(46, 125, 50, 0.08);
+}
+
+.checkBox {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid rgba(46, 125, 50, 0.35);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: transparent;
+  background: #fff;
+}
+
+.checkBoxActive {
+  background: #2E7D32;
+  color: white;
+  border-color: #2E7D32;
+}
+
+.checkLabel {
+  flex: 1;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.checkStatusBadge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.checkStatusPending {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+.checkStatusDone {
+  background: #2E7D32;
+  color: white;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 31, 54, 0.48);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.modalBox {
+  width: min(430px, 100%);
+  background: white;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 24px 70px rgba(13, 31, 54, 0.28);
+  text-align: center;
+}
+
+.modalIcon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(46, 125, 50, 0.12);
+  color: #2E7D32;
+}
+
+.modalIcon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.modalBox h3 {
+  margin: 0 0 10px;
+  color: #1f2937;
+}
+
+.modalBox p {
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btnModalCancelar,
+.btnModalConfirmar {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btnModalCancelar {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btnModalConfirmar {
+  background: #2E7D32;
+  color: white;
+}
+
+@media (max-width: 520px) {
+  .buttonGroup,
+  .modalActions {
+    flex-direction: column-reverse;
+  }
+
+  .reactivateButton,
+  .backButtonForm,
+  .btnModalCancelar,
+  .btnModalConfirmar {
+    width: 100%;
+  }
+
+  .checkRow {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .checkStatusBadge {
+    margin-left: 36px;
+  }
+}
+
 /* ══════════════════════
    RESPONSIVE
 ══════════════════════ */

@@ -84,8 +84,11 @@
   transition: background .2s, border-color .2s, transform .2s;
 }
 .backButton svg { width: 14px; height: 14px; }
-.backButton:hover { background: rgba(21, 101, 192, 0.13); border-color: rgba(21, 101, 192, 0.32); transform: translateY(-1px); }
-
+.backButton:hover:not(:disabled) {
+  background: rgba(21, 101, 192, 0.13);
+  border-color: rgba(21, 101, 192, 0.32);
+  transform: translateY(-1px);
+}
 /* ══════════════════════════════════════
    PAGE TITLE
 ══════════════════════════════════════ */
@@ -309,10 +312,26 @@
   font-size: .85rem; font-weight: 600; text-decoration: none;
   transition: background .2s, border-color .2s, transform .2s;
 }
-.cancelButton:hover {
+.cancelButton:hover:not(:disabled) {
   background: rgba(21, 101, 192, 0.12);
   border-color: rgba(21, 101, 192, 0.32);
   transform: translateY(-1px);
+}
+
+.cancelButton:disabled,
+.backButton:disabled,
+.toggleBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cancelButton:disabled:hover,
+.backButton:disabled:hover,
+.toggleBtn:disabled:hover {
+  background: rgba(21, 101, 192, 0.06);
+  border-color: rgba(21, 101, 192, 0.2);
+  transform: none;
 }
 
 /* ══════════════════════════════════════

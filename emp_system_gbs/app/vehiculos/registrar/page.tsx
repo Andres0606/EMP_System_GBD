@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import styles from '../../CSS/vehiculos/RegistrarVehiculo.module.css';
 
 /* ── Icons ── */
@@ -20,7 +19,8 @@ const ArrowLeftIcon = () => (
 
 export default function RegistrarVehiculoPage() {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
+const enviandoRef = useRef(false);
+const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [prendado, setPrendado] = useState(false);
@@ -47,56 +47,70 @@ export default function RegistrarVehiculoPage() {
     setError('');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSubmitting(false);
+};
 
-    if (!formData.placa.trim()) {
-      setError('La placa es requerida');
-      setSubmitting(false);
-      return;
-    }
+const handleVolver = () => {
+  if (enviandoRef.current || submitting) return;
+  router.push('/vehiculos');
+};
 
-    const vehiculoData = {
-      placa: formData.placa.toUpperCase(),
-      idCliente: parseInt(idCliente!),
-      marca: formData.marca,
-      linea: formData.linea,
-      modelo: formData.modelo ? parseInt(formData.modelo) : null,
-      clase: formData.clase,
-      tipoServicio: formData.tipoServicio,
-      numMotor: formData.numMotor,
-      numChasis: formData.numChasis,
-      color: formData.color,
-      numeroVin: formData.numeroVin,
-      combustible: formData.combustible,
-      prendado: prendado ? 'S' : 'N'
-    };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      const response = await fetch('http://localhost:8080/api/vehiculos/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(vehiculoData),
-      });
+  if (enviandoRef.current) return;
 
-      const data = await response.json();
+  enviandoRef.current = true;
+  setSubmitting(true);
+  setError('');
+  setSuccess('');
 
-      if (response.ok && data.status === 'OK') {
-        setSuccess('¡Vehículo registrado exitosamente!');
-        setTimeout(() => router.push('/vehiculos'), 2000);
-      } else {
-        setError(data.mensaje || 'Error al registrar vehículo');
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Error de conexión con el servidor');
-    } finally {
-      setSubmitting(false);
-    }
+  if (!formData.placa.trim()) {
+    setError('La placa es requerida');
+    desbloquearEnvio();
+    return;
+  }
+
+  const vehiculoData = {
+    placa: formData.placa.toUpperCase(),
+    idCliente: parseInt(idCliente!),
+    marca: formData.marca,
+    linea: formData.linea,
+    modelo: formData.modelo ? parseInt(formData.modelo) : null,
+    clase: formData.clase,
+    tipoServicio: formData.tipoServicio,
+    numMotor: formData.numMotor,
+    numChasis: formData.numChasis,
+    color: formData.color,
+    numeroVin: formData.numeroVin,
+    combustible: formData.combustible,
+    prendado: prendado ? 'S' : 'N'
   };
+
+  try {
+    const response = await fetch('http://localhost:8080/api/vehiculos/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(vehiculoData),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === 'OK') {
+      setSuccess('¡Vehículo registrado exitosamente!');
+      setTimeout(() => router.push('/vehiculos'), 2000);
+    } else {
+      setError(data.mensaje || 'Error al registrar vehículo');
+      desbloquearEnvio();
+    }
+  } catch (err) {
+    console.error('Error:', err);
+    setError('Error de conexión con el servidor');
+    desbloquearEnvio();
+  }
+};
 
   return (
     <div className={styles.container}>
@@ -108,9 +122,14 @@ export default function RegistrarVehiculoPage() {
             <span className={styles.logoMark}><CarIcon /></span>
             <span className={styles.logoText}>Trans<strong>Meta</strong></span>
           </div>
-          <Link href="/vehiculos" className={styles.backButton}>
+          <button
+            type="button"
+            className={styles.backButton}
+            onClick={handleVolver}
+            disabled={submitting}
+          >
             <ArrowLeftIcon /> Volver a mis vehículos
-          </Link>
+          </button>
         </div>
 
         {/* ── Page title ── */}
@@ -244,6 +263,7 @@ export default function RegistrarVehiculoPage() {
                       type="button"
                       className={`${styles.toggleBtn} ${!prendado ? styles.toggleActive : ''}`}
                       onClick={() => setPrendado(false)}
+                      disabled={submitting}
                     >
                       No
                     </button>
@@ -251,6 +271,7 @@ export default function RegistrarVehiculoPage() {
                       type="button"
                       className={`${styles.toggleBtn} ${prendado ? styles.toggleActive : ''}`}
                       onClick={() => setPrendado(true)}
+                      disabled={submitting}
                     >
                       Sí
                     </button>
@@ -264,9 +285,14 @@ export default function RegistrarVehiculoPage() {
 
             {/* Botones */}
             <div className={styles.buttonGroup}>
-              <Link href="/vehiculos" className={styles.cancelButton}>
-                Cancelar
-              </Link>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={handleVolver}
+              disabled={submitting}
+            >
+              Cancelar
+            </button>
               <button type="submit" disabled={submitting} className={styles.submitButton}>
                 {submitting ? 'Registrando...' : 'Registrar Vehículo'}
               </button>

@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/Rematricular.module.css';
 
 /* ── Icons ── */
@@ -47,6 +46,9 @@ export default function RematricularPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const enviandoRef = useRef(false);
+const [rematriculaConfirmada, setRematriculaConfirmada] = useState(false);
+const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
@@ -62,41 +64,104 @@ export default function RematricularPage() {
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setSuccess('');
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSubmitting(false);
+};
 
-    const rematriculaData = {
-      placa,
-      idCliente: parseInt(idCliente),
+const finalizarTramite = async () => {
+  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       idTramite: parseInt(idTramite),
-    };
+      estado: 'Finalizado',
+    }),
+  });
 
-    try {
-      const response = await fetch('http://localhost:8080/api/vehiculos/rematricular', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rematriculaData),
-      });
+  const data = await response.json();
 
-      const data = await response.json();
+  if (!response.ok || data.status !== 'OK') {
+    throw new Error(data.mensaje || 'No se pudo finalizar el trámite');
+  }
+};
 
-      if (response.ok && data.status === 'OK') {
-        setSuccess(`Rematrícula del vehículo ${placa} realizada exitosamente`);
-        setTimeout(() => {
-          router.push(`/asesor/tramites/${idTramite}`);
-        }, 2000);
-      } else {
-        setError(data.mensaje || 'Error al realizar rematrícula');
-      }
-    } catch (err) {
-      setError('Error de conexión con el servidor');
-    } finally {
-      setSubmitting(false);
-    }
+const volverAlTramite = () => {
+  if (!submitting) {
+    router.push(`/asesor/tramites/${idTramite}`);
+  }
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (enviandoRef.current) return;
+
+  setError('');
+  setSuccess('');
+
+  if (!placa || !idCliente) {
+    setError('Falta información del vehículo o cliente.');
+    return;
+  }
+
+  if (!rematriculaConfirmada) {
+    setError('Debe confirmar que la rematrícula fue realizada.');
+    return;
+  }
+
+  setMostrarConfirmacion(true);
+};
+
+const confirmarRematricula = async () => {
+  if (enviandoRef.current) return;
+
+  setMostrarConfirmacion(false);
+  enviandoRef.current = true;
+  setSubmitting(true);
+  setError('');
+  setSuccess('');
+
+  const rematriculaData = {
+    placa,
+    idCliente: parseInt(idCliente),
+    idTramite: parseInt(idTramite),
   };
+
+  let rematriculaFinalizada = false;
+
+  try {
+    const response = await fetch('http://localhost:8080/api/vehiculos/rematricular', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rematriculaData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.status !== 'OK') {
+      throw new Error(data.mensaje || 'Error al realizar rematrícula');
+    }
+
+    await finalizarTramite();
+
+    rematriculaFinalizada = true;
+
+    setSuccess(
+      `Rematrícula del vehículo ${placa} realizada exitosamente. Trámite finalizado correctamente.`
+    );
+
+    setTimeout(() => {
+      router.push(`/asesor/tramites/${idTramite}`);
+    }, 1800);
+  } catch (err: any) {
+    setError(err.message || 'Error de conexión o no se pudo finalizar el trámite');
+  } finally {
+    if (!rematriculaFinalizada) {
+      desbloquearEnvio();
+    }
+  }
+};
 
   return (
     <div className={styles.container}>
@@ -104,9 +169,14 @@ export default function RematricularPage() {
 
         {/* Header */}
         <div className={styles.header}>
-          <Link href={`/asesor/tramites/${idTramite}`} className={styles.backButton}>
-            <ArrowLeftIcon /> Volver al Trámite
-          </Link>
+        <button
+          type="button"
+          disabled={submitting}
+          className={`${styles.backButton} ${submitting ? styles.buttonDisabled : ''}`}
+          onClick={volverAlTramite}
+        >
+          <ArrowLeftIcon /> Volver al Trámite
+        </button>
           <h1>Rematrícula</h1>
         </div>
 
@@ -144,20 +214,103 @@ export default function RematricularPage() {
             <p><strong>ID Cliente:</strong> {idCliente}</p>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className={styles.buttonGroup}>
-              <Link href={`/asesor/tramites/${idTramite}`} className={styles.backButtonForm}>
-                Cancelar
-              </Link>
-              <button type="submit" disabled={submitting} className={styles.reactivateButton}>
-                <RefreshIcon />
-                {submitting ? 'Procesando...' : 'Confirmar Rematrícula'}
-              </button>
-            </div>
-          </form>
+<form onSubmit={handleSubmit}>
+  <div className={styles.actionBox}>
+    <div className={styles.actionBoxHeader}>
+      Confirmación requerida
+    </div>
+
+    <p>
+      Confirma que la rematrícula fue realizada correctamente antes de finalizar el trámite.
+    </p>
+
+    <div
+      role="checkbox"
+      aria-checked={rematriculaConfirmada}
+      tabIndex={0}
+      className={`${styles.checkRow} ${rematriculaConfirmada ? styles.checkRowActive : ''}`}
+      onClick={() => {
+        if (!submitting) {
+          setRematriculaConfirmada(prev => !prev);
+        }
+      }}
+      onKeyDown={e => {
+        if (!submitting && e.key === ' ') {
+          setRematriculaConfirmada(prev => !prev);
+        }
+      }}
+    >
+      <span className={`${styles.checkBox} ${rematriculaConfirmada ? styles.checkBoxActive : ''}`}>
+        ✓
+      </span>
+
+      <span className={styles.checkLabel}>
+        {rematriculaConfirmada
+          ? 'Rematrícula confirmada'
+          : 'Marcar como realizada'}
+      </span>
+
+      <span className={`${styles.checkStatusBadge} ${rematriculaConfirmada ? styles.checkStatusDone : styles.checkStatusPending}`}>
+        {rematriculaConfirmada ? 'Confirmado' : 'Pendiente'}
+      </span>
+    </div>
+  </div>
+
+  <div className={styles.buttonGroup}>
+    <button
+      type="button"
+      disabled={submitting}
+      className={`${styles.backButtonForm} ${submitting ? styles.buttonDisabled : ''}`}
+      onClick={volverAlTramite}
+    >
+      Cancelar
+    </button>
+
+    <button type="submit" disabled={submitting} className={styles.reactivateButton}>
+      <RefreshIcon />
+      {submitting ? 'Procesando...' : 'Confirmar rematrícula'}
+    </button>
+  </div>
+</form>
 
         </div>
       </div>
+
+      {mostrarConfirmacion && (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modalBox}>
+      <div className={styles.modalIcon}>
+        <RefreshIcon />
+      </div>
+
+      <h3>Confirmar rematrícula</h3>
+
+      <p>
+        Se reactivará la matrícula del vehículo <strong>{placa}</strong> y el trámite quedará finalizado.
+        El vehículo volverá a estado ACTIVO.
+      </p>
+
+      <div className={styles.modalActions}>
+        <button
+          type="button"
+          className={styles.btnModalCancelar}
+          onClick={() => setMostrarConfirmacion(false)}
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          className={styles.btnModalConfirmar}
+          onClick={confirmarRematricula}
+        >
+          Sí, rematricular y finalizar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

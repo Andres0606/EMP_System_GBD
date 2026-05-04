@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import styles from '../CSS/Perfil/Perfil.module.css';
 
 /* ── Icons ── */
@@ -15,13 +14,6 @@ const CarIcon = () => (
 const ArrowLeftIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-  </svg>
-);
-const SaveIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-    <polyline points="17 21 17 13 7 13 7 21"/>
-    <polyline points="7 3 7 8 15 8"/>
   </svg>
 );
 const CheckIcon = () => (
@@ -67,9 +59,10 @@ function getRedirectPath(rol: number): string {
 }
 
 export default function PerfilPage() {
-  const router = useRouter();
-  const [loading, setLoading]   = useState(true);
-  const [saving, setSaving]     = useState(false);
+    const router = useRouter();
+    const enviandoRef = useRef(false);
+    const [loading, setLoading]   = useState(true);
+    const [saving, setSaving]     = useState(false);
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
   const [userRol, setUserRol]   = useState<number>(1);
@@ -158,65 +151,93 @@ export default function PerfilPage() {
     setSuccess('');
   };
 
+  const desbloquearEnvio = () => {
+  enviandoRef.current = false;
+  setSaving(false);
+};
+
+const handleVolver = () => {
+  if (enviandoRef.current || saving) return;
+  router.push(getRedirectPath(userRol));
+};
+
   /* ── Submit ── */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError('');
-    setSuccess('');
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (formData.contrasena && formData.contrasena !== formData.confirmarContrasena) {
-      setError('Las contraseñas no coinciden');
-      setSaving(false);
-      return;
-    }
-    if (formData.contrasena && formData.contrasena.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      setSaving(false);
-      return;
-    }
+  if (enviandoRef.current) return;
 
-    const updateData: Record<string, unknown> = {
-      numeroDocumento: parseInt(formData.cedula),
-      nombres: formData.nombres,
-      apellido: formData.apellido,
-      correo: formData.correo,
-      // 👈 Enviar 'S' o 'N' según el toggle
-      licenciaConduccion: userRol === 1 ? (tieneLicencia ? 'S' : 'N') : undefined,
-    };
+  enviandoRef.current = true;
+  setSaving(true);
+  setError('');
+  setSuccess('');
 
-    if (formData.fechaNacimiento) {
-      updateData.fechaNacimiento = convertirFechaParaBackend(formData.fechaNacimiento);
-    }
-    if (formData.telefono) updateData.telefono = parseInt(formData.telefono);
-    if (formData.contrasena) updateData.contrasena = formData.contrasena;
+  if (formData.contrasena && formData.contrasena !== formData.confirmarContrasena) {
+    setError('Las contraseñas no coinciden');
+    desbloquearEnvio();
+    return;
+  }
 
-    console.log('Enviando al backend:', updateData);
+  if (formData.contrasena && formData.contrasena.length < 6) {
+    setError('La contraseña debe tener al menos 6 caracteres');
+    desbloquearEnvio();
+    return;
+  }
 
-    try {
-      const res = await fetch('http://localhost:8080/api/auth/perfil', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
-      });
-      const data = await res.json();
-
-      if (res.ok && data.status === 'OK') {
-        setSuccess('Perfil actualizado exitosamente');
-        sessionStorage.setItem('userNombres', formData.nombres);
-        sessionStorage.setItem('userApellido', formData.apellido);
-        sessionStorage.setItem('userCorreo', formData.correo);
-        setFormData(prev => ({ ...prev, contrasena: '', confirmarContrasena: '' }));
-        setTimeout(() => router.push(getRedirectPath(userRol)), 2000);
-      } else {
-        setError(data.mensaje || 'Error al actualizar perfil');
-      }
-    } catch {
-      setError('Error de conexión con el servidor');
-    } finally {
-      setSaving(false);
-    }
+  const updateData: Record<string, unknown> = {
+    numeroDocumento: parseInt(formData.cedula),
+    nombres: formData.nombres,
+    apellido: formData.apellido,
+    correo: formData.correo,
+    licenciaConduccion: userRol === 1 ? (tieneLicencia ? 'S' : 'N') : undefined,
   };
+
+  if (formData.fechaNacimiento) {
+    updateData.fechaNacimiento = convertirFechaParaBackend(formData.fechaNacimiento);
+  }
+
+  if (formData.telefono) {
+    updateData.telefono = parseInt(formData.telefono);
+  }
+
+  if (formData.contrasena) {
+    updateData.contrasena = formData.contrasena;
+  }
+
+  console.log('Enviando al backend:', updateData);
+
+  try {
+    const res = await fetch('http://localhost:8080/api/auth/perfil', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateData),
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.status === 'OK') {
+      setSuccess('Perfil actualizado exitosamente');
+
+      sessionStorage.setItem('userNombres', formData.nombres);
+      sessionStorage.setItem('userApellido', formData.apellido);
+      sessionStorage.setItem('userCorreo', formData.correo);
+
+      setFormData(prev => ({
+        ...prev,
+        contrasena: '',
+        confirmarContrasena: '',
+      }));
+
+      setTimeout(() => router.push(getRedirectPath(userRol)), 2000);
+    } else {
+      setError(data.mensaje || 'Error al actualizar perfil');
+      desbloquearEnvio();
+    }
+  } catch {
+    setError('Error de conexión con el servidor');
+    desbloquearEnvio();
+  }
+};
 
   /* ── Loading state ── */
   if (loading) {
@@ -247,10 +268,15 @@ export default function PerfilPage() {
 
           <span className={styles.pageTitle}>Mi Perfil</span>
 
-          <Link href={backPath} className={styles.backButton}>
-            <ArrowLeftIcon />
-            <span>Volver al Dashboard</span>
-          </Link>
+<button
+  type="button"
+  className={styles.backButton}
+  onClick={handleVolver}
+  disabled={saving}
+>
+  <ArrowLeftIcon />
+  <span>Volver al Dashboard</span>
+</button>
         </div>
 
         {/* ── Alertas ── */}
@@ -373,26 +399,28 @@ export default function PerfilPage() {
 
                     {/* Toggle Si / No */}
                     <div className={styles.toggleRow}>
-                      <button
-                        type="button"
-                        className={`${styles.toggleBtn} ${tieneLicencia === true ? styles.toggleBtnActive : ''}`}
-                        onClick={() => {
-                          setTieneLicencia(true);
-                          setError(''); setSuccess('');
-                        }}
-                      >
-                        Sí
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.toggleBtn} ${tieneLicencia === false ? styles.toggleBtnActive : ''}`}
-                        onClick={() => {
-                          setTieneLicencia(false);
-                          setError(''); setSuccess('');
-                        }}
-                      >
-                        No
-                      </button>
+                    <button
+                      type="button"
+                      className={`${styles.toggleBtn} ${tieneLicencia === true ? styles.toggleBtnActive : ''}`}
+                      disabled={saving}
+                      onClick={() => {
+                        setTieneLicencia(true);
+                        setError(''); setSuccess('');
+                      }}
+                    >
+                      Sí
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.toggleBtn} ${tieneLicencia === false ? styles.toggleBtnActive : ''}`}
+                      disabled={saving}
+                      onClick={() => {
+                        setTieneLicencia(false);
+                        setError(''); setSuccess('');
+                      }}
+                    >
+                      No
+                    </button>
                     </div>
                   </div>
                 )}
@@ -432,9 +460,7 @@ export default function PerfilPage() {
                   </div>
                 </div>
               </div>
-
               <button type="submit" disabled={saving} className={styles.saveButton}>
-                <SaveIcon />
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </form>

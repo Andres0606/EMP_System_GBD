@@ -272,8 +272,6 @@ export default function DashboardPage() {
 
   {/* Mis Trámites */}
   <div className={styles.card}>
-    <span className={styles.comingBadge}>Próximamente</span>
-
     <div className={styles.cardIcon}>
       <FileIcon />
     </div>
@@ -306,7 +304,6 @@ export default function DashboardPage() {
 
   {/* Perfil */}
   <div className={styles.card}>
-    <span className={styles.comingBadge}>Próximamente</span>
 
     <div className={styles.cardIcon}>
       <UserIcon />
