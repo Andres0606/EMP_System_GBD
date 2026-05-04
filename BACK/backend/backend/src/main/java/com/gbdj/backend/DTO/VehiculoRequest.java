@@ -13,4 +13,6 @@ public class VehiculoRequest {
     private String tipoServicio;
     private String numMotor;
     private String numChasis;
+    private String combustible;
+
 }

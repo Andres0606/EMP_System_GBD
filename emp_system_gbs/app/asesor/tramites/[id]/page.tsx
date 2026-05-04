@@ -234,6 +234,7 @@ case 'Traspaso':
       case 'Traslado Matrícula':
       case 'Radicado Matrícula':
       case 'Transformación':
+          return `/asesor/tramites/${tramite.idTramite}/tramite-simple?tipo=${encodeURIComponent(tramite.tipoTramite)}&placa=${encodeURIComponent(tramite.vehiculo || '')}`;
       case 'Otros':
         return `/asesor/tramites/${tramite.idTramite}/tramite-simple?tipo=${tramite.tipoTramite}`;
       default:
@@ -418,7 +419,7 @@ case 'Traspaso':
         </div>
 
         {/* Acción del trámite */}
-        {puedeEditar && (
+        {puedeEditar && estado !== 'Finalizado' && (
           <div className={styles.detalleCard}>
             <h2><EditIcon /> Gestionar Trámite</h2>
             <p className={styles.editarButtonDesc}>
@@ -427,6 +428,15 @@ case 'Traspaso':
             <Link href={getEditarHref()} className={styles.editarButton}>
               {getEditarLabel()} <ArrowRightIcon />
             </Link>
+          </div>
+        )}
+
+        {puedeEditar && estado === 'Finalizado' && (
+          <div className={styles.detalleCard}>
+            <h2><CheckCircleIcon /> Trámite finalizado</h2>
+            <p className={styles.editarButtonDesc}>
+              Este trámite ya fue finalizado. No se pueden realizar más acciones sobre este registro.
+            </p>
           </div>
         )}
 
