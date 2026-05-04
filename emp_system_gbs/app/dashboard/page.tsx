@@ -305,7 +305,19 @@ export default function DashboardPage() {
       </button>
     </Link>
   </div>
-
+{/* Mis Consultas */}
+<div className={styles.card}>
+  <div className={styles.cardIcon}>
+    
+  </div>
+  <h3>Consultas</h3>
+  <p>Envía y consulta tus mensajes con soporte</p>
+  <Link href="/consultas">
+    <button className={styles.cardBtn}>
+      Mis Consultas <ArrowIcon />
+    </button>
+  </Link>
+</div>
 </div>
       </div>
     </div>
