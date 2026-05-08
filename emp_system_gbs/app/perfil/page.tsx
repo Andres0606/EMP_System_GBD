@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from '../CSS/Perfil/Perfil.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -117,7 +118,7 @@ export default function PerfilPage() {
   const cargarPerfil = async (cedula: string) => {
     try {
       setLoading(true);
-      const res  = await fetch(`http://localhost:8080/api/auth/perfil/${cedula}`);
+      const res  = await fetch(`${BACKEND_URL}/api/auth/perfil/${cedula}`);
       const data = await res.json();
 
       if (res.ok && data.status === 'OK') {
@@ -207,7 +208,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   console.log('Enviando al backend:', updateData);
 
   try {
-    const res = await fetch('http://localhost:8080/api/auth/perfil', {
+    const res = await fetch(`${BACKEND_URL}/api/auth/perfil`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updateData),

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import styles from '../../../../CSS/Asesor/CancelarMatricula.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -49,7 +50,7 @@ export default function CancelarMatriculaPage() {
 
 const verificarPrenda = async () => {
   try {
-    const response = await fetch(`http://localhost:8080/api/vehiculos/cliente/${idCliente}`);
+    const response = await fetch(`${BACKEND_URL}/api/vehiculos/cliente/${idCliente}`);
     const data = await response.json();
 
     if (data.status === 'OK' && data.vehiculos) {
@@ -74,7 +75,7 @@ const verificarPrenda = async () => {
   };
 
   const finalizarTramite = async () => {
-    const response = await fetch('http://localhost:8080/api/tramite/estado', {
+    const response = await fetch(`${BACKEND_URL}/api/tramite/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idTramite: parseInt(idTramite), estado: 'Finalizado' }),
@@ -112,7 +113,7 @@ const confirmarCancelacion = async () => {
   let cancelacionFinalizada = false;
 
   try {
-    const response = await fetch('http://localhost:8080/api/vehiculos/cancelarMatricula', {
+    const response = await fetch(`${BACKEND_URL}/api/vehiculos/cancelarMatricula`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

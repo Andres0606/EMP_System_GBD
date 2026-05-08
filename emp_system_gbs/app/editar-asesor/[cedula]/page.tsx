@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/Admin/EditarAsesor.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 // Iconos
 const UserIcon = () => (
@@ -96,7 +97,7 @@ export default function EditarAsesorPage() {
     setError('');
     
     try {
-      const response = await fetch(`http://localhost:8080/api/auth/asesores/${cedula}`);
+      const response = await fetch(`${BACKEND_URL}/api/auth/asesores/${cedula}`);
       const data = await response.json();
       
       if (response.ok && data.status === 'OK') {
@@ -132,7 +133,7 @@ export default function EditarAsesorPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(`http://localhost:8080/api/auth/asesores/${cedula}`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/asesores/${cedula}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

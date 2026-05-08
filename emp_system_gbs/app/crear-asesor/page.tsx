@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../CSS/Admin/CrearAsesor.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 interface TipoTramite {
   id: number;
@@ -50,7 +51,7 @@ export default function CrearAsesorPage() {
 
   const cargarTiposTramite = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/tipo-tramite/list');
+      const response = await fetch(`${BACKEND_URL}/api/tipo-tramite/list`);
       const data = await response.json();
       if (data.status === 'OK' && data.tiposTramite) {
         setTiposTramite(data.tiposTramite);
@@ -121,7 +122,7 @@ export default function CrearAsesorPage() {
       const anio = fecha.getFullYear();
       const fechaFormateada = `${dia}/${mes}/${anio}`;
 
-      const response = await fetch('http://localhost:8080/api/auth/asesor', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/asesor`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

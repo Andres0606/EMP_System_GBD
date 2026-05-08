@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/CompletarCita.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -130,7 +131,7 @@ const [submitting, setSubmitting] = useState(false);
   const cargarCita = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/citas/agendadas/${cedulaAsesor}`);
+      const response = await fetch(`${BACKEND_URL}/api/citas/agendadas/${cedulaAsesor}`);
       const data = await response.json();
 
       if (data.status === 'OK' && data.citas) {
@@ -171,7 +172,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   const total = base + otros;
 
   try {
-    const resCita = await fetch('http://localhost:8080/api/citas/completar', {
+    const resCita = await fetch(`${BACKEND_URL}/api/citas/completar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idCita: parseInt(idCita) }),
@@ -183,7 +184,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       throw new Error(dataCita.mensaje || 'Error al completar la cita');
     }
 
-    const resTramite = await fetch('http://localhost:8080/api/tramite/register', {
+    const resTramite = await fetch(`${BACKEND_URL}/api/tramite/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

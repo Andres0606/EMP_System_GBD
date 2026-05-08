@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from '../CSS/Login/Login.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const EyeIcon = () => (
@@ -74,7 +75,7 @@ export default function LoginPage() {
     
     try {
         // SOLO UNA LLAMADA - Login
-        const response = await fetch('http://localhost:8080/api/auth/login', {
+        const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

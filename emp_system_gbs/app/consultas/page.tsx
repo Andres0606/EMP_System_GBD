@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../CSS/Consultas/Consultas.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const ArrowLeftIcon = () => (
@@ -78,7 +79,7 @@ export default function ConsultasPage() {
   const cargarConsultas = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/consultas/cliente/${idCliente}`);
+      const response = await fetch(`${BACKEND_URL}/api/consultas/cliente/${idCliente}`);
       const data = await response.json();
       if (data.status === 'OK') {
         setConsultas(data.consultas || []);
@@ -115,7 +116,7 @@ export default function ConsultasPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/consultas/crear', {
+      const response = await fetch(`${BACKEND_URL}/api/consultas/crear`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

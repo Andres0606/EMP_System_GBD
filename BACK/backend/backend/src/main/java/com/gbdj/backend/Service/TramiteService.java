@@ -1,123 +1,112 @@
 package com.gbdj.backend.Service;
 
-import org.springframework.http.*;
+import com.gbdj.backend.Entity.Tramite;
+import com.gbdj.backend.Repository.CitaRepository;
+import com.gbdj.backend.Repository.TramiteRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import java.util.Map;
-import java.util.HashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class TramiteService {
 
-    private static final Logger log = LoggerFactory.getLogger(TramiteService.class);
-    private final RestTemplate restTemplate;
+    private final TramiteRepository tramiteRepo;
+    private final CitaRepository citaRepo;
 
-    public TramiteService() {
-        this.restTemplate = new RestTemplate();
-    }
-
-    // Crear trámite desde cita
-    public Map<String, Object> crearTramite(Map<String, Object> tramiteData) {
-        String url = "https://oracleapex.com/ords/ucc/apiTramite/register";
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(tramiteData, headers);
-        
+    @Transactional
+    public Map<String, Object> crearTramite(Map<String, Object> data) {
+        Map<String, Object> resp = new HashMap<>();
         try {
-            log.info("Creando trámite en APEX: {}", url);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class
-            );
-            return response.getBody();
+            Tramite t = new Tramite();
+            t.setIdCita(toLong(data.get("P_ID_CITA")));
+            t.setEstadoTramite("Activo");
+            tramiteRepo.save(t);
+            resp.put("status", "OK");
+            resp.put("mensaje", "Trámite creado");
+            resp.put("idTramite", t.getIdTramite());
         } catch (Exception e) {
-            log.error("Error al crear trámite: ", e);
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error: " + e.getMessage());
-            return errorResponse;
+            log.error("Error creando trámite", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
         }
+        return resp;
     }
 
     public Map<String, Object> listarPorAsesor(Long idAsesor) {
-    String url = "https://oracleapex.com/ords/ucc/apiTramite/listarPorAsesor?P_ID_ASESOR=" + idAsesor;
-    
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    
-    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-    
-    try {
-        log.info("Listando trámites del asesor: {}", idAsesor);
-        ResponseEntity<Map> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            requestEntity,
-            Map.class
-        );
-        return response.getBody();
-    } catch (Exception e) {
-        log.error("Error al listar trámites: ", e);
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error: " + e.getMessage());
-        return errorResponse;
-    }
-}
-    public Map<String, Object> actualizarEstado(Map<String, Object> tramiteData) {
-        String url = "https://oracleapex.com/ords/ucc/apiTramite/actualizarEstado";
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(tramiteData, headers);
-        
+        Map<String, Object> resp = new HashMap<>();
         try {
-            log.info("Actualizando estado en APEX: {}", url);
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class
-            );
-            return response.getBody();
+            List<Tramite> lista = tramiteRepo.findByIdAsesor(idAsesor);
+            resp.put("status", "OK");
+            resp.put("tramites", toList(lista));
         } catch (Exception e) {
-            log.error("Error al actualizar estado: ", e);
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error: " + e.getMessage());
-            return errorResponse;
+            log.error("Error listando trámites por asesor", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
         }
+        return resp;
     }
+
     public Map<String, Object> listarPorCliente(Long idCliente) {
-    String url = "https://oracleapex.com/ords/ucc/apiTramite/listarPorCliente?P_ID_CLIENTE=" + idCliente;
-    
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    
-    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-    
-    try {
-        log.info("Listando trámites del cliente: {}", idCliente);
-        ResponseEntity<Map> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            requestEntity,
-            Map.class
-        );
-        return response.getBody();
-    } catch (Exception e) {
-        log.error("Error al listar trámites del cliente: ", e);
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error: " + e.getMessage());
-        return errorResponse;
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            List<Tramite> lista = tramiteRepo.findByIdCliente(idCliente);
+            resp.put("status", "OK");
+            resp.put("tramites", toList(lista));
+        } catch (Exception e) {
+            log.error("Error listando trámites por cliente", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
+        }
+        return resp;
     }
-}
+
+    @Transactional
+    public Map<String, Object> actualizarEstado(Map<String, Object> data) {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            Long idTramite = toLong(data.get("P_ID_TRAMITE"));
+            String nuevoEstado = (String) data.get("P_ESTADO");
+            Tramite t = tramiteRepo.findById(idTramite).orElseThrow();
+            t.setEstadoTramite(nuevoEstado);
+            tramiteRepo.save(t);
+            resp.put("status", "OK");
+            resp.put("mensaje", "Estado actualizado");
+        } catch (Exception e) {
+            log.error("Error actualizando estado de trámite", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
+        }
+        return resp;
+    }
+
+    private List<Map<String, Object>> toList(List<Tramite> tramites) {
+        List<Map<String, Object>> lista = new ArrayList<>();
+        for (Tramite t : tramites) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("idTramite", t.getIdTramite());
+            item.put("idCita", t.getIdCita());
+            item.put("estadoTramite", t.getEstadoTramite());
+            item.put("valorOtroConceptos", t.getValorOtroConceptos());
+            citaRepo.findById(t.getIdCita()).ifPresent(c -> {
+                item.put("placaVehiculo", c.getPlacaVehiculo());
+                item.put("tipoTramite", c.getTipoTramite());
+                item.put("idCliente", c.getIdCliente());
+                item.put("idAsesor", c.getIdAsesor());
+                item.put("fechaCita", c.getFechaHoraProgramada());
+            });
+            lista.add(item);
+        }
+        return lista;
+    }
+
+    private Long toLong(Object val) {
+        if (val == null) return null;
+        if (val instanceof Number) return ((Number) val).longValue();
+        return Long.parseLong(val.toString());
+    }
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from '../CSS/Registro/Registro.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -73,7 +74,7 @@ export default function RegistroPage() {
         fechaFormateada = `${dia}/${mes}/${anio}`;
       }
 
-      const response = await fetch('http://localhost:8080/api/auth/register/cliente', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/register/cliente`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

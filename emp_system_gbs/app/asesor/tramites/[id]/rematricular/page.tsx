@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import styles from '../../../../CSS/Asesor/Rematricular.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const ArrowLeftIcon = () => (
@@ -70,7 +71,7 @@ const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 };
 
 const finalizarTramite = async () => {
-  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+  const response = await fetch(`${BACKEND_URL}/api/tramite/estado`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -131,7 +132,7 @@ const confirmarRematricula = async () => {
   let rematriculaFinalizada = false;
 
   try {
-    const response = await fetch('http://localhost:8080/api/vehiculos/rematricular', {
+    const response = await fetch(`${BACKEND_URL}/api/vehiculos/rematricular`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(rematriculaData),

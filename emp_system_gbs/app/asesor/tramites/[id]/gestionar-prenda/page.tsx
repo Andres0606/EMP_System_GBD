@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/GestionarPrenda.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const ArrowLeftIcon = () => (
@@ -102,7 +103,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 };
 
 const finalizarTramite = async () => {
-  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+  const response = await fetch(`${BACKEND_URL}/api/tramite/estado`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -129,8 +130,8 @@ const confirmarGestionPrenda = async () => {
 
   const endpoint =
     tipo === 'inscribir'
-      ? 'http://localhost:8080/api/vehiculos/inscribirPrenda'
-      : 'http://localhost:8080/api/vehiculos/levantarPrenda';
+      ? `${BACKEND_URL}/api/vehiculos/inscribirPrenda`
+      : `${BACKEND_URL}/api/vehiculos/levantarPrenda`;
 
   const data = {
     placa,

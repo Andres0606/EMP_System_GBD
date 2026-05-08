@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/Asesor/Consultas.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const ArrowLeftIcon = () => (
@@ -63,7 +64,7 @@ export default function AsesorConsultasPage() {
   const cargarConsultas = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/consultas/asesor/todas');
+      const response = await fetch(`${BACKEND_URL}/api/consultas/asesor/todas`);
       const data = await response.json();
       if (data.status === 'OK') {
         setConsultas(data.consultas || []);
@@ -88,7 +89,7 @@ export default function AsesorConsultasPage() {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/consultas/responder', {
+      const response = await fetch(`${BACKEND_URL}/api/consultas/responder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

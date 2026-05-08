@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/RegistrarVehiculo.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const ArrowLeftIcon = () => (
@@ -85,7 +86,7 @@ export default function RegistrarVehiculoPage() {
 };
 
 const finalizarTramite = async () => {
-  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+  const response = await fetch(`${BACKEND_URL}/api/tramite/estado`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -129,7 +130,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 let vehiculoRegistrado = false;
 
 try {
-  const response = await fetch('http://localhost:8080/api/vehiculos/register', {
+  const response = await fetch(`${BACKEND_URL}/api/vehiculos/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(vehiculoData),

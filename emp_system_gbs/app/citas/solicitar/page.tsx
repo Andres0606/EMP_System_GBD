@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/citas/SolicitarCita.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -81,7 +82,7 @@ const cargarLicenciaCliente = async () => {
   try {
     setValidandoLicencia(true);
 
-    const response = await fetch(`http://localhost:8080/api/auth/perfil/${idCliente}`);
+    const response = await fetch(`${BACKEND_URL}/api/auth/perfil/${idCliente}`);
     const data = await response.json();
 
     if (response.ok && data.status === 'OK') {
@@ -134,7 +135,7 @@ const cargarLicenciaCliente = async () => {
 
   const cargarVehiculos = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/vehiculos/cliente/${idCliente}`);
+      const response = await fetch(`${BACKEND_URL}/api/vehiculos/cliente/${idCliente}`);
       const data = await response.json();
       if (data.status === 'OK' && data.vehiculos) {
         setVehiculos(data.vehiculos);
@@ -146,7 +147,7 @@ const cargarLicenciaCliente = async () => {
 
   const cargarTiposTramite = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/tipo-tramite/list');
+      const response = await fetch(`${BACKEND_URL}/api/tipo-tramite/list`);
       const data = await response.json();
       if (data.status === 'OK' && data.tiposTramite) {
         setTiposTramite(data.tiposTramite);
@@ -321,7 +322,7 @@ const citaData: any = {
     let citaCreada = false;
 
 try {
-  const response = await fetch('http://localhost:8080/api/citas/solicitar', {
+  const response = await fetch(`${BACKEND_URL}/api/citas/solicitar`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(citaData),

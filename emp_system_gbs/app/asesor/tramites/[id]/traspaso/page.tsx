@@ -6,6 +6,7 @@ import Link from 'next/link';
 import RegistrarClienteForm from '../../../../components/RegistrarClienteForm';
 import RegistrarVehiculoForm from '../../../../components/RegistrarVehiculoForm';
 import styles from '../../../../CSS/Asesor/Traspaso.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -93,7 +94,7 @@ export default function TraspasoPage() {
     if (!busquedaCliente) { setError('Ingrese una cédula para buscar'); return; }
     setCargandoBusqueda(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/auth/perfil/${busquedaCliente}`);
+      const response = await fetch(`${BACKEND_URL}/api/auth/perfil/${busquedaCliente}`);
       const data = await response.json();
       if (response.ok && data.status === 'OK') {
         setNuevoPropietario({
@@ -130,7 +131,7 @@ export default function TraspasoPage() {
   const realizarTraspaso = async () => {
     setSubmitting(true); setError(''); setSuccess('');
     try {
-      const response = await fetch('http://localhost:8080/api/vehiculos/traspaso', {
+      const response = await fetch(`${BACKEND_URL}/api/vehiculos/traspaso`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -228,7 +229,7 @@ export default function TraspasoPage() {
               onSuccess={async (placa) => {
                 setSubmitting(true);
                 try {
-                  const historialResponse = await fetch('http://localhost:8080/api/vehiculos/historial', {
+                  const historialResponse = await fetch(`${BACKEND_URL}/api/vehiculos/historial`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

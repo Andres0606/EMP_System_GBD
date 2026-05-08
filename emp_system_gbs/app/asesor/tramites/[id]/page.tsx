@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../CSS/Asesor/TramiteDetalle.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const ArrowLeftIcon = () => (
@@ -92,7 +93,7 @@ export default function TramiteDetallePage() {
   const cargarDetalle = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`
+        `${BACKEND_URL}/api/tramite/asesor/${cedulaAsesor}`
       );
       const data = await response.json();
       if (data.status === 'OK' && data.tramites) {
@@ -151,7 +152,7 @@ export default function TramiteDetallePage() {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/tramite/estado', {
+      const response = await fetch(`${BACKEND_URL}/api/tramite/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idTramite: parseInt(idTramite), estado: nuevoEstado }),

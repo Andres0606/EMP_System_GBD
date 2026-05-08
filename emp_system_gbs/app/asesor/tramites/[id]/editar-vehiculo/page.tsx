@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/EditarVehiculo.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -141,7 +142,7 @@ const esRegrabacion = esRegrabarMotor || esRegrabarChasis;
 };
 
 const finalizarTramite = async () => {
-  const response = await fetch('http://localhost:8080/api/tramite/estado', {
+  const response = await fetch(`${BACKEND_URL}/api/tramite/estado`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -238,7 +239,7 @@ if (esRegrabacion) {
   return;
 }
 
-    const response = await fetch(`http://localhost:8080/api/vehiculos/${placaOriginal}`, {
+    const response = await fetch(`${BACKEND_URL}/api/vehiculos/${placaOriginal}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatePendiente),

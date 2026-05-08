@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../../../CSS/Asesor/AtenderCita.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -120,7 +121,7 @@ export default function AtenderCitaPage() {
   const cargarCita = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/citas/pendientes/${cedulaAsesor}`
+        `${BACKEND_URL}/api/citas/pendientes/${cedulaAsesor}`
       );
       const data = await response.json();
 
@@ -233,7 +234,7 @@ const generarHorasDisponibles = () => {
     const fechaProgramada = `${fecha}T${hora}`;
 
     try {
-      const response = await fetch('http://localhost:8080/api/citas/atender', {
+      const response = await fetch(`${BACKEND_URL}/api/citas/atender`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

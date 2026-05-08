@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from '../CSS/Components/RegistrarClienteForm.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 interface RegistrarClienteFormProps {
   cedulaInicial?: string;
@@ -85,7 +86,7 @@ export default function RegistrarClienteForm({
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/register/cliente', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/register/cliente`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

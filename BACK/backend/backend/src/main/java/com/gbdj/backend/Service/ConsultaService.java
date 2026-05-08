@@ -1,167 +1,111 @@
 package com.gbdj.backend.Service;
 
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.HttpClientErrorException;
+import com.gbdj.backend.Entity.Consulta;
+import com.gbdj.backend.Repository.ConsultaRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ConsultaService {
 
-    private final RestTemplate restTemplate;
-    private final String baseUrl = "https://oracleapex.com/ords/ucc";
+    private final ConsultaRepository consultaRepo;
 
-    public ConsultaService() {
-        this.restTemplate = new RestTemplate();
-    }
-
-    // Crear consulta
-    public Map<String, Object> crearConsulta(Map<String, Object> consultaData) {
-        String url = baseUrl + "/apiConsulta/register";
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(consultaData, headers);
-        
+    @Transactional
+    public Map<String, Object> crearConsulta(Map<String, Object> data) {
+        Map<String, Object> resp = new HashMap<>();
         try {
-            log.info("=== CREAR CONSULTA SERVICE ===");
-            log.info("URL: {}", url);
-            log.info("Datos enviados a APEX: {}", consultaData);
-            
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class
-            );
-            
-            log.info("Status code: {}", response.getStatusCode());
-            log.info("Respuesta de APEX: {}", response.getBody());
-            return response.getBody();
-            
-        } catch (HttpClientErrorException e) {
-            log.error("Error HTTP: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error HTTP: " + e.getStatusCode());
-            return errorResponse;
+            Consulta c = new Consulta();
+            c.setIdCliente(toLong(data.get("P_ID_CLIENTE")));
+            c.setAsunto((String) data.get("P_ASUNTO"));
+            c.setMensaje((String) data.get("P_MENSAJE"));
+            c.setFechaCreacion(new Date());
+            c.setEstado("PENDIENTE");
+            consultaRepo.save(c);
+            resp.put("status", "OK");
+            resp.put("mensaje", "Consulta creada");
+            resp.put("idConsulta", c.getIdConsulta());
         } catch (Exception e) {
-            log.error("Error al crear consulta: ", e);
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("status", "ERROR");
-            errorResponse.put("mensaje", "Error: " + e.getMessage());
-            return errorResponse;
+            log.error("Error creando consulta", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
         }
+        return resp;
     }
 
-    // Listar consultas por cliente
-public Map<String, Object> listarConsultasPorCliente(Long idCliente) {
-    String url = baseUrl + "/apiConsulta/listByCliente?P_ID_CLIENTE=" + idCliente;
-    
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    
-    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-    
-    try {
-        log.info("=== LISTAR CONSULTAS SERVICE ===");
-        log.info("URL: {}", url);
-        
-        ResponseEntity<Map> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            requestEntity,
-            Map.class
-        );
-        
-        log.info("Status code: {}", response.getStatusCode());
-        log.info("Respuesta de APEX: {}", response.getBody());
-        return response.getBody();
-        
-    } catch (HttpClientErrorException e) {
-        log.error("Error HTTP: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error HTTP: " + e.getStatusCode());
-        return errorResponse;
-    } catch (Exception e) {
-        log.error("Error al listar consultas: ", e);
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error: " + e.getMessage());
-        return errorResponse;
+    public Map<String, Object> listarConsultasPorCliente(Long idCliente) {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            List<Consulta> lista = consultaRepo.findByIdCliente(idCliente);
+            resp.put("status", "OK");
+            resp.put("consultas", toList(lista));
+        } catch (Exception e) {
+            log.error("Error listando consultas", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
+        }
+        return resp;
     }
-}
-// Listar todas las consultas (para asesor/admin)
-public Map<String, Object> listarTodasConsultas() {
-    String url = baseUrl + "/apiConsulta/listAll";
-    
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    
-    HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-    
-    try {
-        log.info("=== LISTAR TODAS CONSULTAS SERVICE ===");
-        log.info("URL: {}", url);
-        
-        ResponseEntity<Map> response = restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            requestEntity,
-            Map.class
-        );
-        
-        log.info("Status code: {}", response.getStatusCode());
-        log.info("Respuesta de APEX: {}", response.getBody());
-        return response.getBody();
-        
-    } catch (HttpClientErrorException e) {
-        log.error("Error HTTP: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error HTTP: " + e.getStatusCode());
-        return errorResponse;
-    } catch (Exception e) {
-        log.error("Error al listar consultas: ", e);
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error: " + e.getMessage());
-        return errorResponse;
+
+    public Map<String, Object> listarTodasConsultas() {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            List<Consulta> lista = consultaRepo.findAll();
+            resp.put("status", "OK");
+            resp.put("consultas", toList(lista));
+        } catch (Exception e) {
+            log.error("Error listando consultas", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
+        }
+        return resp;
     }
-}
-public Map<String, Object> responderConsulta(Map<String, Object> consultaData) {
-    String url = baseUrl + "/apiConsulta/responder";
-    
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    
-    HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(consultaData, headers);
-    
-    try {
-        log.info("=== RESPONDER CONSULTA SERVICE ===");
-        log.info("URL: {}", url);
-        
-        ResponseEntity<Map> response = restTemplate.exchange(
-            url,
-            HttpMethod.POST,
-            requestEntity,
-            Map.class
-        );
-        
-        return response.getBody();
-    } catch (Exception e) {
-        log.error("Error al responder consulta: ", e);
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", "ERROR");
-        errorResponse.put("mensaje", "Error: " + e.getMessage());
-        return errorResponse;
+
+    @Transactional
+    public Map<String, Object> responderConsulta(Map<String, Object> data) {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            Long idConsulta = toLong(data.get("P_ID_CONSULTA"));
+            Consulta c = consultaRepo.findById(idConsulta).orElseThrow();
+            c.setRespuesta((String) data.get("P_RESPUESTA"));
+            c.setFechaRespuesta(new Date());
+            c.setEstado("RESPONDIDA");
+            consultaRepo.save(c);
+            resp.put("status", "OK");
+            resp.put("mensaje", "Consulta respondida");
+        } catch (Exception e) {
+            log.error("Error respondiendo consulta", e);
+            resp.put("status", "ERROR");
+            resp.put("mensaje", e.getMessage());
+        }
+        return resp;
     }
-}
+
+    private List<Map<String, Object>> toList(List<Consulta> consultas) {
+        List<Map<String, Object>> lista = new ArrayList<>();
+        for (Consulta c : consultas) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("idConsulta", c.getIdConsulta());
+            item.put("idCliente", c.getIdCliente());
+            item.put("asunto", c.getAsunto());
+            item.put("mensaje", c.getMensaje());
+            item.put("fechaCreacion", c.getFechaCreacion());
+            item.put("respuesta", c.getRespuesta());
+            item.put("fechaRespuesta", c.getFechaRespuesta());
+            item.put("estado", c.getEstado());
+            lista.add(item);
+        }
+        return lista;
+    }
+
+    private Long toLong(Object val) {
+        if (val == null) return null;
+        if (val instanceof Number) return ((Number) val).longValue();
+        return Long.parseLong(val.toString());
+    }
 }

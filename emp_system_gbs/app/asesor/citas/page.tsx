@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/Asesor/Citas.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -150,8 +151,8 @@ const [cancelando, setCancelando] = useState(false);
       setLoading(true);
 
       const [resPend, resAg] = await Promise.all([
-        fetch(`http://localhost:8080/api/citas/pendientes/${cedulaAsesor}`),
-        fetch(`http://localhost:8080/api/citas/agendadas/${cedulaAsesor}`),
+        fetch(`${BACKEND_URL}/api/citas/pendientes/${cedulaAsesor}`),
+        fetch(`${BACKEND_URL}/api/citas/agendadas/${cedulaAsesor}`),
       ]);
 
       const dataPend = await resPend.json();
@@ -177,7 +178,7 @@ const confirmarCancelacionCita = async () => {
   try {
     setCancelando(true);
 
-    const response = await fetch('http://localhost:8080/api/citas/cancelar', {
+    const response = await fetch(`${BACKEND_URL}/api/citas/cancelar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idCita: citaParaCancelar.idCita }),

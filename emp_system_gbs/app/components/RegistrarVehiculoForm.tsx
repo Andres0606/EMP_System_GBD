@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from '../CSS/Vehiculos/RegistrarVehiculo.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 interface RegistrarVehiculoFormProps {
   idCliente: number;
@@ -67,7 +68,7 @@ export default function RegistrarVehiculoForm({
     };
 
     try {
-      const response = await fetch('http://localhost:8080/api/vehiculos/register', {
+      const response = await fetch(`${BACKEND_URL}/api/vehiculos/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(vehiculoData),

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BACKEND_URL } from '@/lib/config';
 
 const styles = {
   container: {
@@ -211,7 +212,7 @@ export default function ListarAsesoresPage() {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:8080/api/auth/asesores');
+      const response = await fetch(`${BACKEND_URL}/api/auth/asesores`);
       const data = await response.json();
       
       if (response.ok && data.status === 'OK') {
@@ -230,7 +231,7 @@ export default function ListarAsesoresPage() {
 
   const handleEliminar = async (asesor: Asesor) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/auth/asesores/${asesor.cedula}`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/asesores/${asesor.cedula}`, {
         method: 'DELETE',
       });
       

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import styles from '../../../../CSS/Asesor/TramiteSimple.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const ClipboardIcon = () => (
@@ -105,7 +106,7 @@ const esDuplicado = esDuplicadoPlacas || esDuplicadoLicencia;
   const desbloquearEnvio = () => { enviandoRef.current = false; setSubmitting(false); };
 
   const finalizarTramite = async () => {
-    const response = await fetch('http://localhost:8080/api/tramite/estado', {
+    const response = await fetch(`${BACKEND_URL}/api/tramite/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idTramite: parseInt(idTramite), estado: 'Finalizado' }),
@@ -116,7 +117,7 @@ const esDuplicado = esDuplicadoPlacas || esDuplicadoLicencia;
   };
 
   const actualizarCombustible = async () => {
-    const response = await fetch(`http://localhost:8080/api/vehiculos/${placa}`, {
+    const response = await fetch(`${BACKEND_URL}/api/vehiculos/${placa}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ combustible: nuevoCombustible }),

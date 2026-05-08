@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../CSS/Cliente/MisTramites.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -90,7 +91,7 @@ export default function MisTramitesPage() {
   const cargarTramites = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/tramite/cliente/${cedulaCliente}`);
+      const response = await fetch(`${BACKEND_URL}/api/tramite/cliente/${cedulaCliente}`);
       const data = await response.json();
       if (response.ok && data.status === 'OK') {
         setTramites(data.tramites || []);

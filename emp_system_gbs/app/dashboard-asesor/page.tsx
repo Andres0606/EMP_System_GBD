@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../CSS/dashboard/DashboardAsesor.module.css'
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -155,7 +156,7 @@ export default function DashboardAsesorPage() {
 
 const cargarEstadisticas = async (cedula: string) => {
   try {
-    const API_URL = 'http://localhost:8080';
+    const API_URL = `${BACKEND_URL}`;
 
     const leerJsonSeguro = async (response: Response) => {
       if (!response.ok) return {};

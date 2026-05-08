@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../CSS/vehiculos/Vehiculos.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -56,7 +57,7 @@ export default function VehiculosPage() {
   const cargarVehiculos = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/vehiculos/cliente/${idCliente}`);
+      const response = await fetch(`${BACKEND_URL}/api/vehiculos/cliente/${idCliente}`);
       const data = await response.json();
       setVehiculos(Array.isArray(data.vehiculos) ? data.vehiculos : []);
     } catch (err) {

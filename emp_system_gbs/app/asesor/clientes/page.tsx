@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/Asesor/clientes.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -112,7 +113,7 @@ const cargarClientes = async () => {
     }
 
     const response = await fetch(
-      `http://localhost:8080/api/clientes/asesor/${cedula}`
+      `${BACKEND_URL}/api/clientes/asesor/${cedula}`
     );
 
     const data = await response.json();

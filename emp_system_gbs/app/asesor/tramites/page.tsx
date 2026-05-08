@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from '../../CSS/Asesor/Tramites.module.css';
+import { BACKEND_URL } from '@/lib/config';
 
 /* ── Icons ── */
 const CarIcon = () => (
@@ -90,7 +91,7 @@ export default function AsesorTramitesPage() {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:8080/api/tramite/asesor/${cedulaAsesor}`
+        `${BACKEND_URL}/api/tramite/asesor/${cedulaAsesor}`
       );
       const data = await response.json();
 
