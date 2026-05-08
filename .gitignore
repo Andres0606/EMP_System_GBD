@@ -1,1 +1,2 @@
 *.zip
+BACK/backend/backend/logs/*.log
