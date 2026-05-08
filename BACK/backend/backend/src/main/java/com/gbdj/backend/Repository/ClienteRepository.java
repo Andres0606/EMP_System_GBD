@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.List;
 
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    Optional<Cliente> findByNDocumento(Long nDocumento);
+    Optional<Cliente> findBynDocumento(Long nDocumento);
 
     @Query("SELECT DISTINCT c FROM Cliente c JOIN Cita cita ON c.idCliente = cita.idCliente JOIN FETCH c.persona WHERE cita.idAsesor = :idAsesor")
     List<Cliente> findByIdAsesorWithPersona(@Param("idAsesor") Long idAsesor);

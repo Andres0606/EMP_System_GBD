@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import styles from '../CSS/Vehiculos/RegistrarVehiculo.module.css';
+import styles from '../CSS/vehiculos/RegistrarVehiculo.module.css';
 import { BACKEND_URL } from '@/lib/config';
 
 interface RegistrarVehiculoFormProps {

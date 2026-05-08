@@ -92,7 +92,7 @@ public class CitaService {
     public Map<String, Object> listarCitasPendientes(Long cedulaAsesor) {
         Map<String, Object> resp = new HashMap<>();
         try {
-            Optional<Asesor> asesorOpt = asesorRepo.findByNDocumento(cedulaAsesor);
+            Optional<Asesor> asesorOpt = asesorRepo.findBynDocumento(cedulaAsesor);
             if (asesorOpt.isEmpty()) {
                 resp.put("status", "ERROR");
                 resp.put("mensaje", "Asesor no encontrado");
@@ -113,7 +113,7 @@ public class CitaService {
     public Map<String, Object> listarCitasAgendadas(Long cedulaAsesor) {
         Map<String, Object> resp = new HashMap<>();
         try {
-            Optional<Asesor> asesorOpt = asesorRepo.findByNDocumento(cedulaAsesor);
+            Optional<Asesor> asesorOpt = asesorRepo.findBynDocumento(cedulaAsesor);
             if (asesorOpt.isEmpty()) {
                 resp.put("status", "ERROR");
                 resp.put("mensaje", "Asesor no encontrado");

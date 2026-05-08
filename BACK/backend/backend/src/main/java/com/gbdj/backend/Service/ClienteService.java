@@ -26,7 +26,7 @@ public class ClienteService {
     public Map<String, Object> listarClientesPorAsesor(Long cedulaAsesor) {
         Map<String, Object> resp = new HashMap<>();
         try {
-            Long idAsesor = asesorRepo.findByNDocumento(cedulaAsesor)
+            Long idAsesor = asesorRepo.findBynDocumento(cedulaAsesor)
                     .map(a -> a.getIdAsesor()).orElse(null);
             if (idAsesor == null) {
                 resp.put("status", "ERROR");

@@ -44,10 +44,10 @@ public class AuthService {
         resp.put("correo", p.getCorreo());
         resp.put("rol", rol);
         if (rol == 2) {
-            asesorRepo.findByNDocumento(p.getNDocumento())
+            asesorRepo.findBynDocumento(p.getNDocumento())
                 .ifPresent(a -> resp.put("idAsesor", a.getIdAsesor()));
         } else if (rol == 3) {
-            clienteRepo.findByNDocumento(p.getNDocumento())
+            clienteRepo.findBynDocumento(p.getNDocumento())
                 .ifPresent(c -> resp.put("idCliente", c.getIdCliente()));
         }
         return resp;
@@ -55,8 +55,8 @@ public class AuthService {
 
     private int determinarRol(Long nDocumento) {
         if (adminRepo.existsById(nDocumento)) return 1;
-        if (asesorRepo.findByNDocumento(nDocumento).isPresent()) return 2;
-        if (clienteRepo.findByNDocumento(nDocumento).isPresent()) return 3;
+        if (asesorRepo.findBynDocumento(nDocumento).isPresent()) return 2;
+        if (clienteRepo.findBynDocumento(nDocumento).isPresent()) return 3;
         return 0;
     }
 
@@ -145,7 +145,7 @@ public class AuthService {
         resp.put("correo", p.getCorreo());
         resp.put("telefono", p.getTelefono());
         resp.put("fechaNacimiento", p.getFechaNacimiento());
-        resp.put("licenciaConduccion", clienteRepo.findByNDocumento(cedula)
+        resp.put("licenciaConduccion", clienteRepo.findBynDocumento(cedula)
             .map(Cliente::getLicenciaConduccion).orElse(null));
         resp.put("rol", determinarRol(cedula));
         return resp;
@@ -165,7 +165,7 @@ public class AuthService {
             }
             if (data.get("P_TELEFONO") != null) p.setTelefono(toLong(data.get("P_TELEFONO")));
             personaRepo.save(p);
-            clienteRepo.findByNDocumento(cedula).ifPresent(c -> {
+            clienteRepo.findBynDocumento(cedula).ifPresent(c -> {
                 if (data.get("P_LICENCIACONDUCCION") != null) {
                     c.setLicenciaConduccion((String) data.get("P_LICENCIACONDUCCION"));
                     clienteRepo.save(c);
@@ -211,7 +211,7 @@ public class AuthService {
 
     public Map<String, Object> obtenerAsesorPorCedula(Long cedula) {
         Map<String, Object> resp = new HashMap<>();
-        Optional<Asesor> opt = asesorRepo.findByNDocumentoWithPersona(cedula);
+        Optional<Asesor> opt = asesorRepo.findBynDocumentoWithPersona(cedula);
         if (opt.isEmpty()) {
             resp.put("status", "ERROR");
             resp.put("mensaje", "Asesor no encontrado");
@@ -243,7 +243,7 @@ public class AuthService {
             if (data.get("P_CORREO") != null) p.setCorreo((String) data.get("P_CORREO"));
             if (data.get("P_TELEFONO") != null) p.setTelefono(toLong(data.get("P_TELEFONO")));
             personaRepo.save(p);
-            asesorRepo.findByNDocumento(cedula).ifPresent(a -> {
+            asesorRepo.findBynDocumento(cedula).ifPresent(a -> {
                 if (data.get("P_ESPECIALIDAD") != null) a.setEspecialidadTramite((String) data.get("P_ESPECIALIDAD"));
                 asesorRepo.save(a);
             });
@@ -261,7 +261,7 @@ public class AuthService {
     public Map<String, Object> eliminarAsesor(Long cedula) {
         Map<String, Object> resp = new HashMap<>();
         try {
-            asesorRepo.findByNDocumento(cedula).ifPresent(a -> {
+            asesorRepo.findBynDocumento(cedula).ifPresent(a -> {
                 a.setEstado("Inactivo");
                 asesorRepo.save(a);
             });
